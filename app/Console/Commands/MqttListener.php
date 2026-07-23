@@ -226,8 +226,48 @@ class MqttListener extends Command
             return;
         }
 
+        // Set device as online
+        \Cache::put("device_{$device->id}_last_seen", now()->toIso8601String(), now()->addHours(1));
+
         // Determine data type and process accordingly
         $this->processDataByType($device, $data);
+
+        // Broadcast the update via WebSockets
+        $cachedOutputs = \Cache::get("device_outputs_{$device->id}", []);
+        $cacheKey = "sensor_buffer_{$device->id}";
+        $buffer = \Cache::get($cacheKey, []);
+        $lastSeen = \Cache::get("device_{$device->id}_last_seen");
+
+        // Convert cached outputs (ESP32 keys) to [{id, value}] format for browser
+        $keyMap = [
+            'st_lam' => 'sts_lampu',
+            'st_cool' => 'sts_cool',
+            'st_sld_op' => 'sts_sld_op',
+            'st_sld_tu' => 'sts_sld_tu',
+            'st_air' => 'sts_air_input',
+            'st_mix' => 'sts_mixing',
+            'st_pmp' => 'irrigation_pump',
+            'st_fa' => 'fan',
+            'st_mis' => 'sts_misting',
+            'st_dos' => 'sts_dosing',
+            'st_ph_u' => 'sts_ph_up',
+            'st_ph_d' => 'sts_ph_down',
+            'st_bak' => 'sts_air_baku',
+            'st_ppk' => 'sts_air_pupuk',
+        ];
+
+        $deviceOutputs = $device->outputs()->pluck('id', 'output_name');
+        $formattedOutputs = [];
+
+        foreach ($cachedOutputs as $espKey => $val) {
+            $dbName = $keyMap[$espKey] ?? $espKey;
+            $outputId = $deviceOutputs[$dbName] ?? null;
+            if ($outputId) {
+                $formattedOutputs[] = ['id' => $outputId, 'value' => $val];
+            }
+        }
+
+        event(new \App\Events\DeviceStatusUpdated($device->id, $buffer, $formattedOutputs, $lastSeen));
     }
 
     /**
@@ -525,9 +565,29 @@ class MqttListener extends Command
                 // Update Cache
                 $cachedOutputs[$key] = $value;
 
+                // Mapping from ESP32 keys to Database output_name
+                $keyMap = [
+                    'st_lam' => 'sts_lampu',
+                    'st_cool' => 'sts_cool',
+                    'st_sld_op' => 'sts_sld_op',
+                    'st_sld_tu' => 'sts_sld_tu',
+                    'st_air' => 'sts_air_input',
+                    'st_mix' => 'sts_mixing',
+                    'st_pmp' => 'irrigation_pump',
+                    'st_fa' => 'fan',
+                    'st_mis' => 'sts_misting',
+                    'st_dos' => 'sts_dosing',
+                    'st_ph_u' => 'sts_ph_up',
+                    'st_ph_d' => 'sts_ph_down',
+                    'st_bak' => 'sts_air_baku',
+                    'st_ppk' => 'sts_air_pupuk',
+                ];
+
+                $dbOutputName = $keyMap[$key] ?? $key;
+
                 // Save to Database
                 $output = \App\Models\DeviceOutput::where('device_id', $device->id)
-                    ->where('output_name', $key)
+                    ->where('output_name', $dbOutputName)
                     ->first();
 
                 if ($output) {

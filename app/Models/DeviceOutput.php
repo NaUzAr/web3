@@ -47,6 +47,10 @@ class DeviceOutput extends Model
         if (str_contains($outLabel, 'mist') || str_contains($outLabel, 'kabut') || str_contains($outLabel, 'pengkabutan') || str_contains($outName, 'mist')) return 'bi-cloud-fog';
         if (str_contains($outLabel, 'heater') || str_contains($outLabel, 'pemanas')) return 'bi-fire';
         if (str_contains($outLabel, 'valve') || str_contains($outLabel, 'katup') || str_contains($outLabel, 'kran')) return 'bi-sign-stop';
+        if (str_contains($outLabel, 'cool') || str_contains($outLabel, 'pendingin')) return 'bi-snow';
+        if (str_contains($outLabel, 'shading net open')) return 'bi-chevron-double-up';
+        if (str_contains($outLabel, 'shading net close')) return 'bi-chevron-double-down';
+        if (str_contains($outLabel, 'shading') || str_contains($outLabel, 'net')) return 'bi-window-stack';
         
         $isStatusOnly = str_starts_with($this->output_name, 'sts_') || in_array($this->output_name, ['st_bak', 'st_ppk']);
         if ($isStatusOnly) return 'bi-info-circle';
@@ -70,6 +74,10 @@ class DeviceOutput extends Model
         if (str_contains($outLabel, 'mist') || str_contains($outLabel, 'kabut') || str_contains($outLabel, 'pengkabutan') || str_contains($outName, 'mist')) return '#5DADE2';
         if (str_contains($outLabel, 'heater') || str_contains($outLabel, 'pemanas')) return '#E74C3C';
         if (str_contains($outLabel, 'valve') || str_contains($outLabel, 'katup') || str_contains($outLabel, 'kran')) return '#1ABC9C';
+        if (str_contains($outLabel, 'cool') || str_contains($outLabel, 'pendingin')) return '#00BCD4'; // Cyan
+        if (str_contains($outLabel, 'shading net open')) return '#607D8B'; // Blue Grey
+        if (str_contains($outLabel, 'shading net close')) return '#546E7A'; // Darker Blue Grey
+        if (str_contains($outLabel, 'shading') || str_contains($outLabel, 'net')) return '#607D8B';
         
         $isStatusOnly = str_starts_with($this->output_name, 'sts_') || in_array($this->output_name, ['st_bak', 'st_ppk']);
         if ($isStatusOnly) return '#22c55e';

@@ -69,6 +69,11 @@ self.addEventListener('fetch', event => {
         return;
     }
 
+    // Skip non-HTTP/HTTPS requests (like chrome-extension://)
+    if (!event.request.url.startsWith('http')) {
+        return;
+    }
+
     event.respondWith(
         // Try network first
         fetch(event.request)

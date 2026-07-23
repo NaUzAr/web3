@@ -13,6 +13,7 @@
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
         /* Page Specific Overrides */
@@ -961,7 +962,7 @@
         <div class="container">
             <a class="navbar-brand d-flex align-items-center"
                 href="{{ session('is_pwa') ? route('monitoring.index') : route('home') }}">
-                <img src="{{ asset(env('APP_LOGO', 'images/logo.png')) }}" alt="{{ env('APP_NAME', 'Swaratani') }}" height="40" class="me-2">
+                <img src="{{ asset(env('APP_LOGO', 'images/logo.png')) }}" alt="{{ env('APP_NAME', 'Swaratani') }}" style="height: 40px; width: auto; max-height: 40px; object-fit: contain;" class="me-2">
                 <span class="fw-bold" style="color: var(--navbar_text, #333);">Swaratani IoT</span>
             </a>
             <div class="navbar-nav ms-auto flex-row align-items-center gap-4 gap-sm-3">
@@ -994,6 +995,16 @@
                         @endif
                     </h1>
                     <div class="d-flex gap-2 align-items-center">
+                        @if($isOnline ?? false)
+                            <span class="device-type-badge" id="conn-badge" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); font-size: 0.8rem; padding: 0.35rem 0.8rem; height: fit-content;">
+                                <i class="bi bi-wifi me-1"></i> ONLINE
+                            </span>
+                        @else
+                            <span class="device-type-badge" id="conn-badge" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); font-size: 0.8rem; padding: 0.35rem 0.8rem; height: fit-content;">
+                                <i class="bi bi-wifi-off me-1"></i> OFFLINE
+                            </span>
+                        @endif
+                        
                         @if($isAdminView ?? false)
                             <span class="device-type-badge" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); font-size: 0.8rem; padding: 0.35rem 0.8rem; height: fit-content;">
                                 <i class="bi bi-shield-check me-1"></i> Admin View
@@ -1004,8 +1015,8 @@
                         </span>
                     </div>
                 </div>
-                <p class="mb-0 mt-2" style="color: var(--text-secondary);">
-                    <span class="live-dot me-2"></span>
+                <p class="mb-0 mt-2" style="color: var(--text-secondary);" id="last-update-text">
+                    <span class="live-dot me-2" id="live-dot" style="display: {{ ($isOnline ?? false) ? 'inline-block' : 'none' }};"></span>
                     @if($latestData)
                         Terakhir update: {{ \Carbon\Carbon::parse($latestData->recorded_at)->diffForHumans() }}
                     @else
@@ -1260,14 +1271,21 @@
                                             </span>
                                         </div>
                                     @else
+                                        @php
+                                            $outName = strtolower($output->output_name);
+                                            $isShading = str_contains($outName, 'shading') || str_contains($outName, 'net');
+                                            $onText = $isShading ? 'OPEN' : 'ON';
+                                            $offText = $isShading ? 'CLOSE' : 'OFF';
+                                        @endphp
                                         <div class="output-status {{ $output->current_value ? 'on' : 'off' }}"
-                                            id="output-status-{{ $output->id }}">
-                                            {{ $output->current_value ? 'ON' : 'OFF' }}
+                                            id="output-status-{{ $output->id }}"
+                                            data-on-text="{{ $onText }}"
+                                            data-off-text="{{ $offText }}">
+                                            {{ $output->current_value ? $onText : $offText }}
                                         </div>
                                         
                                         {{-- ON/OFF Buttons for Boolean --}}
                                         @php
-                                            $outName = strtolower($output->output_name);
                                             $isDosingPump = str_contains($outName, 'pump_ab') || str_contains($outName, 'dosing') || $outName === 'st_dos';
                                             $isPhUp = str_contains($outName, 'ph_up') || str_contains($outName, 'ph1') || $outName === 'st_ph_u';
                                             $isPhDown = str_contains($outName, 'ph_down') || str_contains($outName, 'ph2') || $outName === 'st_ph_d';
@@ -1296,12 +1314,12 @@
                                                 <button type="button"
                                                     class="segmented-btn {{ $output->current_value ? 'active-on' : '' }}"
                                                     onclick="setOutput({{ $output->id }}, true)" id="btn-on-{{ $output->id }}">
-                                                    ON
+                                                    {{ $onText }}
                                                 </button>
                                                 <button type="button"
                                                     class="segmented-btn {{ !$output->current_value ? 'active-off' : '' }}"
                                                     onclick="setOutput({{ $output->id }}, false)" id="btn-off-{{ $output->id }}">
-                                                    OFF
+                                                    {{ $offText }}
                                                 </button>
                                             </div>
                                         @endif
@@ -1543,26 +1561,9 @@
         <script>
             // Setup CSRF token for AJAX requests
             const csrfToken = '{{ csrf_token() }}';
-            const userDeviceId = {{ $userDevice->id }};
-            const pendingOutputs = {}; // Store pending UI states to prevent polling flicker
+            const userDeviceId = {{ $userDevice->id ?? 'null' }};
 
-            // Optimistically update UI and lock it for polling (buttons only)
-            function setOptimisticUI(outputId, isOn) {
-                pendingOutputs[outputId] = { expectedValue: isOn, timestamp: Date.now() };
-                
-                const btnOn = document.getElementById(`btn-on-${outputId}`);
-                const btnOff = document.getElementById(`btn-off-${outputId}`);
 
-                if (btnOn && btnOff) {
-                    if (isOn) {
-                        btnOn.className = 'segmented-btn active-on';
-                        btnOff.className = 'segmented-btn';
-                    } else {
-                        btnOn.className = 'segmented-btn';
-                        btnOff.className = 'segmented-btn active-off';
-                    }
-                }
-            }
 
             // Set output ON/OFF (for buttons)
             function setOutput(outputId, isOn) {
@@ -2027,22 +2028,7 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            const btnOn = document.getElementById(`btn-on-${outputId}`);
-                            const btnOff = document.getElementById(`btn-off-${outputId}`);
-                            const statusEl = document.getElementById(`output-status-${outputId}`);
-
-                            if (isOn) {
-                                btnOn.className = 'btn btn-sm btn-success';
-                                btnOff.className = 'btn btn-sm btn-outline-danger';
-                            } else {
-                                btnOn.className = 'btn btn-sm btn-outline-success';
-                                btnOff.className = 'btn btn-sm btn-danger';
-                            }
-
-                            if (statusEl) {
-                                statusEl.textContent = isOn ? 'ON' : 'OFF';
-                                statusEl.className = isOn ? 'output-status on' : 'output-status off';
-                            }
+                            setOptimisticUI(outputId, isOn);
 
                             const card = document.getElementById(`output-card-${outputId}`);
                             if (card) {
@@ -2153,16 +2139,7 @@
                             const modal = bootstrap.Modal.getInstance(document.getElementById('phControlModal'));
                             modal.hide();
 
-                            const btnOn = document.getElementById(`btn-on-${outputId}`);
-                            const btnOff = document.getElementById(`btn-off-${outputId}`);
-                            const statusEl = document.getElementById(`output-status-${outputId}`);
-
-                            if (btnOn) btnOn.className = 'btn btn-sm btn-success';
-                            if (btnOff) btnOff.className = 'btn btn-sm btn-outline-danger';
-                            if (statusEl) {
-                                statusEl.textContent = 'ON';
-                                statusEl.className = 'output-status on';
-                            }
+                            setOptimisticUI(outputId, true);
 
                             const card = document.getElementById(`output-card-${outputId}`);
                             if (card) {
@@ -2274,45 +2251,7 @@
                 }
             }
 
-            function updateOutputs(outputs) {
-                outputs.forEach(output => {
-                    // Update Boolean Outputs (Buttons)
-                    const btnOn = document.getElementById(`btn-on-${output.id}`);
-                    const btnOff = document.getElementById(`btn-off-${output.id}`);
-                    const statusEl = document.getElementById(`output-status-${output.id}`);
 
-                    if (btnOn && btnOff && statusEl) {
-                        const isOn = parseFloat(output.value) > 0;
-
-                        if (isOn) {
-                            btnOn.className = 'segmented-btn active-on';
-                            btnOff.className = 'segmented-btn';
-                            statusEl.className = 'output-status on';
-                            statusEl.innerText = 'ON';
-                        } else {
-                            btnOn.className = 'segmented-btn';
-                            btnOff.className = 'segmented-btn active-off';
-                            statusEl.className = 'output-status off';
-                            statusEl.innerText = 'OFF';
-                        }
-                    }
-
-                    // Update Range/Slider Outputs
-                    const slider = document.getElementById(`output-${output.id}`);
-                    const valueDisplay = document.getElementById(`output-value-${output.id}`);
-
-                    if (slider && document.activeElement !== slider) {
-                        slider.value = output.value;
-                        if (valueDisplay) {
-                            // Extract unit from existing text or data attribute (simplification needed?)
-                            // Assuming unit is static suffix for now or extract last non-digits
-                            const currentText = valueDisplay.innerText;
-                            const unit = currentText.replace(/[0-9\.]/g, '');
-                            valueDisplay.innerText = parseInt(output.value) + unit;
-                        }
-                    }
-                });
-            }
             // Custom Toast Notification
             function showToast(message, type = 'success') {
                 // Determine type based on message content if not explicitly passed
@@ -2352,8 +2291,34 @@
 
     {{-- Auto-Reload Script - Always runs regardless of initial data --}}
     <script>
-        // Auto-reload status every 2 seconds
-        setInterval(fetchStatus, 2000);
+        // Map sensor name to ID using PHP array
+        const sensorMap = @json($sensors->pluck('id', 'sensor_name'));
+        
+        // Map output name to ID using PHP array
+        const outputMap = @json($outputs->pluck('id', 'output_name'));
+        
+        const pendingOutputs = {}; // Lock buttons for 20s after click
+
+        // Optimistically update UI and lock for 20 seconds
+        function setOptimisticUI(outputId, isOn) {
+            pendingOutputs[outputId] = { expectedValue: isOn, timestamp: Date.now() };
+
+            const btnOn = document.getElementById(`btn-on-${outputId}`);
+            const btnOff = document.getElementById(`btn-off-${outputId}`);
+
+            if (btnOn && btnOff) {
+                if (isOn) {
+                    btnOn.className = 'segmented-btn active-on';
+                    btnOff.className = 'segmented-btn';
+                } else {
+                    btnOn.className = 'segmented-btn';
+                    btnOff.className = 'segmented-btn active-off';
+                }
+            }
+        }
+        
+        // Auto-reload status every 60 seconds (as a fallback, since WebSockets handle real-time)
+        setInterval(fetchStatus, 60000);
 
         async function fetchStatus() {
             try {
@@ -2376,10 +2341,68 @@
                 console.error('Polling error:', error);
             }
         }
+        
+        // Timeout timer for offline detection
+        let offlineTimer = null;
+        
+        function resetOfflineTimer() {
+            if (offlineTimer) clearTimeout(offlineTimer);
+            offlineTimer = setTimeout(() => {
+                setDeviceOffline();
+            }, 60000); // 1 minute without updates = Offline
+        }
+        
+        function setDeviceOnline() {
+            const badge = document.getElementById('conn-badge');
+            if (badge) {
+                badge.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+                badge.innerHTML = '<i class="bi bi-wifi me-1"></i> ONLINE';
+            }
+            const dot = document.getElementById('live-dot');
+            if (dot) dot.style.display = 'inline-block';
+            resetOfflineTimer();
+        }
+        
+        function setDeviceOffline() {
+            const badge = document.getElementById('conn-badge');
+            if (badge) {
+                badge.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+                badge.innerHTML = '<i class="bi bi-wifi-off me-1"></i> OFFLINE';
+            }
+            const dot = document.getElementById('live-dot');
+            if (dot) dot.style.display = 'none';
+        }
 
-        // Map sensor name to ID using PHP array
-        const sensorMap = @json($sensors->pluck('id', 'sensor_name'));
+        document.addEventListener('DOMContentLoaded', function () {
+            @if($isOnline ?? false)
+                resetOfflineTimer();
+            @endif
 
+            if (window.Echo) {
+                window.Echo.private(`device.{{ $device->id }}`)
+                    .listen('DeviceStatusUpdated', (e) => {
+                        console.log('Realtime Update:', e);
+                        
+                        setDeviceOnline();
+                        
+                        // Update last update text
+                        const lastUpdateEl = document.getElementById('last-update-text');
+                        if (lastUpdateEl) {
+                            lastUpdateEl.innerHTML = `<span class="live-dot me-2" id="live-dot" style="display: inline-block;"></span> Terakhir update: Baru saja`;
+                        }
+
+                        if (e.outputs && Array.isArray(e.outputs) && e.outputs.length > 0) {
+                            updateOutputs(e.outputs);
+                        }
+                        
+                        if (e.sensors) {
+                            updateSensors(e.sensors);
+                        }
+                    });
+            } else {
+                console.warn("Laravel Echo is not initialized. WebSockets will not work.");
+            }
+        });
         function updateSensors(sensorData) {
             for (const [key, value] of Object.entries(sensorData)) {
                 if (sensorMap[key]) {
@@ -2395,20 +2418,20 @@
 
         function updateOutputs(outputs) {
             outputs.forEach(output => {
-                // Check if there's a pending optimistic update
+                // Skip update if button is locked (within 20s of user click)
                 if (pendingOutputs[output.id]) {
                     const pending = pendingOutputs[output.id];
                     const isOn = parseFloat(output.value) > 0;
-                    if (Date.now() - pending.timestamp < 15000) { // 15 seconds timeout
+                    if (Date.now() - pending.timestamp < 20000) {
                         if (isOn === pending.expectedValue) {
-                            // Device state matches expected, clear lock
+                            // Device confirmed the change, unlock
                             delete pendingOutputs[output.id];
                         } else {
-                            // Device hasn't updated yet, skip UI update to prevent flickering
-                            return; 
+                            // Device hasn't changed yet, keep button locked
+                            return;
                         }
                     } else {
-                        // Timeout expired, clear lock and let it update
+                        // 20s expired, unlock and let real state through
                         delete pendingOutputs[output.id];
                     }
                 }
@@ -2430,12 +2453,12 @@
                         btnOn.className = 'segmented-btn active-on';
                         btnOff.className = 'segmented-btn';
                         statusEl.className = 'output-status on';
-                        statusEl.innerText = 'ON';
+                        statusEl.innerText = statusEl.getAttribute('data-on-text') || 'ON';
                     } else {
                         btnOn.className = 'segmented-btn';
                         btnOff.className = 'segmented-btn active-off';
                         statusEl.className = 'output-status off';
-                        statusEl.innerText = 'OFF';
+                        statusEl.innerText = statusEl.getAttribute('data-off-text') || 'OFF';
                     }
                 }
 

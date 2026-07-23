@@ -705,6 +705,12 @@ class AdminDeviceController extends Controller
                 $message = "<MIS#{$val}#>";
             } elseif (str_contains($name, 'lamp') || $name === 'st_lam') {
                 $message = "<LAM#{$val}#>";
+            } elseif ($name === 'sts_sld_op') {
+                $message = "<SLD_OP#{$val}#>";
+            } elseif ($name === 'sts_sld_tu') {
+                $message = "<SLD_TU#{$val}#>";
+            } elseif ($name === 'sts_cool') {
+                $message = "<COOL#{$val}#>";
             }
             // 4. Air Baku & Air Pupuk
             elseif ($name === 'st_bak') {

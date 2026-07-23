@@ -136,7 +136,11 @@ class MonitoringController extends Controller
         // Cek ketersediaan otomasi (berdasarkan sensor yang ada)
         $hasAutomation = $device->hasAnyAutomation();
 
-        return view('monitoring.show', compact('userDevice', 'device', 'sensors', 'outputs', 'latestData', 'scheduleConfig', 'hasAutomation'));
+        // Check if device is online (last seen within 5 minutes)
+        $lastSeen = \Cache::get("device_{$device->id}_last_seen", $device->last_seen_at);
+        $isOnline = $lastSeen ? now()->diffInMinutes(\Carbon\Carbon::parse($lastSeen)) <= 5 : false;
+
+        return view('monitoring.show', compact('userDevice', 'device', 'sensors', 'outputs', 'latestData', 'scheduleConfig', 'hasAutomation', 'isOnline', 'lastSeen'));
     }
 
     /**

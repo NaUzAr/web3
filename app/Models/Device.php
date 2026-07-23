@@ -235,6 +235,9 @@ class Device extends Model
             'sts_ph_down' => ['label' => 'pH Down Pump', 'type' => 'boolean', 'unit' => '', 'icon' => 'bi-arrow-down-circle'],
             'sts_air_baku' => ['label' => 'Air Baku Valve', 'type' => 'boolean', 'unit' => '', 'icon' => 'bi-water'],
             'sts_air_pupuk' => ['label' => 'Air Pupuk Valve', 'type' => 'boolean', 'unit' => '', 'icon' => 'bi-flower1'],
+            'sts_sld_op' => ['label' => 'Shading Net Open', 'type' => 'boolean', 'unit' => '', 'icon' => 'bi-chevron-double-up'],
+            'sts_sld_tu' => ['label' => 'Shading Net Close', 'type' => 'boolean', 'unit' => '', 'icon' => 'bi-chevron-double-down'],
+            'sts_cool' => ['label' => 'Cooling System', 'type' => 'boolean', 'unit' => '', 'icon' => 'bi-snow'],
 
             // Pompa Irigasi Multi-Zona (Khusus dengan setting jumlah zona)
             'irrigation_pump' => [
@@ -274,6 +277,9 @@ class Device extends Model
                 'sts_ph_down' => 1,
                 'sts_air_baku' => 1,
                 'sts_air_pupuk' => 1,
+                'sts_sld_op' => 1,
+                'sts_sld_tu' => 1,
+                'sts_cool' => 1,
             ],
             // Tambahkan default output untuk tipe baru:
         ];
