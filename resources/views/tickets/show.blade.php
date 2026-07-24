@@ -45,14 +45,7 @@
 <body>
     <div class="bg-animation"></div>
 
-    <nav class="navbar navbar-expand-lg navbar-glass">
-        <div class="container">
-            <a class="navbar-brand d-flex align-items-center" href="{{ route('tickets.index') }}">
-                <i class="bi bi-arrow-left me-2"></i>
-                <span class="fw-bold" style="color: var(--navbar_text, #333);">Kembali</span>
-            </a>
-        </div>
-    </nav>
+    @include('partials.navbar')
 
     <div class="container py-4">
         <div class="row">
@@ -62,10 +55,13 @@
                         <h2 class="page-title mb-1">#TKT-{{ str_pad($ticket->id, 4, '0', STR_PAD_LEFT) }}</h2>
                         <span class="text-secondary">{{ $ticket->subject }} &bull; {{ $ticket->created_at->format('d M Y, H:i') }}</span>
                     </div>
-                    <div>
+                    <div class="d-flex align-items-center gap-2">
                         <span class="status-badge status-{{ $ticket->status }}">
                             {{ strtoupper(str_replace('_', ' ', $ticket->status)) }}
                         </span>
+                        <a href="{{ route('tickets.index') }}" class="btn btn-glass btn-sm d-inline-flex align-items-center gap-2">
+                            <i class="bi bi-arrow-left"></i> Kembali
+                        </a>
                     </div>
                 </div>
 

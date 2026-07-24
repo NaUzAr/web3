@@ -565,28 +565,7 @@
     <div class="bg-animation"></div>
 
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-glass">
-        <div class="container">
-            <a class="navbar-brand d-flex align-items-center"
-                href="{{ session('is_pwa') ? route('monitoring.index') : route('home') }}">
-                <img src="{{ asset(env('APP_LOGO', 'images/logo.png')) }}" alt="{{ env('APP_NAME', 'Swaratani') }}" height="40" class="me-2">
-                <span class="fw-bold" style="color: var(--navbar_text, #333);">Swaratani IoT</span>
-            </a>
-            <div class="navbar-nav ms-auto flex-row align-items-center gap-4 gap-sm-3">
-                @if(!session('is_pwa'))
-                    <a class="nav-link px-0" href="{{ route('home') }}" title="Beranda" style="color: var(--navbar-text);">
-                        <i class="bi bi-house fs-5 me-sm-1"></i><span class="d-none d-sm-inline"> Beranda</span>
-                    </a>
-                @endif
-                <form action="{{ route('logout') }}" method="POST" class="d-inline m-0">
-                    @csrf
-                    <button type="submit" class="nav-link btn btn-link px-0 text-decoration-none" style="color: var(--navbar-text);" title="Logout">
-                        <i class="bi bi-box-arrow-right fs-5 me-sm-1"></i><span class="d-none d-sm-inline"> Logout</span>
-                    </button>
-                </form>
-            </div>
-        </div>
-    </nav>
+    @include('partials.navbar')
 
     <div class="container pt-3 pb-5">
         <div class="d-flex justify-content-between align-items-center mb-4 gap-2 header-container">

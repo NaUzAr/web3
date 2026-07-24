@@ -32,19 +32,16 @@
 <body>
     <div class="bg-animation"></div>
 
-    <nav class="navbar navbar-expand-lg navbar-glass">
-        <div class="container">
-            <a class="navbar-brand d-flex align-items-center" href="{{ route('tickets.index') }}">
-                <i class="bi bi-arrow-left me-2"></i>
-                <span class="fw-bold" style="color: var(--navbar_text, #333);">Kembali</span>
-            </a>
-        </div>
-    </nav>
+    @include('partials.navbar')
 
     <div class="container py-4">
         <div class="row">
-            <div class="col-lg-8 mx-auto">
-                <h2 class="page-title mb-4">Buat Tiket Laporan</h2>
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="page-title mb-0">Buat Tiket Laporan</h2>
+                    <a href="{{ route('tickets.index') }}" class="btn btn-glass btn-sm d-inline-flex align-items-center gap-2">
+                        <i class="bi bi-arrow-left"></i> Kembali
+                    </a>
+                </div>
                 
                 @if($errors->any())
                     <div class="alert alert-danger">

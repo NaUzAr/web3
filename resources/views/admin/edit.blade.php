@@ -263,28 +263,19 @@
     <div class="bg-animation"></div>
 
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-glass">
-        <div class="container">
-            <a class="navbar-brand d-flex align-items-center" href="{{ route('home') }}">
-                <img src="{{ asset(env('APP_LOGO', 'images/logo.png')) }}" alt="{{ env('APP_NAME', 'Swaratani') }}" height="40" class="me-2">
-                <span class="fw-bold" style="color: var(--primary) !important;">Swaratani IoT</span>
-            </a>
-            <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="{{ route('admin.devices.index') }}">
-                    <i class="bi bi-arrow-left me-1"></i> Kembali ke Devices
-                </a>
-            </div>
-        </div>
-    </nav>
+    @include('partials.navbar')
 
     <div class="container py-5">
         <div class="row justify-content-center">
             <div class="col-lg-8">
                 <div class="glass-card shadow-lg">
-                    <div class="card-header-gradient">
+                    <div class="card-header-gradient d-flex justify-content-between align-items-center">
                         <h4 class="mb-0 text-white">
                             <i class="bi bi-pencil-square me-2"></i>Edit Device
                         </h4>
+                        <a href="{{ route('admin.devices.index') }}" class="btn btn-sm btn-outline-light">
+                            <i class="bi bi-arrow-left me-1"></i> Kembali ke Devices
+                        </a>
                     </div>
                     <div class="card-body p-4">
 

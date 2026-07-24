@@ -958,28 +958,7 @@
     <div class="bg-animation"></div>
 
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-glass">
-        <div class="container">
-            <a class="navbar-brand d-flex align-items-center"
-                href="{{ session('is_pwa') ? route('monitoring.index') : route('home') }}">
-                <img src="{{ asset(env('APP_LOGO', 'images/logo.png')) }}" alt="{{ env('APP_NAME', 'Swaratani') }}" style="height: 40px; width: auto; max-height: 40px; object-fit: contain;" class="me-2">
-                <span class="fw-bold" style="color: var(--navbar_text, #333);">Swaratani IoT</span>
-            </a>
-            <div class="navbar-nav ms-auto flex-row align-items-center gap-4 gap-sm-3">
-                @if($isAdminView ?? false)
-                    <a class="nav-link px-0 text-decoration-none" href="{{ route('admin.devices.index') }}" title="Kembali ke Manager" style="color: var(--navbar-text);">
-                        <i class="bi bi-arrow-left fs-5 me-2 me-sm-1" style="-webkit-text-stroke: 1px currentColor;"></i>
-                        <i class="bi bi-hdd-network fs-5 me-sm-1"></i><span class="d-none d-sm-inline"> Manager</span>
-                    </a>
-                @else
-                    <a class="nav-link px-0 text-decoration-none" href="{{ route('monitoring.index') }}" title="Kembali ke Tampilan Device" style="color: var(--navbar-text);">
-                        <i class="bi bi-arrow-left fs-5 me-2 me-sm-1" style="-webkit-text-stroke: 1px currentColor;"></i>
-                        <i class="bi bi-display fs-5 me-sm-1"></i><span class="d-none d-sm-inline"> Tampilan Device</span>
-                    </a>
-                @endif
-            </div>
-        </div>
-    </nav>
+    @include('partials.navbar')
 
     <div class="container pt-3 pb-5">
         <!-- Header -->

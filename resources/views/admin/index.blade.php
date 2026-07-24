@@ -395,31 +395,7 @@
     <div class="bg-animation"></div>
 
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-glass">
-        <div class="container">
-            <a class="navbar-brand d-flex align-items-center" href="{{ route('home') }}">
-                <img src="{{ asset(env('APP_LOGO', 'images/logo.png')) }}" alt="{{ env('APP_NAME', 'Swaratani') }}" height="40" class="me-2">
-                <span class="fw-bold" style="color: var(--navbar_text, #333);">Swaratani IoT</span>
-            </a>
-            <div class="navbar-nav ms-auto gap-2 flex-row flex-wrap">
-                <a class="nav-link" href="{{ route('admin.sensor-rules.index') }}">
-                    <i class="bi bi-sliders me-1"></i> Sensor Rules
-                </a>
-                <a class="nav-link" href="{{ route('admin.tickets.index') }}">
-                    <i class="bi bi-inboxes me-1"></i> Tiket
-                </a>
-                <a class="nav-link" href="{{ route('admin.activity-logs') }}">
-                    <i class="bi bi-journal-text me-1"></i> Activity Logs
-                </a>
-                <a class="nav-link" href="{{ route('admin.announcements.index') }}">
-                    <i class="bi bi-megaphone-fill me-1"></i> Broadcast
-                </a>
-                <a class="nav-link" href="{{ route('home') }}">
-                    <i class="bi bi-house me-1"></i> Beranda
-                </a>
-            </div>
-        </div>
-    </nav>
+    @include('partials.navbar')
 
     <div class="container py-5">
         <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">

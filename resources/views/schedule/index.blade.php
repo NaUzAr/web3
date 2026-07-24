@@ -416,20 +416,7 @@
     <div class="bg-animation"></div>
 
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-glass">
-        <div class="container">
-            <a class="navbar-brand d-flex align-items-center" href="{{ route('home') }}">
-                <img src="{{ asset(env('APP_LOGO', 'images/logo.png')) }}" alt="{{ env('APP_NAME', 'Swaratani') }}" height="40" class="me-2">
-                <span class="fw-bold" style="color: var(--navbar_text, #333);">Swaratani IoT</span>
-            </a>
-            <div class="navbar-nav ms-auto flex-row align-items-center gap-4 gap-sm-3">
-                <a class="nav-link px-0 text-decoration-none" href="{{ route('monitoring.show', $userDevice->id) }}" title="Kembali ke Device" style="color: var(--navbar-text);">
-                    <i class="bi bi-arrow-left fs-5 me-2 me-sm-1" style="-webkit-text-stroke: 1px currentColor;"></i>
-                    <i class="bi bi-display fs-5 me-sm-1"></i><span class="d-none d-sm-inline"> Tampilan Device</span>
-                </a>
-            </div>
-        </div>
-    </nav>
+    @include('partials.navbar')
 
     <div class="container pt-3 pb-5 min-vh-100 d-flex flex-column">
         <!-- Header Page -->
@@ -441,6 +428,11 @@
                 <p class="mb-0 mt-1" style="color: var(--text-secondary);">
                     Device: <strong>{{ $device->name }}</strong> | Target: <strong>{{ $scheduleConfig->output_key }}</strong>
                 </p>
+            </div>
+            <div>
+                <a href="{{ route('monitoring.show', $userDevice->id) }}" class="btn btn-glass d-inline-flex align-items-center gap-2">
+                    <i class="bi bi-arrow-left"></i> Kembali ke Device
+                </a>
             </div>
         </div>
 

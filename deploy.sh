@@ -6,7 +6,7 @@
 
 set -e
 
-PROJECT_DIR="/opt/docker-apps/swaratani_web"
+PROJECT_DIR="/opt/docker-apps/swaratani"
 CONTAINER="swaratani_app"
 
 echo "🔄 Pulling latest code from GitHub..."
