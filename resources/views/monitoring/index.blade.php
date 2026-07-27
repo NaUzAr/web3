@@ -57,12 +57,12 @@
             width: 60px;
             height: 60px;
             border-radius: 16px;
-            background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+            background: var(--glow-3);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.8rem;
-            color: #0ea5e9;
+            color: var(--primary);
             margin-right: 1rem;
         }
 
@@ -133,8 +133,8 @@
         .device-type {
             display: inline-flex;
             align-items: center;
-            background: rgba(14, 165, 233, 0.1);
-            color: #0ea5e9;
+            background: var(--glow-1);
+            color: var(--primary);
             font-size: 0.75rem;
             font-weight: 600;
             padding: 0.2rem 0.6rem;
@@ -149,7 +149,7 @@
 
         /* View Button */
         .btn-view {
-            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+            background: var(--primary-gradient);
             color: #fff;
             font-weight: 600;
             font-size: 1rem;
@@ -158,14 +158,14 @@
             text-decoration: none;
             transition: all 0.3s ease;
             border: none;
-            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
+            box-shadow: 0 4px 12px var(--glow-1);
         }
 
         .btn-view:hover {
-            background: linear-gradient(135deg, #0284c7, #0369a1);
+            background: var(--primary-gradient);
             color: #fff;
             transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(14, 165, 233, 0.3);
+            box-shadow: 0 6px 15px var(--glow-2);
         }
         
         /* Responsive List View Columns */
@@ -202,9 +202,9 @@
 
         /* Edit Button */
         .btn-edit {
-            background: rgba(14, 165, 233, 0.1);
-            border: 1px solid rgba(14, 165, 233, 0.3);
-            color: #0ea5e9;
+            background: var(--glow-1);
+            border: 1px solid var(--glow-2);
+            color: var(--primary);
             width: 36px;
             height: 36px;
             border-radius: 8px;
@@ -216,9 +216,9 @@
         }
 
         .btn-edit:hover {
-            background: rgba(14, 165, 233, 0.2);
-            border-color: #0ea5e9;
-            color: #0284c7;
+            background: var(--glow-2);
+            border-color: var(--primary);
+            color: var(--primary-dark);
         }
 
         /* Dropdown Item Override */
@@ -261,15 +261,15 @@
         }
 
         .btn-app {
-            color: #0ea5e9;
-            border: 1px solid rgba(14, 165, 233, 0.2);
+            color: var(--primary);
+            border: 1px solid var(--glow-2);
         }
         .btn-app:hover {
-            background: #f0f9ff;
-            color: #0284c7;
-            border-color: #0ea5e9;
+            background: var(--glow-3);
+            color: var(--primary-dark);
+            border-color: var(--primary);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.15);
+            box-shadow: 0 4px 12px var(--glow-1);
         }
 
         .btn-history {
@@ -452,9 +452,9 @@
             font-size: 1rem;
         }
         .btn-view-toggle.active {
-            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+            background: var(--primary-gradient);
             color: #ffffff;
-            box-shadow: 0 4px 10px rgba(14, 165, 233, 0.2);
+            box-shadow: 0 4px 10px var(--glow-1);
         }
         .btn-view-toggle:hover:not(.active) {
             background: #f1f5f9;
@@ -646,7 +646,7 @@
                             <div class="d-flex justify-content-between align-items-start mb-3">
                                 <div class="d-flex align-items-center">
                                     <div class="device-icon">
-                                        <i class="bi {{ $userDevice->device->type === 'aws' ? 'bi-cloud-sun-fill' : 'bi-flower1' }} text-white"></i>
+                                        <i class="bi {{ $userDevice->device->type === 'aws' ? 'bi-cloud-sun-fill' : 'bi-flower1' }}"></i>
                                     </div>
                                     <div class="ms-3">
                                         <h5 class="device-name mb-1">
@@ -734,7 +734,7 @@
                                 <!-- Info Part -->
                                 <div class="d-flex align-items-center flex-grow-1" style="min-width: 0;">
                                     <div class="device-icon flex-shrink-0 d-none d-md-flex" style="width: 45px; height: 45px;">
-                                        <i class="bi {{ $userDevice->device->type === 'aws' ? 'bi-cloud-sun-fill' : 'bi-flower1' }} text-white fs-5"></i>
+                                        <i class="bi {{ $userDevice->device->type === 'aws' ? 'bi-cloud-sun-fill' : 'bi-flower1' }} fs-5"></i>
                                     </div>
                                     <div class="ms-0 ms-md-3 text-truncate">
                                         <h5 class="device-name mb-0 text-truncate" style="font-size: 1rem;">

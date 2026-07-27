@@ -138,7 +138,13 @@ class MonitoringController extends Controller
 
         // Check if device is online (last seen within 5 minutes)
         $lastSeen = \Cache::get("device_{$device->id}_last_seen", $device->last_seen_at);
-        $isOnline = $lastSeen ? now()->diffInMinutes(\Carbon\Carbon::parse($lastSeen)) <= 5 : false;
+        
+        // Prioritaskan timestamp data sensor terakhir untuk menentukan status ONLINE
+        if (isset($latestData->recorded_at) && $latestData->recorded_at) {
+            $isOnline = \Carbon\Carbon::parse($latestData->recorded_at)->greaterThanOrEqualTo(now()->subMinutes(5));
+        } else {
+            $isOnline = $lastSeen ? \Carbon\Carbon::parse($lastSeen)->greaterThanOrEqualTo(now()->subMinutes(5)) : false;
+        }
 
         return view('monitoring.show', compact('userDevice', 'device', 'sensors', 'outputs', 'latestData', 'scheduleConfig', 'hasAutomation', 'isOnline', 'lastSeen'));
     }

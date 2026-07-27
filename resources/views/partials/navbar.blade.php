@@ -119,7 +119,7 @@
     <div class="container d-flex align-items-center justify-content-between flex-wrap gap-2">
         <a class="navbar-brand" href="{{ $isPwa ? route('monitoring.index') : route('home') }}">
             <img src="{{ asset(env('APP_LOGO', 'images/logo.png')) }}" alt="{{ env('APP_NAME', 'Swaratani') }}">
-            <span>{{ env('APP_NAME', 'Swaratani') }} IoT</span>
+            <span>{{ env('APP_NAME', 'Swaratani') }}</span>
         </a>
 
         <div class="nav-links-wrap ms-auto">

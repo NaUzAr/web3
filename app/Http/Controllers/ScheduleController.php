@@ -18,16 +18,34 @@ class ScheduleController extends Controller
         $this->mqttService = $mqttService;
     }
 
+    private function getDevice($id)
+    {
+        if (Auth::user()->is_admin) {
+            return Device::findOrFail($id);
+        }
+
+        $userDevice = UserDevice::where('user_id', Auth::id())
+            ->where('id', $id)
+            ->firstOrFail();
+
+        return $userDevice->device;
+    }
+
     /**
      * Show schedule management page for specific device
      */
     public function index($userDeviceId)
     {
-        $userDevice = UserDevice::where('id', $userDeviceId)
-            ->where('user_id', Auth::id())
-            ->firstOrFail();
-
-        $device = $userDevice->device;
+        $device = $this->getDevice($userDeviceId);
+        $isAdminView = Auth::user()->is_admin;
+        
+        // For views, if admin we pass dummy userDevice so it doesn't break blade variables
+        if ($isAdminView) {
+            $userDevice = new UserDevice(['id' => $device->id, 'device_id' => $device->id, 'custom_name' => $device->name]);
+            $userDevice->setRelation('device', $device);
+        } else {
+            $userDevice = UserDevice::where('id', $userDeviceId)->first();
+        }
 
         // Check if device has schedule functionality
         $scheduleConfig = \App\Models\DeviceSchedule::where('device_id', $device->id)->first();
@@ -48,7 +66,7 @@ class ScheduleController extends Controller
             return $numA - $numB;
         });
 
-        return view('schedule.index', compact('userDevice', 'device', 'scheduleConfig', 'cachedSchedules'));
+        return view('schedule.index', compact('userDevice', 'device', 'scheduleConfig', 'cachedSchedules', 'isAdminView'));
     }
 
     /**
@@ -57,11 +75,7 @@ class ScheduleController extends Controller
      */
     public function storeTimeSchedules(Request $request, $userDeviceId)
     {
-        $userDevice = UserDevice::where('id', $userDeviceId)
-            ->where('user_id', Auth::id())
-            ->firstOrFail();
-
-        $device = $userDevice->device;
+        $device = $this->getDevice($userDeviceId);
         $scheduleConfig = \App\Models\DeviceSchedule::where('device_id', $device->id)->firstOrFail();
 
         // Flexible validation - accept both duration and off_time
@@ -150,11 +164,7 @@ class ScheduleController extends Controller
      */
     public function destroy($userDeviceId, $slotId)
     {
-        $userDevice = UserDevice::where('id', $userDeviceId)
-            ->where('user_id', Auth::id())
-            ->firstOrFail();
-
-        $device = $userDevice->device;
+        $device = $this->getDevice($userDeviceId);
 
         // MQTT command to delete
         $success = $this->mqttService->deleteSchedule(

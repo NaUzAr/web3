@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#0e5f8a">
-    <meta name="description" content="{{ env('APP_NAME', 'Swaratani') }} IoT - Sistem monitoring pertanian cerdas berbasis IoT">
+    <meta name="description" content="{{ env('APP_NAME', 'Swaratani') }} - Sistem monitoring pertanian cerdas berbasis">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -18,7 +18,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
-    <title>{{ env('APP_NAME', 'Swaratani') }} IoT - Dashboard</title>
+    <title>{{ env('APP_NAME', 'Swaratani') }} - Dashboard</title>
 
     @include('partials.theme')
 
@@ -660,7 +660,12 @@
             $onlineDevices = $userDevices->filter(function($ud) {
                 return $ud->device && $ud->device->isOnline();
             })->count();
-            $totalAutomations = \App\Models\OutputAutomationConfig::whereIn('user_device_id', $userDevices->pluck('id'))->where('enabled', true)->count();
+            $automationKeys = ['ats_suhu', 'ats_kelem', 'ats_lux', 'ats_co2', 'ats_tds', 'ats_ph', 'ats_wlevel'];
+            $totalAutomations = \App\Models\DeviceSetting::whereIn('device_id', $userDevices->pluck('device_id'))
+                ->whereIn('key', $automationKeys)
+                ->select('device_id')
+                ->distinct()
+                ->count();
         @endphp
 
         <!-- ===== HERO SECTION ===== -->
@@ -674,7 +679,7 @@
                     Selamat Datang, <span class="highlight">{{ $user->name }}</span>
                 </h1>
                 <p class="hero-subtitle fade-up">
-                    Pantau, kendalikan, dan otomatisasi seluruh perangkat IoT pertanian Anda dari satu dashboard terpadu.
+                    Pantau, kendalikan, dan otomatisasi seluruh perangkat pertanian Anda dari satu dashboard terpadu.
                 </p>
                 <div class="hero-actions fade-up">
                     <a href="{{ route('monitoring.index') }}" class="btn-hero-primary">
@@ -734,13 +739,13 @@
             <div class="container">
                 <div class="section-header fade-up">
                     <h2>Fitur Utama</h2>
-                    <p>Akses cepat ke semua fitur {{ env('APP_NAME', 'Swaratani') }} IoT</p>
+                    <p>Akses cepat ke semua fitur {{ env('APP_NAME', 'Swaratani') }}</p>
                 </div>
                 <div class="features-grid">
                     <a href="{{ route('monitoring.index') }}" class="feature-card fade-up">
                         <div class="feature-icon monitoring"><i class="bi bi-graph-up-arrow"></i></div>
                         <h3>Monitoring Real-time</h3>
-                        <p>Pantau data sensor suhu, kelembapan, pH, dan lainnya secara langsung dari perangkat IoT Anda.</p>
+                        <p>Pantau data sensor suhu, kelembapan, pH, dan lainnya secara langsung dari perangkat Anda.</p>
                         <span class="feature-link">Buka Monitoring <i class="bi bi-arrow-right"></i></span>
                     </a>
                     <a href="{{ route('monitoring.index') }}" class="feature-card fade-up">
@@ -788,7 +793,7 @@
                     #SmartFarming
                 </div>
                 <h1 class="hero-title fade-up">
-                    Monitoring Pertanian<br><span class="highlight">Cerdas Berbasis IoT</span>
+                    Monitoring Pertanian<br><span class="highlight">Cerdas Berbasis</span>
                 </h1>
                 <p class="hero-subtitle fade-up">
                     {{ env('APP_NAME', 'Swaratani') }} menghadirkan solusi monitoring dan automasi pertanian terintegrasi untuk mendorong produktivitas dan efisiensi budidaya tanaman Anda.
@@ -829,7 +834,7 @@
 
     <!-- ===== FOOTER ===== -->
     <footer class="page-footer">
-        <p>&copy; {{ date('Y') }} <a href="{{ route('home') }}">{{ env('APP_NAME', 'Swaratani') }} IoT</a> &bull; Tim Engineering Pertanian</p>
+        <p>&copy; {{ date('Y') }} <a href="{{ route('home') }}">{{ env('APP_NAME', 'Swaratani') }}</a> &bull; Tim Engineering Pertanian</p>
     </footer>
 
     @include('partials.chatbot')

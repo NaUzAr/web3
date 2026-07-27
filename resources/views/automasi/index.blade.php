@@ -374,7 +374,7 @@
     @include('partials.navbar')
 
     <div class="container pt-3 pb-5 min-vh-100 d-flex flex-column">
-        <div class="page-header d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div class="page-header d-flex justify-content-between align-items-center mb-4 gap-3">
             <div>
                 <h2 class="mb-0 fw-bold d-flex align-items-center" style="color: var(--text-main);">
                     <i class="bi bi-robot me-2"></i>Otomasi
@@ -384,8 +384,8 @@
                 </p>
             </div>
             <div>
-                <a href="{{ route('monitoring.show', $deviceId) }}" class="btn btn-glass d-inline-flex align-items-center gap-2">
-                    <i class="bi bi-arrow-left"></i> Kembali ke Device
+                <a href="{{ ($isAdminView ?? false) ? route('admin.device.monitoring', $deviceId) : route('monitoring.show', $deviceId) }}" class="btn btn-glass d-inline-flex align-items-center gap-2">
+                    <i class="bi bi-arrow-left me-md-1"></i> <span class="d-none d-md-inline">Kembali ke Device</span>
                 </a>
             </div>
         </div>

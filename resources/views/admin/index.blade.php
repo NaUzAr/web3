@@ -475,7 +475,14 @@
                                 <td data-label="Device">
                                     <a href="{{ route('admin.device.monitoring', $device->id) }}"
                                         class="text-decoration-none">
-                                        <div class="fw-bold" style="color: #1f2937;">{{ $device->name }}</div>
+                                        <div class="fw-bold d-flex align-items-center" style="color: #1f2937;">
+                                            {{ $device->name }}
+                                            @if($device->isOnline())
+                                                <span class="d-inline-block rounded-circle bg-success ms-2" style="width: 8px; height: 8px; box-shadow: 0 0 6px rgba(25, 135, 84, 0.5);" title="Online"></span>
+                                            @else
+                                                <span class="d-inline-block rounded-circle bg-secondary ms-2" style="width: 8px; height: 8px;" title="Offline"></span>
+                                            @endif
+                                        </div>
                                         <small style="color: #64748b;">{{ $device->table_name }}</small>
                                     </a>
                                 </td>
@@ -590,7 +597,7 @@
                                 <img src="{{ asset(env('APP_LOGO', 'images/logo.png')) }}" alt="Logo" class="qris-header-logo">
                                 <div class="qris-header-text">
                                     <div class="qris-brand">SWARATANI</div>
-                                    <div class="qris-sub">Smart Agriculture IoT</div>
+                                    <div class="qris-sub">Smart Agriculture</div>
                                 </div>
                             </div>
                         </div>

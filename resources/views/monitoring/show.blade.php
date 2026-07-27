@@ -984,11 +984,7 @@
                             </span>
                         @endif
                         
-                        @if($isAdminView ?? false)
-                            <span class="device-type-badge" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); font-size: 0.8rem; padding: 0.35rem 0.8rem; height: fit-content;">
-                                <i class="bi bi-shield-check me-1"></i> Admin View
-                            </span>
-                        @endif
+
                         <span class="device-type-badge" style="font-size: 0.8rem; padding: 0.35rem 0.8rem; height: fit-content;">
                             {{ strtoupper($device->type ?? 'DEVICE') }}
                         </span>
@@ -996,7 +992,7 @@
                 </div>
                 <p class="mb-0 mt-2" style="color: var(--text-secondary);" id="last-update-text">
                     <span class="live-dot me-2" id="live-dot" style="display: {{ ($isOnline ?? false) ? 'inline-block' : 'none' }};"></span>
-                    @if($latestData)
+                    @if($latestData && $latestData->recorded_at)
                         Terakhir update: {{ \Carbon\Carbon::parse($latestData->recorded_at)->diffForHumans() }}
                     @else
                         Menunggu data...
@@ -1007,20 +1003,15 @@
                 <a href="{{ isset($isAdminView) && $isAdminView ? route('admin.device.history', $device->id) : route('monitoring.history', $userDevice->id) }}" class="btn btn-history btn-action-custom">
                     <i class="bi bi-clock-history me-sm-1"></i> <span class="d-none d-sm-inline">Riwayat Data</span>
                 </a>
-                @if(!($isAdminView ?? false))
-                    @if($scheduleConfig ?? false)
-                        <a href="{{ route('schedule.index', $userDevice->id) }}" class="btn btn-app btn-action-custom">
-                            <i class="bi bi-calendar-check me-sm-1"></i> <span class="d-none d-sm-inline">Jadwal</span>
-                        </a>
-                    @endif
-                    @if($hasAutomation ?? false)
-                        <a href="{{ route('automasi.index', $userDevice->id) }}" class="btn btn-automation btn-action-custom">
-                            <i class="bi bi-cpu me-sm-1"></i> <span class="d-none d-sm-inline">Otomasi</span>
-                        </a>
-                    @endif
-                    <button type="button" class="btn btn-gradient" data-bs-toggle="modal" data-bs-target="#exportModal">
-                        <i class="bi bi-download me-sm-1"></i> <span class="d-none d-sm-inline">Download CSV</span>
-                    </button>
+                @if($scheduleConfig ?? false)
+                    <a href="{{ ($isAdminView ?? false) ? route('schedule.index', $device->id) : route('schedule.index', $userDevice->id) }}" class="btn btn-app btn-action-custom">
+                        <i class="bi bi-calendar-check me-sm-1"></i> <span class="d-none d-sm-inline">Jadwal</span>
+                    </a>
+                @endif
+                @if($hasAutomation ?? false)
+                    <a href="{{ ($isAdminView ?? false) ? route('automasi.index', $device->id) : route('automasi.index', $userDevice->id) }}" class="btn btn-automation btn-action-custom">
+                        <i class="bi bi-cpu me-sm-1"></i> <span class="d-none d-sm-inline">Otomasi</span>
+                    </a>
                 @endif
             </div>
         </div>
@@ -1362,59 +1353,9 @@
     </div>
 
 
-    @if(!($isAdminView ?? false))
-        <!-- Export Modal -->
-        <div class="modal fade" id="exportModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content modal-content-glass">
-                    <div class="modal-handle"></div>
-                    <div class="modal-header-custom">
-                        <h5 id="exportModalLabel"><i class="bi bi-download me-2"></i>Download Data</h5>
-                        <div class="subtitle">Pilih rentang tanggal untuk data CSV</div>
-                    </div>
-                    <form action="{{ route('monitoring.export', $userDevice->id) }}" method="GET">
-                        <div class="modal-body-custom">
-                            <div class="mb-3">
-                                <label class="form-label fw-bold" style="color: #374151; font-size: 0.9rem;">
-                                    <i class="bi bi-calendar-event me-1"></i> Tanggal Mulai
-                                </label>
-                                <input type="date" name="start_date" class="form-control form-control-dark"
-                                    value="{{ date('Y-m-d', strtotime('-7 days')) }}" required>
-                            </div>
 
-                            <div class="mb-3">
-                                <label class="form-label fw-bold" style="color: #374151; font-size: 0.9rem;">
-                                    <i class="bi bi-calendar-check me-1"></i> Tanggal Akhir
-                                </label>
-                                <input type="date" name="end_date" class="form-control form-control-dark"
-                                    value="{{ date('Y-m-d') }}" required>
-                            </div>
 
-                            <div class="d-flex gap-2 flex-wrap">
-                                <button type="button" class="btn btn-sm"
-                                    style="border: 1px solid var(--primary); color: var(--primary); border-radius: 12px; padding: 6px 12px;"
-                                    onclick="setDateRange(7)">7 Hari</button>
-                                <button type="button" class="btn btn-sm"
-                                    style="border: 1px solid var(--primary); color: var(--primary); border-radius: 12px; padding: 6px 12px;"
-                                    onclick="setDateRange(30)">30 Hari</button>
-                                <button type="button" class="btn btn-sm"
-                                    style="border: 1px solid var(--primary); color: var(--primary); border-radius: 12px; padding: 6px 12px;"
-                                    onclick="setDateRange(90)">3 Bulan</button>
-                            </div>
-                        </div>
-                        <div class="modal-actions">
-                            <button type="submit" class="btn" style="background: linear-gradient(135deg, #0e5f8a, #0d9488); border-radius: 12px; padding: 0.75rem; font-size: 1rem; font-weight: 700; width: 100%; color: #fff; box-shadow: 0 4px 14px rgba(13, 148, 136, 0.3);">
-                                <i class="bi bi-file-earmark-spreadsheet me-1"></i> Download CSV
-                            </button>
-                            <button type="button" class="btn"
-                                style="background: #f3f4f6; color: #6b7280; border-radius: 12px; padding: 0.75rem; font-size: 1rem; font-weight: 600; width: 100%; border: none;"
-                                data-bs-dismiss="modal">Batal</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
+    @if(true)
         <!-- Irrigation Pump Control Modal (Bottom Sheet Style) -->
         <div class="modal fade" id="irrigationPumpModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog">
@@ -1540,13 +1481,19 @@
         <script>
             // Setup CSRF token for AJAX requests
             const csrfToken = '{{ csrf_token() }}';
+            const isAdminView = {{ ($isAdminView ?? false) ? 'true' : 'false' }};
+            const deviceId = {{ $device->id ?? 'null' }};
             const userDeviceId = {{ $userDevice->id ?? 'null' }};
+            
+            function getBaseUrl() {
+                return isAdminView ? `/admin/device/${deviceId}` : `/monitoring/device/${userDeviceId}`;
+            }
 
 
 
             // Set output ON/OFF (for buttons)
             function setOutput(outputId, isOn) {
-                const url = `/monitoring/device/${userDeviceId}/output/${outputId}/toggle`;
+                const url = getBaseUrl() + `/output/${outputId}/toggle`;
 
                 fetch(url, {
                     method: 'POST',
@@ -1614,7 +1561,9 @@
                 const waterType = document.getElementById('irrigationWaterType').value;
 
                 // Send via AJAX
-                const url = `/monitoring/device/${userDeviceId}/output/${outputId}/irrigation-pump`;
+                const url = isAdminView 
+                    ? `/admin/device/${deviceId}/output/${outputId}/irrigation-pump`
+                    : `/monitoring/device/${userDeviceId}/output/${outputId}/irrigation-pump`;
 
                 fetch(url, {
                     method: 'POST',
@@ -1736,8 +1685,8 @@
                 btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>';
                 btn.disabled = true;
 
-                // Use the existing toggle endpoint to send manual ON
-                const url = `/monitoring/device/${userDeviceId}/output/${outputId}/toggle`;
+                // Kirim lewat AJAX
+                const url = getBaseUrl() + `/output/${outputId}/toggle`;
 
                 fetch(url, {
                     method: 'POST',
@@ -1790,7 +1739,7 @@
                 btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Mengirim...';
                 btn.disabled = true;
 
-                const url = `/monitoring/device/${userDeviceId}/dosing/volume`;
+                const url = getBaseUrl() + `/dosing/volume`;
 
                 fetch(url, {
                     method: 'POST',
@@ -1825,7 +1774,7 @@
 
             // Toggle output (AJAX) - kept for range sliders
             function toggleOutput(outputId, value) {
-                const url = `/monitoring/device/${userDeviceId}/output/${outputId}/toggle`;
+                const url = getBaseUrl() + `/output/${outputId}/toggle`;
 
                 fetch(url, {
                     method: 'POST',
@@ -1869,20 +1818,25 @@
                 }
             }
 
-            function setDateRange(days) {
-                const endDate = new Date();
-                const startDate = new Date();
-                startDate.setDate(startDate.getDate() - days);
-
-                document.querySelector('input[name="start_date"]').value = startDate.toISOString().split('T')[0];
-                document.querySelector('input[name="end_date"]').value = endDate.toISOString().split('T')[0];
+            // Helper function to fetch latest status data
+            function fetchLatestStatus() {
+                const url = getBaseUrl() + `/status`;
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Logic to update UI with status
+                        console.log('Status updated', data);
+                    })
+                    .catch(error => console.error('Error fetching status:', error));
             }
+
+
 
             // Special Pump Control Functions
             function sendPumpOn() {
                 const zone = document.getElementById('pumpZone').value;
                 const inputType = document.getElementById('pumpInputType').value;
-                const url = `/monitoring/device/${userDeviceId}/pump/control`;
+                const url = getBaseUrl() + `/pump/control`;
 
                 // Show loading state
                 const btn = document.querySelector('#pumpModal .btn-pump-send');
@@ -1942,7 +1896,7 @@
             }
 
             function sendPumpOff() {
-                const url = `/monitoring/device/${userDeviceId}/pump/control`;
+                const url = getBaseUrl() + `/pump/control`;
 
                 fetch(url, {
                     method: 'POST',
@@ -1986,284 +1940,6 @@
         </script>
     @endif
 
-    @if($isAdminView ?? false)
-        <script>
-            // Admin Output Control JavaScript
-            const csrfToken = '{{ csrf_token() }}';
-            const deviceId = {{ $device->id }};
-
-            // Set output ON/OFF (for buttons)
-            function setOutput(outputId, isOn) {
-                const url = `/admin/device/${deviceId}/output/${outputId}/toggle`;
-
-                fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken
-                    },
-                    body: JSON.stringify({ value: isOn })
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            setOptimisticUI(outputId, isOn);
-
-                            const card = document.getElementById(`output-card-${outputId}`);
-                            if (card) {
-                                card.style.borderColor = '#22c55e';
-                                setTimeout(() => {
-                                    card.style.borderColor = 'rgba(250, 204, 21, 0.3)';
-                                }, 500);
-                            }
-                        } else {
-                            showToast('Gagal mengupdate output.');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        showToast('Terjadi kesalahan saat mengupdate output.');
-                    });
-            }
-
-            function toggleOutput(outputId, value) {
-                const url = `/admin/device/${deviceId}/output/${outputId}/toggle`;
-
-                fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken
-                    },
-                    body: JSON.stringify({ value: value })
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            const card = document.getElementById(`output-card-${outputId}`);
-                            if (card) {
-                                card.style.borderColor = '#22c55e';
-                                setTimeout(() => {
-                                    card.style.borderColor = 'rgba(250, 204, 21, 0.3)';
-                                }, 500);
-                            }
-                        } else {
-                            showToast('Gagal mengupdate output.');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        showToast('Terjadi kesalahan saat mengupdate output.');
-                    });
-            }
-
-            function updateRangeValue(outputId, value, unit) {
-                const valueEl = document.getElementById(`output-value-${outputId}`);
-                if (valueEl) {
-                    valueEl.textContent = value + unit;
-                }
-            }
-
-            // ============= pH CONTROL MODAL FUNCTIONS (Admin) =============
-
-            function openPhControlModal(outputId, pumpType) {
-                document.getElementById('phControlOutputId').value = outputId;
-                document.getElementById('phControlType').value = pumpType;
-
-                let title = 'Control';
-                let icon = 'bi-droplet-half';
-                if (pumpType === 'dosing') {
-                    title = 'Dosing AB';
-                    icon = 'bi-eyedropper';
-                } else if (pumpType === 'ph_up') {
-                    title = 'pH Up';
-                    icon = 'bi-arrow-up-circle';
-                } else if (pumpType === 'ph_down') {
-                    title = 'pH Down';
-                    icon = 'bi-arrow-down-circle';
-                }
-
-                document.getElementById('phControlModalLabel').innerHTML =
-                    `<i class="bi ${icon} me-2" style="color: #8b5cf6;"></i>${title} Control`;
-                document.getElementById('phControlSubtitle').textContent =
-                    `Pilih mode kontrol ${title}`;
-
-                document.getElementById('phDosingVolume').value = 10;
-
-                const modal = new bootstrap.Modal(document.getElementById('phControlModal'));
-                modal.show();
-            }
-
-            // pH Manual ON (Admin) - sends <pmpPH#1#> or <pmpPH2#1#>
-            function sendPhManualOn() {
-                const outputId = document.getElementById('phControlOutputId').value;
-                const btn = document.getElementById('btnPhManualOn');
-                const originalText = btn.innerHTML;
-                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>';
-                btn.disabled = true;
-
-                const url = `/admin/device/${deviceId}/output/${outputId}/toggle`;
-
-                fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken
-                    },
-                    body: JSON.stringify({ value: true })
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            const modal = bootstrap.Modal.getInstance(document.getElementById('phControlModal'));
-                            modal.hide();
-
-                            setOptimisticUI(outputId, true);
-
-                            const card = document.getElementById(`output-card-${outputId}`);
-                            if (card) {
-                                card.style.borderColor = '#22c55e';
-                                setTimeout(() => { card.style.borderColor = 'rgba(250, 204, 21, 0.3)'; }, 500);
-                            }
-                        } else {
-                            showToast('Gagal: ' + (data.message || 'Silakan coba lagi.'));
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        showToast('Terjadi kesalahan saat mengirim perintah.');
-                    })
-                    .finally(() => {
-                        btn.innerHTML = originalText;
-                        btn.disabled = false;
-                    });
-            }
-
-            // pH by Volume (Admin) - sends <pmpph#10#> or <pmpph2#10#>
-            function sendPhByVolume() {
-                const phType = document.getElementById('phControlType').value;
-                const volume = parseInt(document.getElementById('phDosingVolume').value);
-
-                if (!volume || volume < 1) {
-                    showToast('Masukkan volume yang valid (minimal 1 mL).');
-                    return;
-                }
-
-                const btn = document.getElementById('btnPhByVolume');
-                const originalText = btn.innerHTML;
-                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Mengirim...';
-                btn.disabled = true;
-
-                const url = `/admin/device/${deviceId}/dosing/volume`;
-
-                fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken
-                    },
-                    body: JSON.stringify({
-                        pump_type: phType,
-                        volume: volume
-                    })
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            const modal = bootstrap.Modal.getInstance(document.getElementById('phControlModal'));
-                            modal.hide();
-                            showToast(data.message);
-                        } else {
-                            showToast('Gagal: ' + (data.message || 'Silakan coba lagi.'));
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        showToast('Terjadi kesalahan saat mengirim perintah.');
-                    })
-                    .finally(() => {
-                        btn.innerHTML = originalText;
-                        btn.disabled = false;
-                    });
-            }
-
-            // Auto-reload status every 2 seconds
-            setInterval(fetchStatus, 2000);
-
-            async function fetchStatus() {
-                try {
-                    @if($isAdminView ?? false)
-                        const response = await fetch('{{ route("admin.device.status", $device->id) }}');
-                    @else
-                        const response = await fetch('{{ route("monitoring.status", $userDevice->id) }}');
-                    @endif
-                                                                                                                                                                                                    const data = await response.json();
-
-                    if (data.success) {
-                        if (data.outputs) {
-                            updateOutputs(data.outputs);
-                        }
-                        if (data.sensors) {
-                            updateSensors(data.sensors);
-                        }
-                    }
-                } catch (error) {
-                    console.error('Polling error:', error);
-                }
-            }
-
-            // Map sensor name to ID using PHP array
-            const sensorMap = @json($sensors->pluck('id', 'sensor_name'));
-
-            function updateSensors(sensorData) {
-                // key is sensor_name (e.g. ni_PH), value is the reading
-                for (const [key, value] of Object.entries(sensorData)) {
-                    if (sensorMap[key]) {
-                        const sensorId = sensorMap[key];
-                        const el = document.getElementById(`sensor-val-${sensorId}`);
-                        if (el) {
-                            // Format number to 1 decimal place if it's a number
-                            const num = parseFloat(value);
-                            el.innerText = !isNaN(num) ? num.toFixed(1) : value;
-                        }
-                    }
-                }
-            }
-
-
-            // Custom Toast Notification
-            function showToast(message, type = 'success') {
-                // Determine type based on message content if not explicitly passed
-                if (message.toString().toLowerCase().includes('gagal') || 
-                    message.toString().toLowerCase().includes('kesalahan') ||
-                    message.toString().toLowerCase().includes('masukkan')) {
-                    type = 'error';
-                }
-
-                const container = document.getElementById('toastContainer');
-                const toast = document.createElement('div');
-                toast.className = `custom-toast ${type}`;
-                
-                const icon = type === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill';
-                
-                toast.innerHTML = `
-                    <i class="bi ${icon}"></i>
-                    <div style="font-weight: 600; color: #1f2937;">${message}</div>
-                `;
-                
-                container.appendChild(toast);
-                
-                // Animate in
-                setTimeout(() => toast.classList.add('show'), 10);
-                
-                // Animate out and remove
-                setTimeout(() => {
-                    toast.classList.remove('show');
-                    setTimeout(() => toast.remove(), 400);
-                }, 3000);
-            }
-        </script>
-    @endif
 
     <!-- Toast Container -->
     <div class="toast-container" id="toastContainer"></div>
@@ -2362,20 +2038,20 @@
                     .listen('DeviceStatusUpdated', (e) => {
                         console.log('Realtime Update:', e);
                         
-                        setDeviceOnline();
-                        
-                        // Update last update text
-                        const lastUpdateEl = document.getElementById('last-update-text');
-                        if (lastUpdateEl) {
-                            lastUpdateEl.innerHTML = `<span class="live-dot me-2" id="live-dot" style="display: inline-block;"></span> Terakhir update: Baru saja`;
+                        if (e.sensors && Object.keys(e.sensors).length > 0) {
+                            setDeviceOnline();
+                            
+                            // Update last update text
+                            const lastUpdateEl = document.getElementById('last-update-text');
+                            if (lastUpdateEl) {
+                                lastUpdateEl.innerHTML = `<span class="live-dot me-2" id="live-dot" style="display: inline-block;"></span> Terakhir update: Baru saja`;
+                            }
+                            
+                            updateSensors(e.sensors);
                         }
-
+                        
                         if (e.outputs && Array.isArray(e.outputs) && e.outputs.length > 0) {
                             updateOutputs(e.outputs);
-                        }
-                        
-                        if (e.sensors) {
-                            updateSensors(e.sensors);
                         }
                     });
             } else {

@@ -68,25 +68,25 @@
             'navbar_text' => 'rgba(255, 255, 255, 0.9)',
         ],
         'tani' => [
-            'primary' => '#f59e0b', // Oranye-Kuning (Amber)
-            'primary_dark' => '#d97706',
-            'primary_light' => '#fcd34d',
-            'secondary' => '#ffffff',
-            'secondary_light' => '#fffbeb',
-            'secondary_dark' => '#fde68a',
-            'gradient_primary' => 'linear-gradient(135deg, #fb923c 0%, #f59e0b 50%, #d97706 100%)', // Orange ke Yellow
-            'gradient_secondary' => 'linear-gradient(135deg, #fffbeb 0%, #ffffff 100%)',
-            'gradient_bg' => '#f8fafc', // Background putih bersih (seperti Maheswara)
-            'navbar_bg' => 'rgba(255, 255, 255, 0.95)',
-            'navbar_bg_light' => 'rgba(255, 255, 255, 0.9)',
-            'glow_1' => 'rgba(245, 158, 11, 0.15)', 
-            'glow_2' => 'rgba(251, 146, 60, 0.15)', 
-            'glow_3' => 'rgba(252, 211, 77, 0.1)',
-            'mobile_nav_dark' => 'rgba(255, 255, 255, 0.95)',
-            'text_main' => '#0f172a', // Teks gelap
-            'text_secondary' => '#475569',
-            'card_bg' => 'rgba(255, 255, 255, 0.8)',
-            'navbar_text' => '#0f172a',
+            'primary' => '#eab308', // Darker yellow/gold for text and borders to ensure visibility
+            'primary_dark' => '#ca8a04',
+            'primary_light' => '#fef08a',
+            'secondary' => '#000000', // Black accents
+            'secondary_light' => '#333333',
+            'secondary_dark' => '#000000',
+            'gradient_primary' => 'linear-gradient(135deg, #facc15 0%, #eab308 50%, #ca8a04 100%)', // Vibrant Yellow to Gold
+            'gradient_secondary' => 'linear-gradient(135deg, #333333 0%, #000000 100%)', // Black gradient
+            'gradient_bg' => 'linear-gradient(135deg, rgba(250, 204, 21, 0.05) 0%, rgba(250, 204, 21, 0.15) 100%)', // Soft Yellow Background
+            'navbar_bg' => 'rgba(255, 255, 255, 0.98)', // Solid white navbar
+            'navbar_bg_light' => 'rgba(255, 255, 255, 0.95)',
+            'glow_1' => 'rgba(234, 179, 8, 0.2)', 
+            'glow_2' => 'rgba(202, 138, 4, 0.2)', 
+            'glow_3' => 'rgba(254, 240, 138, 0.5)', // Light yellow for icon backgrounds
+            'mobile_nav_dark' => 'rgba(255, 255, 255, 0.98)',
+            'text_main' => '#000000', // Black text for contrast
+            'text_secondary' => '#334155', // Dark slate for secondary text
+            'card_bg' => 'rgba(255, 255, 255, 0.95)', // White cards to pop against yellow bg
+            'navbar_text' => '#000000',
         ],
         'blue' => [
             'primary' => '#3b82f6',
@@ -206,7 +206,7 @@
             {{ $t['card_bg'] ?? 'rgba(255, 255, 255, 0.1)' }}
         ;
         --glass-border:
-            {{ $theme === 'maheswara' ? 'rgba(14, 95, 138, 0.15)' : 'rgba(255, 255, 255, 0.2)' }}
+            {{ in_array($theme, ['maheswara', 'tani']) ? 'rgba(14, 95, 138, 0.15)' : 'rgba(255, 255, 255, 0.2)' }}
         ;
     }
 

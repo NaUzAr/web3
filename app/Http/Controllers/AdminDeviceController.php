@@ -582,7 +582,21 @@ class AdminDeviceController extends Controller
             $latestData->recorded_at = $lastRow ? $lastRow->recorded_at : null;
         }
 
-        return view('monitoring.show', compact('device', 'sensors', 'outputs', 'latestData', 'isAdminView'));
+        // Ambil konfigurasi jadwal jika ada
+        $scheduleConfig = $device->schedules()->first();
+
+        // Cek ketersediaan otomasi (berdasarkan sensor yang ada)
+        $hasAutomation = $device->hasAnyAutomation();
+
+        // Check if device is online
+        $lastSeen = \Cache::get("device_{$device->id}_last_seen", $device->last_seen_at);
+        if (isset($latestData->recorded_at) && $latestData->recorded_at) {
+            $isOnline = \Carbon\Carbon::parse($latestData->recorded_at)->greaterThanOrEqualTo(now()->subMinutes(5));
+        } else {
+            $isOnline = $lastSeen ? \Carbon\Carbon::parse($lastSeen)->greaterThanOrEqualTo(now()->subMinutes(5)) : false;
+        }
+
+        return view('monitoring.show', compact('device', 'sensors', 'outputs', 'latestData', 'isAdminView', 'scheduleConfig', 'hasAutomation', 'isOnline', 'lastSeen'));
     }
 
     // HALAMAN HISTORY (ADMIN VIEW)
@@ -843,6 +857,132 @@ class AdminDeviceController extends Controller
 
         } catch (\Exception $e) {
             \Log::error("MQTT Admin Dosing by Volume failed: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengirim perintah: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Control special pump with zone and input type selection (Admin)
+     * MQTT Format: <PMP_ON#zone#inputType#> or <PMP_OFF#>
+     */
+    public function controlPump(Request $request, $deviceId)
+    {
+        $this->checkAdmin();
+        $device = Device::findOrFail($deviceId);
+        $action = $request->input('action', 'off');
+
+        try {
+            $topic = rtrim($device->mqtt_topic, '/') . '/sub';
+
+            if ($action === 'on') {
+                $inputType = $request->input('input_type', 0); // 0 = Air Baku, 1 = Air Pupuk
+                $zone = $request->input('zone', 1);
+                $message = "<PMP_ON#{$inputType}#{$zone}#>";
+            } else {
+                $message = "<PMP_OFF#>";
+            }
+
+            $host = config('mqtt.host', env('MQTT_HOST', 'smartagri.web.id'));
+            $port = config('mqtt.port', env('MQTT_PORT', 1883));
+            $username = config('mqtt.username', env('MQTT_USERNAME'));
+            $password = config('mqtt.password', env('MQTT_PASSWORD'));
+
+            $connectionSettings = new \PhpMqtt\Client\ConnectionSettings();
+            if ($username && $password) {
+                $connectionSettings = $connectionSettings
+                    ->setUsername($username)
+                    ->setPassword($password);
+            }
+            $connectionSettings = $connectionSettings
+                ->setKeepAliveInterval(60)
+                ->setConnectTimeout(10);
+
+            $mqtt = new \PhpMqtt\Client\MqttClient($host, $port, 'laravel-admin-pump-' . uniqid());
+            $mqtt->connect($connectionSettings, true);
+            $mqtt->publish($topic, $message, 1);
+            $mqtt->disconnect();
+
+            \Log::info("MQTT Admin Pump Control sent", ['topic' => $topic, 'message' => $message]);
+
+            return response()->json([
+                'success' => true,
+                'action' => $action,
+                'message' => $message,
+                'zone' => $request->input('zone'),
+                'input_type' => $request->input('input_type'),
+            ]);
+        } catch (\Exception $e) {
+            \Log::error("MQTT Admin Pump Control failed: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengirim perintah: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Control irrigation pump with zone selection (Admin)
+     * MQTT Format: <PMP_ON#waterType#zone#> or <PMP_OFF#>
+     */
+    public function controlIrrigationPump(Request $request, $deviceId, $outputId)
+    {
+        $this->checkAdmin();
+        $device = Device::findOrFail($deviceId);
+
+        $output = \App\Models\DeviceOutput::where('id', $outputId)
+            ->where('device_id', $device->id)
+            ->firstOrFail();
+
+        $turnOn = filter_var($request->input('turnOn', false), FILTER_VALIDATE_BOOLEAN);
+        $waterType = $request->input('waterType', 1); // 1 = pupuk, 2 = baku
+        $zone = $request->input('zone', 1);
+
+        try {
+            $topic = rtrim($device->mqtt_topic, '/') . '/sub';
+
+            if ($turnOn) {
+                $message = "<PMP_ON#{$waterType}#{$zone}#>";
+            } else {
+                $message = "<PMP_OFF#>";
+            }
+
+            $host = config('mqtt.host', env('MQTT_HOST', 'smartagri.web.id'));
+            $port = config('mqtt.port', env('MQTT_PORT', 1883));
+            $username = config('mqtt.username', env('MQTT_USERNAME'));
+            $password = config('mqtt.password', env('MQTT_PASSWORD'));
+
+            $connectionSettings = new \PhpMqtt\Client\ConnectionSettings();
+            if ($username && $password) {
+                $connectionSettings = $connectionSettings
+                    ->setUsername($username)
+                    ->setPassword($password);
+            }
+            $connectionSettings = $connectionSettings
+                ->setKeepAliveInterval(60)
+                ->setConnectTimeout(10);
+
+            $mqtt = new \PhpMqtt\Client\MqttClient($host, $port, 'laravel-admin-irrigation-' . uniqid());
+            $mqtt->connect($connectionSettings, true);
+            $mqtt->publish($topic, $message, 1);
+            $mqtt->disconnect();
+
+            \Log::info("MQTT Admin Irrigation Pump Control sent", [
+                'topic' => $topic,
+                'message' => $message,
+                'output_id' => $outputId,
+                'zone' => $zone,
+                'water_type' => $waterType
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => $turnOn ? "Pompa irigasi dinyalakan (Zona $zone)" : "Pompa irigasi dimatikan",
+            ]);
+        } catch (\Exception $e) {
+            \Log::error("MQTT Admin Irrigation Pump Control failed: " . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengirim perintah: ' . $e->getMessage(),

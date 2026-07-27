@@ -154,6 +154,129 @@
             font-size: 0.9rem;
             cursor: pointer;
         }
+
+        .btn-action-custom {
+            padding: 0.6rem 1.25rem;
+            font-weight: 600;
+            border-radius: 50px;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            display: inline-flex;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .btn-download {
+            color: #0ea5e9;
+            border: 1px solid rgba(14, 165, 233, 0.2);
+        }
+        .btn-download:hover {
+            background: #f0f9ff;
+            color: #0284c7;
+            border-color: #0ea5e9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.15);
+        }
+
+        .btn-back {
+            color: #475569;
+            border: 1px solid rgba(71, 85, 105, 0.2);
+        }
+        .btn-back:hover {
+            background: #f8fafc;
+            color: #334155;
+            border-color: #475569;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(71, 85, 105, 0.15);
+        }
+
+        /* Modal Classes */
+        .modal-content-glass {
+            background: #ffffff;
+            border: none;
+            border-radius: 24px 24px 0 0;
+            color: #1f2937;
+            box-shadow: 0 -10px 60px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            max-height: 90vh;
+        }
+
+        .modal-dialog {
+            margin: 0;
+            max-width: 100%;
+            display: flex;
+            align-items: flex-end;
+            min-height: 100%;
+        }
+
+        @media (min-width: 576px) {
+            .modal-dialog {
+                max-width: 480px;
+                margin: auto;
+                align-items: center;
+            }
+            .modal-content-glass {
+                border-radius: 24px;
+            }
+        }
+
+        .modal-handle {
+            width: 40px;
+            height: 5px;
+            background: #d1d5db;
+            border-radius: 3px;
+            margin: 12px auto 0;
+        }
+
+        .modal-header-custom {
+            padding: 0.75rem 1.5rem 1rem;
+            text-align: center;
+            border: none;
+        }
+
+        .modal-header-custom h5 {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: #111827;
+        }
+
+        .modal-header-custom .subtitle {
+            font-size: 0.85rem;
+            color: #9ca3af;
+            margin-top: 2px;
+        }
+
+        .modal-body-custom {
+            padding: 0 1.25rem 1rem;
+            overflow-y: auto;
+        }
+
+        .modal-actions {
+            padding: 1rem 1.25rem 1.5rem;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+        }
+
+        .form-control-dark,
+        .form-select-dark {
+            background-color: #ffffff !important;
+            border: 2px solid #e5e7eb !important;
+            color: #111827 !important;
+            border-radius: 14px;
+            padding: 0.9rem 1rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-control-dark:focus,
+        .form-select-dark:focus {
+            background-color: #ffffff !important;
+            border-color: var(--primary) !important;
+            box-shadow: 0 0 0 4px rgba(14, 95, 138, 0.12) !important;
+        }
     </style>
 </head>
 
@@ -163,7 +286,7 @@
 
     <div class="container pt-3 pb-5">
         <!-- Header Page -->
-        <div class="page-header d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div class="page-header d-flex justify-content-between align-items-center mb-4 gap-3">
             <div>
                 <h2 class="mb-0 fw-bold d-flex align-items-center" style="color: var(--text-main);">
                     <i class="bi bi-clock-history me-2"></i>Riwayat Data
@@ -172,9 +295,14 @@
                     Device: <strong>{{ $device->name }}</strong>
                 </p>
             </div>
-            <div>
-                <a href="{{ isset($isAdminView) && $isAdminView ? route('admin.device.monitoring', $device->id) : route('monitoring.show', $userDevice->id) }}" class="btn btn-glass d-inline-flex align-items-center gap-2">
-                    <i class="bi bi-arrow-left"></i> Kembali ke Device
+            <div class="d-flex gap-2">
+                @if(!($isAdminView ?? false))
+                    <button type="button" class="btn btn-action-custom btn-download" data-bs-toggle="modal" data-bs-target="#exportModal">
+                        <i class="bi bi-download me-md-1"></i> <span class="d-none d-md-inline">Download CSV</span>
+                    </button>
+                @endif
+                <a href="{{ isset($isAdminView) && $isAdminView ? route('admin.device.monitoring', $device->id) : route('monitoring.show', $userDevice->id) }}" class="btn btn-action-custom btn-back">
+                    <i class="bi bi-arrow-left me-md-1"></i> <span class="d-none d-md-inline">Kembali ke Device</span>
                 </a>
             </div>
         </div>
@@ -318,11 +446,74 @@
         @endif
     </div>
 
+    @if(!($isAdminView ?? false))
+        <!-- Export Modal -->
+        <div class="modal fade" id="exportModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content modal-content-glass">
+                    <div class="modal-handle"></div>
+                    <div class="modal-header-custom">
+                        <h5 id="exportModalLabel"><i class="bi bi-download me-2"></i>Download Data</h5>
+                        <div class="subtitle">Pilih rentang tanggal untuk data CSV</div>
+                    </div>
+                    <form action="{{ route('monitoring.export', $userDevice->id) }}" method="GET">
+                        <div class="modal-body-custom">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold" style="color: #374151; font-size: 0.9rem;">
+                                    <i class="bi bi-calendar-event me-1"></i> Tanggal Mulai
+                                </label>
+                                <input type="date" name="start_date" class="form-control form-control-dark"
+                                    value="{{ date('Y-m-d', strtotime('-7 days')) }}" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold" style="color: #374151; font-size: 0.9rem;">
+                                    <i class="bi bi-calendar-check me-1"></i> Tanggal Akhir
+                                </label>
+                                <input type="date" name="end_date" class="form-control form-control-dark"
+                                    value="{{ date('Y-m-d') }}" required>
+                            </div>
+
+                            <div class="d-flex gap-2 flex-wrap">
+                                <button type="button" class="btn btn-sm"
+                                    style="border: 1px solid var(--primary); color: var(--primary); border-radius: 12px; padding: 6px 12px;"
+                                    onclick="setDateRange(7)">7 Hari</button>
+                                <button type="button" class="btn btn-sm"
+                                    style="border: 1px solid var(--primary); color: var(--primary); border-radius: 12px; padding: 6px 12px;"
+                                    onclick="setDateRange(30)">30 Hari</button>
+                                <button type="button" class="btn btn-sm"
+                                    style="border: 1px solid var(--primary); color: var(--primary); border-radius: 12px; padding: 6px 12px;"
+                                    onclick="setDateRange(90)">3 Bulan</button>
+                            </div>
+                        </div>
+                        <div class="modal-actions">
+                            <button type="submit" class="btn" style="background: linear-gradient(135deg, #0e5f8a, #0d9488); border-radius: 12px; padding: 0.75rem; font-size: 1rem; font-weight: 700; width: 100%; color: #fff; box-shadow: 0 4px 14px rgba(13, 148, 136, 0.3);">
+                                <i class="bi bi-file-earmark-spreadsheet me-1"></i> Download CSV
+                            </button>
+                            <button type="button" class="btn"
+                                style="background: #f3f4f6; color: #6b7280; border-radius: 12px; padding: 0.75rem; font-size: 1rem; font-weight: 600; width: 100%; border: none;"
+                                data-bs-dismiss="modal">Batal</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    @endif
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
     <script>
+        function setDateRange(days) {
+            const endDate = new Date();
+            const startDate = new Date();
+            startDate.setDate(startDate.getDate() - days);
+
+            document.querySelector('input[name="start_date"]').value = startDate.toISOString().split('T')[0];
+            document.querySelector('input[name="end_date"]').value = endDate.toISOString().split('T')[0];
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize Flatpickr for datetime inputs using wrapper mode
             flatpickr(".flatpickr-wrapper", {

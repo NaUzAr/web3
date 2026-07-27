@@ -18,10 +18,14 @@ class AutomasiController extends Controller
         $this->mqttService = $mqttService;
     }
 
-    private function getDevice($userDeviceId)
+    private function getDevice($id)
     {
+        if (Auth::user()->is_admin) {
+            return Device::findOrFail($id);
+        }
+
         $userDevice = UserDevice::where('user_id', Auth::id())
-            ->where('id', $userDeviceId)
+            ->where('id', $id)
             ->firstOrFail();
 
         return $userDevice->device;
@@ -75,9 +79,11 @@ class AutomasiController extends Controller
             $hasPh = in_array('ni_PH', $sensorNames);
         }
 
+        $isAdminView = Auth::user()->is_admin;
+
         return view('automasi.index', compact(
             'device', 'hasClimate', 'hasFertilizer', 'settings', 'deviceId',
-            'hasSuhu', 'hasKelem', 'hasTds', 'hasPh'
+            'hasSuhu', 'hasKelem', 'hasTds', 'hasPh', 'isAdminView'
         ));
     }
 

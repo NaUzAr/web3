@@ -47,6 +47,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Dosing by Volume (Admin)
         Route::post('/device/{deviceId}/dosing/volume', [AdminDeviceController::class, 'controlDosingByVolume'])->name('device.dosing.volume');
+        
+        // Pump Control (Admin)
+        Route::post('/device/{deviceId}/pump/control', [AdminDeviceController::class, 'controlPump'])->name('device.pump.control');
+        Route::post('/device/{deviceId}/output/{outputId}/irrigation-pump', [AdminDeviceController::class, 'controlIrrigationPump'])->name('device.irrigation.pump');
 
         // Activity Logs
         Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs');
