@@ -107,6 +107,9 @@ class AdminDeviceController extends Controller
         $request->validate([
             'name' => 'required|string|max:100',
             'mqtt_topic' => 'required|string|max:100',
+            'mqtt_topic_status' => 'nullable|string|max:100',
+            'mqtt_topic_output' => 'nullable|string|max:100',
+            'mqtt_topic_schedule' => 'nullable|string|max:100',
             'type' => 'required|string|in:' . $validTypes,
             'sensors' => 'required|array|min:1',
             'sensors.*.type' => 'required|string',
@@ -176,6 +179,9 @@ class AdminDeviceController extends Controller
             'latitude' => $request->latitude,
             'longitude' => $request->longitude,
             'mqtt_topic' => $request->mqtt_topic,
+            'mqtt_topic_status' => $request->mqtt_topic_status,
+            'mqtt_topic_output' => $request->mqtt_topic_output,
+            'mqtt_topic_schedule' => $request->mqtt_topic_schedule,
             'token' => $token,
             'table_name' => $tableName,
             'type' => $request->type,
@@ -340,6 +346,9 @@ class AdminDeviceController extends Controller
             'latitude' => 'nullable|numeric|between:-90,90',
             'longitude' => 'nullable|numeric|between:-180,180',
             'mqtt_topic' => 'required|string|max:100',
+            'mqtt_topic_status' => 'nullable|string|max:100',
+            'mqtt_topic_output' => 'nullable|string|max:100',
+            'mqtt_topic_schedule' => 'nullable|string|max:100',
         ]);
 
         $device = Device::findOrFail($id);
@@ -350,6 +359,9 @@ class AdminDeviceController extends Controller
             'latitude' => $request->latitude,
             'longitude' => $request->longitude,
             'mqtt_topic' => $request->mqtt_topic,
+            'mqtt_topic_status' => $request->mqtt_topic_status,
+            'mqtt_topic_output' => $request->mqtt_topic_output,
+            'mqtt_topic_schedule' => $request->mqtt_topic_schedule,
             // Token & table_name JANGAN diupdate agar koneksi database aman
         ]);
 
@@ -685,7 +697,7 @@ class AdminDeviceController extends Controller
 
         // Publish ke MQTT untuk kirim perintah ke device
         try {
-            $topic = rtrim($device->mqtt_topic, '/') . '/sub';
+            $topic = $device->mqtt_topic_output ? $device->mqtt_topic_output : rtrim($device->mqtt_topic, '/') . '/sub';
 
             // Custom format based on output name
             $val = $newValue ? '1' : '0';
@@ -808,7 +820,7 @@ class AdminDeviceController extends Controller
         $message = "<{$command}#{$volume}#>";
 
         try {
-            $topic = rtrim($device->mqtt_topic, '/') . '/sub';
+            $topic = $device->mqtt_topic_output ? $device->mqtt_topic_output : rtrim($device->mqtt_topic, '/') . '/sub';
 
             $host = config('mqtt.host', env('MQTT_HOST', 'smartagri.web.id'));
             $port = config('mqtt.port', env('MQTT_PORT', 1883));
@@ -875,7 +887,7 @@ class AdminDeviceController extends Controller
         $action = $request->input('action', 'off');
 
         try {
-            $topic = rtrim($device->mqtt_topic, '/') . '/sub';
+            $topic = $device->mqtt_topic_output ? $device->mqtt_topic_output : rtrim($device->mqtt_topic, '/') . '/sub';
 
             if ($action === 'on') {
                 $inputType = $request->input('input_type', 0); // 0 = Air Baku, 1 = Air Pupuk
@@ -941,7 +953,7 @@ class AdminDeviceController extends Controller
         $zone = $request->input('zone', 1);
 
         try {
-            $topic = rtrim($device->mqtt_topic, '/') . '/sub';
+            $topic = $device->mqtt_topic_output ? $device->mqtt_topic_output : rtrim($device->mqtt_topic, '/') . '/sub';
 
             if ($turnOn) {
                 $message = "<PMP_ON#{$waterType}#{$zone}#>";

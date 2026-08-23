@@ -128,9 +128,11 @@ class ScheduleController extends Controller
         // Get schedule type (Jenis) - use as output_key if schedule_type is provided
         $outputKey = $validated['schedule_type'] ?? $scheduleConfig->output_key ?? 'general';
 
+        $topic = $device->mqtt_topic_schedule ? $device->mqtt_topic_schedule : $device->mqtt_topic;
+
         // Send to MQTT
         $success = $this->mqttService->sendSingleTimeSchedule(
-            $device->mqtt_topic,
+            $topic,
             $device->token,
             $outputKey,
             $schedule,
@@ -166,9 +168,11 @@ class ScheduleController extends Controller
     {
         $device = $this->getDevice($userDeviceId);
 
+        $topic = $device->mqtt_topic_schedule ? $device->mqtt_topic_schedule : $device->mqtt_topic;
+
         // MQTT command to delete
         $success = $this->mqttService->deleteSchedule(
-            $device->mqtt_topic,
+            $topic,
             $device->token,
             (int) $slotId
         );

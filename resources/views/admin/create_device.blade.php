@@ -365,6 +365,27 @@
                                 <div class="form-text">Device akan mengirim data ke topik ini.</div>
                             </div>
 
+                            <!-- ADDITIONAL TOPICS FOR SMART GH V2 -->
+                            <div id="additionalMqttTopics" style="display: none;">
+                                <div class="alert alert-info-custom py-2 mb-3">
+                                    <small><i class="bi bi-info-circle me-1"></i>
+                                        Smart GH V2 membutuhkan 3 topik MQTT khusus untuk memisahkan jalur data.
+                                    </small>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label"><i class="bi bi-broadcast-pin me-1"></i> Alamat Topik Status (Opsional)</label>
+                                    <input type="text" name="mqtt_topic_status" class="form-control" placeholder="Contoh: sensor/kebun/status">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label"><i class="bi bi-broadcast-pin me-1"></i> Alamat Topik Output (Opsional)</label>
+                                    <input type="text" name="mqtt_topic_output" class="form-control" placeholder="Contoh: sensor/kebun/cmd">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label"><i class="bi bi-broadcast-pin me-1"></i> Alamat Topik Schedule (Opsional)</label>
+                                    <input type="text" name="mqtt_topic_schedule" class="form-control" placeholder="Contoh: sensor/kebun/schedule">
+                                </div>
+                            </div>
+
                             <!-- STEP 3: DAFTAR SENSOR -->
                             <div class="mb-4">
                                 <label class="form-label">
@@ -808,6 +829,12 @@
             document.querySelectorAll('.type-card').forEach(card => card.classList.remove('selected'));
             document.querySelector(`[data-type="${type}"]`).classList.add('selected');
             document.getElementById('deviceType').value = type;
+
+            // Show additional topics only for smart_gh_v2
+            const additionalMqttTopics = document.getElementById('additionalMqttTopics');
+            if (additionalMqttTopics) {
+                additionalMqttTopics.style.display = type === 'smart_gh_v2' ? 'block' : 'none';
+            }
 
             // Only add default sensors if no sensors exist yet
             const sensorContainer = document.getElementById('sensorContainer');

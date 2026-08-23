@@ -73,15 +73,21 @@ class MqttListener extends Command
                 $this->warn("⚠️  No devices found. Create devices first via admin panel.");
             } else {
                 foreach ($devices as $device) {
-                    // Subscribe to {mqtt_topic}/pub (mesin publish ke topic ini, server listen)
-                    $subTopic = rtrim($device->mqtt_topic, '/') . '/pub';
-                    $this->info("📡 Subscribed to: {$subTopic} (Device: {$device->name})");
+                    $topicsToSubscribe = [];
+                    $topicsToSubscribe[] = rtrim($device->mqtt_topic, '/') . '/pub';
+                    if (!empty($device->mqtt_topic_status)) {
+                        $topicsToSubscribe[] = rtrim($device->mqtt_topic_status, '/');
+                    }
 
-                    $mqtt->subscribe($subTopic, function ($topic, $message) {
-                        $this->processMessage($topic, $message);
-                    }, 0);
-                    
-                    $subscribedTopics[] = $subTopic;
+                    foreach ($topicsToSubscribe as $subTopic) {
+                        $this->info("📡 Subscribed to: {$subTopic} (Device: {$device->name})");
+
+                        $mqtt->subscribe($subTopic, function ($topic, $message) {
+                            $this->processMessage($topic, $message);
+                        }, 0);
+                        
+                        $subscribedTopics[] = $subTopic;
+                    }
                 }
             }
 
@@ -100,17 +106,23 @@ class MqttListener extends Command
                         $currentDevices = \App\Models\Device::all();
                         
                         foreach ($currentDevices as $device) {
-                            $subTopic = rtrim($device->mqtt_topic, '/') . '/pub';
+                            $topicsToSubscribe = [];
+                            $topicsToSubscribe[] = rtrim($device->mqtt_topic, '/') . '/pub';
+                            if (!empty($device->mqtt_topic_status)) {
+                                $topicsToSubscribe[] = rtrim($device->mqtt_topic_status, '/');
+                            }
                             
-                            // If we haven't subscribed to this device's topic yet
-                            if (!in_array($subTopic, $subscribedTopics)) {
-                                $this->info("🆕 New device detected dynamically! Subscribing to: {$subTopic} (Device: {$device->name})");
-                                
-                                $client->subscribe($subTopic, function ($topic, $message) {
-                                    $this->processMessage($topic, $message);
-                                }, 0);
-                                
-                                $subscribedTopics[] = $subTopic;
+                            foreach ($topicsToSubscribe as $subTopic) {
+                                // If we haven't subscribed to this device's topic yet
+                                if (!in_array($subTopic, $subscribedTopics)) {
+                                    $this->info("🆕 New device detected dynamically! Subscribing to: {$subTopic} (Device: {$device->name})");
+                                    
+                                    $client->subscribe($subTopic, function ($topic, $message) {
+                                        $this->processMessage($topic, $message);
+                                    }, 0);
+                                    
+                                    $subscribedTopics[] = $subTopic;
+                                }
                             }
                         }
                     }
@@ -208,14 +220,12 @@ class MqttListener extends Command
         }
 
         // Cari device berdasarkan topic ATAU token
-        // Topic yang diterima: {mqtt_topic}/sub, tapi di DB hanya {mqtt_topic}
+        // Topic yang diterima: {mqtt_topic}/pub (atau mqtt_topic_status), tapi di DB hanya {mqtt_topic}
         $baseTopic = preg_replace('/\/pub$/', '', $topic);
-        $device = Device::where('mqtt_topic', $baseTopic)->first();
-
-        // Fallback: cari dengan topic asli
-        if (!$device) {
-            $device = Device::where('mqtt_topic', $topic)->first();
-        }
+        $device = Device::where('mqtt_topic', $baseTopic)
+            ->orWhere('mqtt_topic', $topic)
+            ->orWhere('mqtt_topic_status', $topic)
+            ->first();
 
         if (!$device && isset($data['token'])) {
             $device = Device::where('token', $data['token'])->first();

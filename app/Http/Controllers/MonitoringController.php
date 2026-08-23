@@ -363,7 +363,7 @@ class MonitoringController extends Controller
         // Publish ke MQTT untuk kirim perintah ke device
         try {
             $device = $userDevice->device;
-            $topic = rtrim($device->mqtt_topic, '/') . '/sub';
+            $topic = $device->mqtt_topic_output ? $device->mqtt_topic_output : rtrim($device->mqtt_topic, '/') . '/sub';
 
             // Custom format based on output name
             $val = $newValue ? '1' : '0';
@@ -469,7 +469,7 @@ class MonitoringController extends Controller
         $action = $request->input('action', 'off');
 
         try {
-            $topic = rtrim($device->mqtt_topic, '/') . '/sub';
+            $topic = $device->mqtt_topic_output ? $device->mqtt_topic_output : rtrim($device->mqtt_topic, '/') . '/sub';
 
             if ($action === 'on') {
                 $inputType = $request->input('input_type', 0); // 0 = Air Baku, 1 = Air Pupuk
@@ -551,7 +551,7 @@ class MonitoringController extends Controller
         $zone = $request->input('zone', 1);
 
         try {
-            $topic = rtrim($device->mqtt_topic, '/') . '/sub';
+            $topic = $device->mqtt_topic_output ? $device->mqtt_topic_output : rtrim($device->mqtt_topic, '/') . '/sub';
 
             if ($turnOn) {
                 // Format: <PMP_ON#waterType#zone#>
@@ -657,7 +657,7 @@ class MonitoringController extends Controller
         $message = "<{$command}#{$volume}#>";
 
         try {
-            $topic = rtrim($device->mqtt_topic, '/') . '/sub';
+            $topic = $device->mqtt_topic_output ? $device->mqtt_topic_output : rtrim($device->mqtt_topic, '/') . '/sub';
 
             $host = config('mqtt.host', env('MQTT_HOST', 'smartagri.web.id'));
             $port = config('mqtt.port', env('MQTT_PORT', 1883));
