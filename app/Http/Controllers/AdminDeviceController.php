@@ -610,7 +610,13 @@ class AdminDeviceController extends Controller
             $isOnline = $lastSeen ? \Carbon\Carbon::parse($lastSeen)->greaterThanOrEqualTo(now()->subMinutes(5)) : false;
         }
 
-        return view('monitoring.show', compact('device', 'sensors', 'outputs', 'latestData', 'isAdminView', 'scheduleConfig', 'hasAutomation', 'isOnline', 'lastSeen'));
+        // Ambil status Smart Farm jika device bertipe smart_farm
+        $sfStatus = null;
+        if ($device->type === 'smart_farm') {
+            $sfStatus = \Cache::get("device_sf_status_{$device->id}");
+        }
+
+        return view('monitoring.show', compact('device', 'sensors', 'outputs', 'latestData', 'isAdminView', 'scheduleConfig', 'hasAutomation', 'isOnline', 'lastSeen', 'sfStatus'));
     }
 
     // HALAMAN HISTORY (ADMIN VIEW)

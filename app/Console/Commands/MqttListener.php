@@ -893,7 +893,7 @@ class MqttListener extends Command
             \Cache::put("device_outputs_{$device->id}", $cachedOutputs, now()->addHours(24));
 
             // Simpan status Smart Farm tambahan di cache
-            \Cache::put("device_sf_status_{$device->id}", [
+            $sfStatusData = [
                 'siram'      => $siram,
                 'blok'       => $blok,
                 'pupuk'      => $pupuk,
@@ -902,14 +902,15 @@ class MqttListener extends Command
                 'jam'        => $status['jam'] ?? null,
                 'hari'       => $status['hari'] ?? null,
                 'updated_at' => now()->toIso8601String(),
-            ], now()->addHours(1));
+            ];
+            \Cache::put("device_sf_status_{$device->id}", $sfStatusData, now()->addHours(1));
 
             $this->info("           ✅ Smart Farm: updated {$updatesCount} outputs in DB & cache");
 
-            // Broadcast ke WebSocket
+            // Broadcast ke WebSocket (termasuk status detail smart farm)
             $lastSeen = \Cache::get("device_{$device->id}_last_seen");
             $sensorBuffer = \Cache::get("sensor_buffer_{$device->id}", []);
-            event(new \App\Events\DeviceStatusUpdated($device->id, $sensorBuffer, $formattedOutputs, $lastSeen));
+            event(new \App\Events\DeviceStatusUpdated($device->id, $sensorBuffer, $formattedOutputs, $lastSeen, $sfStatusData));
 
         // --- EVT:AUTO_OFF ---
         } elseif ($prefix === 'EVT' && $cmd === 'AUTO_OFF') {
@@ -927,6 +928,52 @@ class MqttListener extends Command
         } elseif ($prefix === 'OK') {
             $this->info("           ✅ Smart Farm OK: {$cmd}" . (isset($parts[2]) ? " → {$parts[2]}" : ''));
             Log::info("Smart Farm OK [{$device->name}] {$payload}");
+
+            // Parse sinkronisasi jadwal: OK:JADWAL:<idx>:<jam>:<menit>:<durasi>:<blok>:<literPupuk10>:<hari_bitmask>:<aktif>
+            if ($cmd === 'JADWAL' && isset($parts[2])) {
+                $params = explode(':', $parts[2]);
+                if (count($params) >= 8) {
+                    $idx = (int) $params[0];
+                    $jam = (int) $params[1];
+                    $menit = (int) $params[2];
+                    $durasi = (int) $params[3];
+                    $blok = (int) $params[4];
+                    $literPupuk10 = (int) $params[5];
+                    $hariBitmask = (int) $params[6];
+                    $aktif = (int) $params[7];
+
+                    $displaySlot = $idx + 1;
+                    $slotKey = "sch{$displaySlot}";
+                    $cacheKey = "device_schedules_{$device->id}";
+                    $cachedSchedules = \Cache::get($cacheKey, []);
+
+                    $cachedSchedules[$slotKey] = [
+                        'slot_key' => $slotKey,
+                        'on_time' => sprintf('%02d:%02d', $jam, $menit),
+                        'duration' => $durasi,
+                        'blok' => $blok,
+                        'sector' => $blok,
+                        'liter_pupuk' => $literPupuk10 / 10,
+                        'liter_pupuk_10' => $literPupuk10,
+                        'days' => \App\Services\MqttSmartFarmService::bitmaskToDays($hariBitmask),
+                        'hari_bitmask' => $hariBitmask,
+                        'is_active' => (bool) $aktif,
+                        'updated_at' => now()->toIso8601String(),
+                    ];
+
+                    \Cache::put($cacheKey, $cachedSchedules, now()->addDays(30));
+                    $this->info("           📅 Smart Farm: Synced Jadwal #{$displaySlot} from device");
+                }
+            } elseif ($cmd === 'JADWAL_DEL' && isset($parts[2])) {
+                $idx = (int) $parts[2];
+                $displaySlot = $idx + 1;
+                $slotKey = "sch{$displaySlot}";
+                $cacheKey = "device_schedules_{$device->id}";
+                $cachedSchedules = \Cache::get($cacheKey, []);
+                unset($cachedSchedules[$slotKey]);
+                \Cache::put($cacheKey, $cachedSchedules, now()->addDays(30));
+                $this->info("           🗑️ Smart Farm: Removed Jadwal #{$displaySlot} from cache");
+            }
 
         // --- ERR responses ---
         } elseif ($prefix === 'ERR') {

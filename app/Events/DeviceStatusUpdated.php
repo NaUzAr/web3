@@ -18,18 +18,20 @@ class DeviceStatusUpdated implements ShouldBroadcastNow
     public $sensors;
     public $outputs;
     public $last_seen;
+    public $smartFarmStatus;
 
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct($deviceId, $sensors, $outputs, $last_seen)
+    public function __construct($deviceId, $sensors, $outputs, $last_seen, $smartFarmStatus = null)
     {
         $this->deviceId = $deviceId;
         $this->sensors = $sensors;
         $this->outputs = $outputs;
         $this->last_seen = $last_seen;
+        $this->smartFarmStatus = $smartFarmStatus;
     }
 
     /**

@@ -1124,6 +1124,68 @@
             </div>
         @endif
 
+        @if($device->type === 'smart_farm')
+            @php
+                $isSiram = !empty($sfStatus['siram']);
+                $siramBlok = $sfStatus['blok'] ?? 1;
+                $siramPupuk = ($sfStatus['pupuk'] ?? '') === 'ON';
+                $sisaDetik = (int) ($sfStatus['sisa'] ?? 0);
+                $sisaMenit = floor($sisaDetik / 60);
+                $sisaDetikMod = $sisaDetik % 60;
+                $sfError = !empty($sfStatus['error']);
+                $sfJam = $sfStatus['jam'] ?? null;
+                $jamFormatted = $sfJam && strlen((string)$sfJam) === 4 ? substr((string)$sfJam, 0, 2) . ':' . substr((string)$sfJam, 2, 2) : null;
+            @endphp
+            <!-- Smart Farm Live Irrigation Status Card -->
+            <div class="glass-card mb-4 p-4 shadow-sm" id="sf-status-card" style="border-radius: 20px; border: 1px solid rgba(255,255,255,0.4); background: var(--glass-bg);">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="d-flex align-items-center justify-content-center" id="sf-icon-wrapper" style="width: 52px; height: 52px; border-radius: 16px; background: {{ $isSiram ? 'linear-gradient(135deg, #059669, #10b981)' : 'linear-gradient(135deg, #0284c7, #38bdf8)' }}; color: white; font-size: 1.6rem; box-shadow: 0 8px 16px -4px rgba(0,0,0,0.15);">
+                            <i class="bi {{ $isSiram ? 'bi-droplet-fill' : 'bi-water' }}" id="sf-icon-main"></i>
+                        </div>
+                        <div>
+                            <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                                <span class="badge rounded-pill {{ $isSiram ? 'bg-success text-white' : 'bg-secondary text-white' }}" id="sf-badge-siram" style="padding: 6px 14px; font-weight: 700; letter-spacing: 0.5px;">
+                                    <i class="bi {{ $isSiram ? 'bi-play-circle-fill' : 'bi-pause-circle' }} me-1" id="sf-icon-badge"></i>
+                                    <span id="sf-text-siram">{{ $isSiram ? "SEDANG MENYIRAM (BLOK {$siramBlok})" : 'SIAGA (STANDBY)' }}</span>
+                                </span>
+                                @if($jamFormatted)
+                                    <span class="badge rounded-pill bg-light text-muted border small" id="sf-badge-jam" title="Waktu internal RTC controller">
+                                        <i class="bi bi-clock me-1"></i>RTC: {{ $jamFormatted }}
+                                    </span>
+                                @endif
+                                @if($sfError)
+                                    <span class="badge rounded-pill bg-danger text-white small" id="sf-badge-error">
+                                        <i class="bi bi-exclamation-triangle-fill me-1"></i>Error Relay
+                                    </span>
+                                @endif
+                            </div>
+                            <div class="small text-muted" id="sf-detail-siram">
+                                @if($isSiram)
+                                    Menyiram <strong>Blok {{ $siramBlok }}</strong> &bull; Sisa Waktu: <strong><span id="sf-sisa-waktu">{{ $sisaMenit }}m {{ $sisaDetikMod }}s</span></strong>
+                                    @if($siramPupuk)
+                                        &bull; <span class="text-warning fw-bold"><i class="bi bi-droplet-half me-1"></i>Pupuk Aktif</span>
+                                    @endif
+                                @else
+                                    Sistem irigasi multi-zona siap. Pompa dan solenoid dalam kondisi standby.
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        @if($isSiram)
+                            <button type="button" id="sf-btn-stop" class="btn btn-danger btn-sm d-inline-flex align-items-center gap-2 shadow-sm" style="border-radius: 50px; padding: 0.6rem 1.4rem; font-weight: 600;" onclick="stopSiramQuick()">
+                                <i class="bi bi-stop-circle-fill"></i> Stop Siram
+                            </button>
+                        @endif
+                        <a href="{{ ($isAdminView ?? false) ? route('schedule.index', $device->id) : route('schedule.index', $userDevice->id) }}" class="btn btn-glass btn-sm d-inline-flex align-items-center gap-2 shadow-sm" style="border-radius: 50px; padding: 0.6rem 1.4rem; font-weight: 600;">
+                            <i class="bi bi-calendar-check text-primary"></i> Kelola Jadwal
+                        </a>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         @if($outputs->count() > 0)
             <!-- Output Control Panel -->
             <div class="output-panel">
@@ -2039,7 +2101,7 @@
                     .listen('DeviceStatusUpdated', (e) => {
                         console.log('Realtime Update:', e);
                         
-                        if (e.sensors && Object.keys(e.sensors).length > 0) {
+                        if ((e.sensors && Object.keys(e.sensors).length > 0) || (e.outputs && e.outputs.length > 0) || e.smartFarmStatus) {
                             setDeviceOnline();
                             
                             // Update last update text
@@ -2047,18 +2109,96 @@
                             if (lastUpdateEl) {
                                 lastUpdateEl.innerHTML = `<span class="live-dot me-2" id="live-dot" style="display: inline-block;"></span> Terakhir update: Baru saja`;
                             }
-                            
+                        }
+
+                        if (e.sensors && Object.keys(e.sensors).length > 0) {
                             updateSensors(e.sensors);
                         }
                         
                         if (e.outputs && Array.isArray(e.outputs) && e.outputs.length > 0) {
                             updateOutputs(e.outputs);
                         }
+
+                        if (e.smartFarmStatus) {
+                            updateSmartFarmLiveStatus(e.smartFarmStatus);
+                        }
                     });
             } else {
                 console.warn("Laravel Echo is not initialized. WebSockets will not work.");
             }
         });
+
+        function updateSmartFarmLiveStatus(sf) {
+            const card = document.getElementById('sf-status-card');
+            if (!card) return;
+
+            const isSiram = sf.siram === 1 || sf.siram === '1' || sf.siram === true;
+            const badgeSiram = document.getElementById('sf-badge-siram');
+            const textSiram = document.getElementById('sf-text-siram');
+            const iconBadge = document.getElementById('sf-icon-badge');
+            const iconWrapper = document.getElementById('sf-icon-wrapper');
+            const iconMain = document.getElementById('sf-icon-main');
+            const detailSiram = document.getElementById('sf-detail-siram');
+            const badgeJam = document.getElementById('sf-badge-jam');
+            const btnStop = document.getElementById('sf-btn-stop');
+
+            if (isSiram) {
+                if (badgeSiram) badgeSiram.className = 'badge rounded-pill bg-success text-white';
+                if (textSiram) textSiram.innerText = `SEDANG MENYIRAM (BLOK ${sf.blok || 1})`;
+                if (iconBadge) iconBadge.className = 'bi bi-play-circle-fill me-1';
+                if (iconWrapper) iconWrapper.style.background = 'linear-gradient(135deg, #059669, #10b981)';
+                if (iconMain) iconMain.className = 'bi bi-droplet-fill';
+
+                if (detailSiram) {
+                    const sisa = parseInt(sf.sisa) || 0;
+                    const m = Math.floor(sisa / 60);
+                    const s = sisa % 60;
+                    let pupukHtml = (sf.pupuk === 'ON') ? ' &bull; <span class="text-warning fw-bold"><i class="bi bi-droplet-half me-1"></i>Pupuk Aktif</span>' : '';
+                    detailSiram.innerHTML = `Menyiram <strong>Blok ${sf.blok || 1}</strong> &bull; Sisa Waktu: <strong><span id="sf-sisa-waktu">${m}m ${s}s</span></strong>${pupukHtml}`;
+                }
+            } else {
+                if (badgeSiram) badgeSiram.className = 'badge rounded-pill bg-secondary text-white';
+                if (textSiram) textSiram.innerText = 'SIAGA (STANDBY)';
+                if (iconBadge) iconBadge.className = 'bi bi-pause-circle me-1';
+                if (iconWrapper) iconWrapper.style.background = 'linear-gradient(135deg, #0284c7, #38bdf8)';
+                if (iconMain) iconMain.className = 'bi bi-water';
+                if (detailSiram) {
+                    detailSiram.innerHTML = 'Sistem irigasi multi-zona siap. Pompa dan solenoid dalam kondisi standby.';
+                }
+                if (btnStop) {
+                    btnStop.remove();
+                }
+            }
+
+            if (sf.jam && badgeJam) {
+                const jamStr = String(sf.jam);
+                if (jamStr.length === 4) {
+                    badgeJam.innerHTML = `<i class="bi bi-clock me-1"></i>RTC: ${jamStr.substring(0, 2)}:${jamStr.substring(2, 4)}`;
+                }
+            }
+        }
+
+        async function stopSiramQuick() {
+            if (!confirm('Hentikan penyiraman irigasi sekarang?')) return;
+            try {
+                const targetId = '{{ ($isAdminView ?? false) ? $device->id : ($userDevice->id ?? $device->id) }}';
+                const res = await fetch(`/device/${targetId}/schedule/siram-stop`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                    }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert(data.message || 'Perintah stop penyiraman dikirim!');
+                } else {
+                    alert('Gagal: ' + (data.message || 'Terjadi kesalahan'));
+                }
+            } catch (err) {
+                alert('Gagal mengirim perintah: ' + err.message);
+            }
+        }
         function updateSensors(sensorData) {
             for (const [key, value] of Object.entries(sensorData)) {
                 if (sensorMap[key]) {

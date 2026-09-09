@@ -217,14 +217,35 @@ class ScheduleController extends Controller
         ]);
 
         if ($success) {
+            $daysArray = MqttSmartFarmService::bitmaskToDays($hariBitmask);
             $daysText = $request->filled('days')
-                ? implode(', ', MqttSmartFarmService::bitmaskToDays($hariBitmask))
+                ? implode(', ', $daysArray)
                 : 'Setiap hari';
             $pupukText = $literPupuk10 > 0
                 ? ', Pupuk: ' . ($literPupuk10 / 10) . 'L'
                 : '';
 
             $displaySlot = $idx + 1;
+            $slotKey = "sch{$displaySlot}";
+
+            // Simpan ke cache agar tampilan web langsung terupdate
+            $cacheKey = "device_schedules_{$device->id}";
+            $cachedSchedules = \Cache::get($cacheKey, []);
+            $cachedSchedules[$slotKey] = [
+                'slot_key' => $slotKey,
+                'on_time' => $validated['on_time'],
+                'duration' => $duration,
+                'blok' => $blok,
+                'sector' => $blok,
+                'liter_pupuk' => $literPupuk10 / 10,
+                'liter_pupuk_10' => $literPupuk10,
+                'days' => $daysArray,
+                'hari_bitmask' => $hariBitmask,
+                'is_active' => (bool) $request->input('aktif', 1),
+                'updated_at' => now()->toIso8601String(),
+            ];
+            \Cache::put($cacheKey, $cachedSchedules, now()->addDays(30));
+
             return response()->json([
                 'success' => true,
                 'message' => "Jadwal #{$displaySlot} berhasil dikirim! "
@@ -253,6 +274,15 @@ class ScheduleController extends Controller
             $idx = ($rawSlot >= 1 && $rawSlot <= 10) ? ($rawSlot - 1) : $rawSlot;
             $idx = max(0, min(9, $idx));
             $success = $this->smartFarmService->sendJadwalDel($topic, $idx);
+
+            if ($success) {
+                $displaySlot = $idx + 1;
+                $slotKey = "sch{$displaySlot}";
+                $cacheKey = "device_schedules_{$device->id}";
+                $cachedSchedules = \Cache::get($cacheKey, []);
+                unset($cachedSchedules[$slotKey]);
+                \Cache::put($cacheKey, $cachedSchedules, now()->addDays(30));
+            }
         }
         // === DEVICE LAIN: Format legacy ===
         else {
