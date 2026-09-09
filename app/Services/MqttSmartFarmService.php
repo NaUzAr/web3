@@ -332,7 +332,8 @@ class MqttSmartFarmService
     {
         try {
             $mqtt = $this->connect();
-            $topic = rtrim($mqttTopic, '/') . '/sub';
+            $baseTopic = preg_replace('/\/(sub|pub|status)$/', '', rtrim($mqttTopic, '/'));
+            $topic = $baseTopic . '/sub';
 
             $mqtt->publish($topic, $message . "\n", 1); // QoS 1, append newline
             $mqtt->disconnect();

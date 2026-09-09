@@ -120,9 +120,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/', [ScheduleController::class, 'index'])->name('index');
         Route::post('/time', [ScheduleController::class, 'storeTimeSchedules'])->name('time.store');
         Route::delete('/{slotId}', [ScheduleController::class, 'destroy'])->name('destroy');
-        // Smart Farm: Siram manual & stop
+        // Smart Farm: Siram manual, stop, dan tarik jadwal
         Route::post('/siram-start', [ScheduleController::class, 'siramStart'])->name('siram.start');
         Route::post('/siram-stop', [ScheduleController::class, 'siramStop'])->name('siram.stop');
+        Route::post('/sync', [ScheduleController::class, 'syncFromDevice'])->name('sync');
+        Route::get('/data', [ScheduleController::class, 'getSchedulesData'])->name('data');
     });
 
     // === USER RIWAYAT (Activity Log Frontend) ===

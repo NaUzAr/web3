@@ -69,6 +69,12 @@ class ScheduleController extends Controller
             return $numA - $numB;
         });
 
+        // Smart Farm: Auto-request jadwal dari device setiap kali halaman dibuka / di-load
+        if ($device->type === 'smart_farm') {
+            $topic = $device->mqtt_topic_schedule ?: $device->mqtt_topic;
+            $this->smartFarmService->sendJadwalGet($topic);
+        }
+
         return view('schedule.index', compact('userDevice', 'device', 'scheduleConfig', 'cachedSchedules', 'isAdminView'));
     }
 
@@ -246,10 +252,14 @@ class ScheduleController extends Controller
             ];
             \Cache::put($cacheKey, $cachedSchedules, now()->addDays(30));
 
+            // Smart Farm: Request lagi jadwal dari device setelah edit untuk memastikan data EEPROM terbaru tersinkron
+            usleep(250000); // jeda 250ms agar STM32 selesai commit EEPROM
+            $this->smartFarmService->sendJadwalGet($topic);
+            session()->put("sf_schedule_requested_{$device->id}", true);
+
             return response()->json([
                 'success' => true,
-                'message' => "Jadwal #{$displaySlot} berhasil dikirim! "
-                    . "(Blok {$blok}, {$validated['on_time']} selama {$duration} menit{$pupukText}, {$daysText})",
+                'message' => "Jadwal #{$displaySlot} berhasil disimpan! Data disinkronkan ke alat.",
             ]);
         }
 
@@ -276,6 +286,11 @@ class ScheduleController extends Controller
             $success = $this->smartFarmService->sendJadwalDel($topic, $idx);
 
             if ($success) {
+                // Smart Farm: Request lagi jadwal dari device setelah hapus
+                usleep(250000);
+                $this->smartFarmService->sendJadwalGet($topic);
+                session()->put("sf_schedule_requested_{$device->id}", true);
+
                 $displaySlot = $idx + 1;
                 $slotKey = "sch{$displaySlot}";
                 $cacheKey = "device_schedules_{$device->id}";
@@ -372,5 +387,60 @@ class ScheduleController extends Controller
             'success' => false,
             'message' => 'Gagal mengirim perintah stop.',
         ], 500);
+    }
+
+    /**
+     * Smart Farm: Request sinkronisasi jadwal dari perangkat (CMD:JADWAL_GET)
+     */
+    public function syncFromDevice($userDeviceId)
+    {
+        $device = $this->getDevice($userDeviceId);
+
+        if ($device->type !== 'smart_farm') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Fitur sinkronisasi ini khusus perangkat Smart Farm.',
+            ], 400);
+        }
+
+        $topic = $device->mqtt_topic_schedule ?: $device->mqtt_topic;
+        $success = $this->smartFarmService->sendJadwalGet($topic);
+
+        if ($success) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Permintaan jadwal (CMD:JADWAL_GET) terkirim ke perangkat! Data sedang disinkronkan...',
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Gagal mengirim permintaan jadwal ke perangkat.',
+        ], 500);
+    }
+
+    /**
+     * Smart Farm: Ambil data cached schedules terkini dalam format JSON (untuk auto-refresh / sync polling)
+     */
+    public function getSchedulesData($userDeviceId)
+    {
+        $device = $this->getDevice($userDeviceId);
+        $cacheKey = "device_schedules_{$device->id}";
+        $cachedSchedules = \Cache::get($cacheKey, []);
+
+        uksort($cachedSchedules, function ($a, $b) {
+            $numA = (int) filter_var($a, FILTER_SANITIZE_NUMBER_INT);
+            $numB = (int) filter_var($b, FILTER_SANITIZE_NUMBER_INT);
+            return $numA - $numB;
+        });
+
+        return response()->json([
+            'success' => true,
+            'device_id' => $device->id,
+            'schedules' => $cachedSchedules,
+            'count' => count($cachedSchedules),
+            'synced_at' => \Cache::get("device_schedules_synced_at_{$device->id}"),
+            'timestamp' => now()->toIso8601String(),
+        ]);
     }
 }

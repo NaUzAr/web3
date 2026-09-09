@@ -973,6 +973,9 @@ class MqttListener extends Command
                 unset($cachedSchedules[$slotKey]);
                 \Cache::put($cacheKey, $cachedSchedules, now()->addDays(30));
                 $this->info("           🗑️ Smart Farm: Removed Jadwal #{$displaySlot} from cache");
+            } elseif ($cmd === 'JADWAL_END') {
+                \Cache::put("device_schedules_synced_at_{$device->id}", now()->toIso8601String(), now()->addDays(30));
+                $this->info("           🎉 Smart Farm: Finished syncing all schedules from device");
             }
 
         // --- ERR responses ---

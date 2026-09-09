@@ -429,8 +429,14 @@
                     Device: <strong>{{ $device->name }}</strong> | Target: <strong>{{ $scheduleConfig->output_key }}</strong>
                 </p>
             </div>
-            <div class="d-flex align-items-center gap-2">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
                 @if($device->type === 'smart_farm')
+                    <span id="sync-status-indicator" class="badge rounded-pill d-inline-flex align-items-center gap-1" style="display: none !important; font-size: 0.78rem; padding: 0.55rem 0.9rem; background: rgba(14, 165, 233, 0.12); color: #0284c7; border: 1px solid rgba(14, 165, 233, 0.25);">
+                        <i class="bi bi-arrow-repeat spin-icon" id="indicator-spin-icon"></i> <span id="sync-status-text">Sinkron ke alat...</span>
+                    </span>
+                    <button type="button" id="btn-sync-jadwal" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1 shadow-sm" style="border-radius: 50px; padding: 0.6rem 1.25rem; font-weight: 600;" onclick="syncJadwalDevice()" title="Tarik seluruh jadwal dari memori alat (EEPROM)">
+                        <i class="bi bi-arrow-repeat" id="icon-sync-jadwal"></i> <span>Tarik dari Alat</span>
+                    </button>
                     <button type="button" class="btn btn-danger btn-sm d-inline-flex align-items-center gap-1 shadow-sm" style="border-radius: 50px; padding: 0.6rem 1.25rem;" onclick="stopSiram()">
                         <i class="bi bi-stop-circle-fill"></i> <span>Stop Siram</span>
                     </button>
@@ -576,7 +582,7 @@
                                                 <i class="bi bi-play-fill me-1"></i>Siram
                                             </button>
                                         @endif
-                                        <button class="btn btn-sm" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #60a5fa; border-radius: 50px; padding: 6px 14px; font-weight: 500;" onclick='openScheduleModal({{ $i }}, @json($sch))' title="Edit Jadwal">
+                                        <button class="btn btn-sm" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #60a5fa; border-radius: 50px; padding: 6px 14px; font-weight: 500;" onclick='openScheduleModal({{ $i }}, (window.cachedSchedules && window.cachedSchedules["sch{{ $i }}"]) ? window.cachedSchedules["sch{{ $i }}"] : @json($sch))' title="Edit Jadwal">
                                             <i class="bi bi-pencil-square me-1"></i> Edit
                                         </button>
                                         @if($isActive)
@@ -849,7 +855,14 @@
                 });
                 const data = await res.json();
                 if(data.success) { 
-                    location.reload(); 
+                    deleteConfirmModal.hide();
+                    setTimeout(() => {
+                        if (typeof checkScheduleUpdates === 'function') {
+                            checkScheduleUpdates(true);
+                        } else {
+                            location.reload();
+                        }
+                    }, 1500);
                 } else { 
                     alert('Gagal: ' + data.message); 
                     this.innerHTML = 'Hapus';
@@ -913,9 +926,15 @@
                 });
                 const data = await res.json();
                 if(data.success) {
-                    alert(data.message);
+                    btnText.innerText = 'Tersimpan!';
                     modal.hide();
-                    location.reload();
+                    setTimeout(() => {
+                        if (typeof checkScheduleUpdates === 'function') {
+                            checkScheduleUpdates(true);
+                        } else {
+                            location.reload();
+                        }
+                    }, 1500);
                 } else {
                     alert('Gagal: ' + data.message);
                 }
@@ -948,7 +967,8 @@
         async function stopSiram() {
             if(!confirm('Hentikan semua proses penyiraman yang sedang berjalan?')) return;
             try {
-                const res = await fetch('{{ route("schedule.siram.stop", [$userDevice->id], false) }}', {
+                const targetId = '{{ ($isAdminView ?? false) ? $device->id : ($userDevice->id ?? $device->id) }}';
+                const res = await fetch(`/device/${targetId}/schedule/siram-stop`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken }
                 });
@@ -958,6 +978,249 @@
                 alert('Error: ' + e.message);
             }
         }
+
+        // Smart Farm: Tarik jadwal dari perangkat via MQTT
+        async function syncJadwalDevice() {
+            const btn = document.getElementById('btn-sync-jadwal');
+            const icon = document.getElementById('icon-sync-jadwal');
+            if (btn) btn.disabled = true;
+            if (icon) icon.classList.add('spin-icon');
+
+            try {
+                const targetId = '{{ ($isAdminView ?? false) ? $device->id : ($userDevice->id ?? $device->id) }}';
+                const res = await fetch(`/device/${targetId}/schedule/sync`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    setTimeout(() => {
+                        checkScheduleUpdates(true);
+                        if (btn) btn.disabled = false;
+                        if (icon) icon.classList.remove('spin-icon');
+                    }, 3500);
+                } else {
+                    alert('Gagal: ' + data.message);
+                    if (btn) btn.disabled = false;
+                    if (icon) icon.classList.remove('spin-icon');
+                }
+            } catch(e) {
+                alert('Error: ' + e.message);
+                if (btn) btn.disabled = false;
+                if (icon) icon.classList.remove('spin-icon');
+            }
+        }
+
+        @if($device->type === 'smart_farm')
+        window.cachedSchedules = @json($cachedSchedules);
+        const targetId = '{{ ($isAdminView ?? false) ? $device->id : ($userDevice->id ?? $device->id) }}';
+
+        // Render baris jadwal langsung ke DOM tanpa reload
+        function renderScheduleRow(slotNum, sch) {
+            if (!window.cachedSchedules) window.cachedSchedules = {};
+            window.cachedSchedules[`sch${slotNum}`] = sch;
+            const row = document.getElementById(`row-slot-${slotNum}`);
+            if (!row) return;
+
+            const isActive = sch && (sch.is_active == 1 || sch.is_active === true);
+            const onTime = (isActive && sch.on_time) ? sch.on_time.substring(0, 5) : '-';
+            const duration = (isActive && sch.duration) ? `${sch.duration} Menit` : '-';
+            const offTime = (isActive && sch.off_time) ? sch.off_time : '-';
+            const blok = (isActive && (sch.blok !== undefined ? sch.blok : sch.sector)) ? (sch.blok !== undefined ? sch.blok : sch.sector) : 1;
+            const literPupuk = (isActive && (sch.liter_pupuk !== undefined ? sch.liter_pupuk : (sch.liter_pupuk_10 ? sch.liter_pupuk_10 / 10 : 0))) || 0;
+
+            let daysStr = '-';
+            if (isActive && sch.days) {
+                daysStr = Array.isArray(sch.days) ? sch.days.join(', ') : sch.days;
+                if (!daysStr) daysStr = 'Setiap Hari';
+            }
+
+            // Waktu Mulai
+            const cellWaktu = row.querySelector('[data-label="Waktu Mulai"]');
+            if (cellWaktu) cellWaktu.textContent = onTime;
+
+            // Durasi / Waktu Selesai
+            const cellDurasi = row.querySelector('[data-label="Durasi"]');
+            if (cellDurasi) cellDurasi.textContent = duration;
+            const cellSelesai = row.querySelector('[data-label="Waktu Selesai"]');
+            if (cellSelesai) cellSelesai.textContent = offTime;
+
+            // Blok Irigasi
+            const cellBlok = row.querySelector('[data-label="Blok Irigasi"]') || row.querySelector('[data-label="Zona Tujuan"]');
+            if (cellBlok) {
+                if (isActive) {
+                    cellBlok.innerHTML = `
+                        <span class="badge rounded-pill" style="background: rgba(14, 165, 233, 0.1); color: #0284c7; border: 1px solid rgba(14, 165, 233, 0.2);">
+                            <i class="bi bi-geo-alt-fill me-1" style="color: #0ea5e9;"></i> ${isSmartFarm ? 'Blok ' : 'Zona '} ${blok}
+                        </span>
+                    `;
+                } else {
+                    cellBlok.innerHTML = `<span style="color: var(--text-secondary);">-</span>`;
+                }
+            }
+
+            // Pupuk (L)
+            const cellPupuk = row.querySelector('[data-label="Pupuk (L)"]');
+            if (cellPupuk) {
+                if (isActive) {
+                    if (literPupuk > 0) {
+                        cellPupuk.innerHTML = `
+                            <span class="badge rounded-pill" style="background: rgba(234, 179, 8, 0.1); color: #ca8a04; border: 1px solid rgba(234, 179, 8, 0.2);">
+                                <i class="bi bi-droplet-half me-1"></i>${literPupuk} L
+                            </span>
+                        `;
+                    } else {
+                        cellPupuk.innerHTML = `<span class="text-muted small">Tanpa Pupuk</span>`;
+                    }
+                } else {
+                    cellPupuk.innerHTML = `<span style="color: var(--text-secondary);">-</span>`;
+                }
+            }
+
+            // Hari
+            const cellHari = row.querySelector('[data-label="Hari"]');
+            if (cellHari) {
+                cellHari.textContent = isActive ? daysStr : '-';
+            }
+
+            // Status
+            const cellStatus = row.querySelector('[data-label="Status"]');
+            if (cellStatus) {
+                if (isActive) {
+                    cellStatus.innerHTML = `
+                        <span class="badge rounded-pill shadow-sm" style="background: rgba(16, 185, 129, 0.15); color: #059669; border: 1px solid rgba(16, 185, 129, 0.3); padding: 6px 12px;">
+                            <i class="bi bi-check-circle-fill me-1"></i> Aktif
+                        </span>
+                    `;
+                } else {
+                    cellStatus.innerHTML = `
+                        <span class="badge rounded-pill" style="background: rgba(107, 114, 128, 0.1); color: var(--text-secondary); border: 1px solid rgba(107, 114, 128, 0.2); padding: 6px 12px;">
+                            Kosong
+                        </span>
+                    `;
+                }
+            }
+
+            // Tombol Aksi
+            const cellAksi = row.querySelector('td:last-child');
+            if (cellAksi) {
+                let btns = `<div class="d-flex justify-content-end gap-2">`;
+                if (isSmartFarm && isActive) {
+                    btns += `
+                        <button class="btn btn-sm btn-success text-white" style="border-radius: 50px; padding: 6px 14px; font-weight: 500;" onclick="siramManual(${slotNum - 1})" title="Jalankan Siram Sekarang">
+                            <i class="bi bi-play-fill me-1"></i>Siram
+                        </button>
+                    `;
+                }
+                btns += `
+                    <button class="btn btn-sm" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #60a5fa; border-radius: 50px; padding: 6px 14px; font-weight: 500;" onclick="openScheduleModal(${slotNum}, window.cachedSchedules['sch${slotNum}'])" title="Edit Jadwal">
+                        <i class="bi bi-pencil-square me-1"></i> Edit
+                    </button>
+                `;
+                if (isActive) {
+                    btns += `
+                        <button class="btn btn-sm" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; border-radius: 50px; padding: 6px 12px;" onclick="confirmDeleteSchedule(${slotNum})" title="Hapus Jadwal">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    `;
+                }
+                btns += `</div>`;
+                cellAksi.innerHTML = btns;
+            }
+        }
+
+        // Fungsi cek data jadwal terbaru dari server / device (tanpa reload halaman)
+        async function checkScheduleUpdates(showIndicator = true) {
+            const indicator = document.getElementById('sync-status-indicator');
+            const statusText = document.getElementById('sync-status-text');
+            const spinIcon = document.getElementById('indicator-spin-icon');
+            const iconSync = document.getElementById('icon-sync-jadwal');
+
+            if (showIndicator) {
+                if (indicator) indicator.style.setProperty('display', 'inline-flex', 'important');
+                if (iconSync) iconSync.classList.add('spin-icon');
+                if (spinIcon) spinIcon.className = 'bi bi-arrow-repeat spin-icon';
+                if (statusText) statusText.innerText = 'Sinkron ke alat...';
+            }
+
+            try {
+                const res = await fetch(`/device/${targetId}/schedule/data`);
+                const data = await res.json();
+
+                if (iconSync) iconSync.classList.remove('spin-icon');
+
+                if (data.success && data.schedules) {
+                    // Update seluruh baris secara langsung di DOM (tanpa reload layar)
+                    for (let i = 1; i <= maxSlots; i++) {
+                        const sch = data.schedules[`sch${i}`] || null;
+                        renderScheduleRow(i, sch);
+                    }
+
+                    if (indicator) {
+                        indicator.style.background = 'rgba(16, 185, 129, 0.15)';
+                        indicator.style.color = '#059669';
+                        indicator.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+                        if (spinIcon) spinIcon.className = 'bi bi-check2';
+                        if (statusText) statusText.innerText = 'Jadwal tersinkron';
+                        setTimeout(() => {
+                            indicator.style.setProperty('display', 'none', 'important');
+                        }, 2500);
+                    }
+                } else {
+                    if (indicator) indicator.style.setProperty('display', 'none', 'important');
+                }
+            } catch (e) {
+                console.warn('Sync check failed:', e);
+                if (iconSync) iconSync.classList.remove('spin-icon');
+                if (indicator) indicator.style.setProperty('display', 'none', 'important');
+            }
+        }
+
+        // 1. Saat pertama kali halaman di-load:
+        // Controller index() sudah mengirim CMD:JADWAL_GET ke alat.
+        // Beri jeda 3.5 detik agar respon 10 slot dari STM32 selesai dikirim, lalu update tabel.
+        window.addEventListener('DOMContentLoaded', () => {
+            const indicator = document.getElementById('sync-status-indicator');
+            const iconSync = document.getElementById('icon-sync-jadwal');
+            if (indicator) indicator.style.setProperty('display', 'inline-flex', 'important');
+            if (iconSync) iconSync.classList.add('spin-icon');
+
+            setTimeout(() => {
+                checkScheduleUpdates(true);
+            }, 3500);
+
+            // Cek sekali lagi di 7 detik untuk memastikan respon akhir (JADWAL_END) tertangkap
+            setTimeout(() => {
+                checkScheduleUpdates(false);
+            }, 7000);
+        });
+
+        // 2. Autoload berkala setiap 1 menit (60 detik) tanpa reload halaman
+        setInterval(async () => {
+            // Jangan jalankan jika user sedang membuka modal edit
+            const modalOpen = document.querySelector('.modal.show');
+            if (modalOpen) return;
+
+            try {
+                // Kirim request sinkronisasi ke alat via MQTT
+                await fetch(`/device/${targetId}/schedule/sync`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken }
+                });
+
+                // Beri jeda 3.5 detik untuk respon alat, lalu perbarui tabel langsung di DOM
+                setTimeout(() => {
+                    checkScheduleUpdates(true);
+                }, 3500);
+            } catch (err) {
+                console.warn('Autoload 1 menit gagal:', err);
+            }
+        }, 60000); // 60.000 ms = 1 menit
+        @endif
     </script>
+    <style>
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .spin-icon { animation: spin 1s linear infinite; display: inline-block; }
+    </style>
 </body>
 </html>
