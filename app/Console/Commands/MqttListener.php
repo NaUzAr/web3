@@ -26,128 +26,183 @@ class MqttListener extends Command
     protected $description = 'Listen to MQTT broker for sensor data and device status';
 
     /**
+     * Flag to control daemon running state.
+     */
+    private bool $running = true;
+
+    /**
      * Execute the console command.
      */
     public function handle()
     {
-        // Baca dari .env dulu, jika tidak ada gunakan option/default
+        // Setup graceful shutdown signals if PCNTL is available
+        if (function_exists('pcntl_async_signals')) {
+            pcntl_async_signals(true);
+            pcntl_signal(SIGTERM, function () {
+                $this->info("🛑 Received SIGTERM. Exiting gracefully...");
+                $this->running = false;
+            });
+            pcntl_signal(SIGINT, function () {
+                $this->info("🛑 Received SIGINT. Exiting gracefully...");
+                $this->running = false;
+            });
+        }
+
+        // Ambil konfigurasi: prioritaskan opsi CLI -> config('mqtt.*') -> env -> default
         $host = $this->option('host') !== 'localhost'
             ? $this->option('host')
-            : env('MQTT_HOST', 'localhost');
+            : config('mqtt.host', env('MQTT_HOST', '76.13.21.230'));
         $port = (int) ($this->option('port') !== 1883
             ? $this->option('port')
-            : env('MQTT_PORT', 1883));
-        $username = $this->option('username') ?: env('MQTT_USERNAME');
-        $password = $this->option('password') ?: env('MQTT_PASSWORD');
+            : config('mqtt.port', env('MQTT_PORT', 1883)));
+        $username = $this->option('username') ?: config('mqtt.username', env('MQTT_USERNAME', 'iot'));
+        $password = $this->option('password') ?: config('mqtt.password', env('MQTT_PASSWORD', 'smartgh'));
 
-        $this->info("🚀 Starting MQTT Listener...");
+        $this->info("🚀 Starting MQTT Listener Daemon...");
         $this->info("   Broker: {$host}:{$port}");
 
-        try {
-            // Setup connection
-            $connectionSettings = new ConnectionSettings();
+        // Auto-reconnect loop: Listener tidak boleh langsung mati jika koneksi terputus
+        while ($this->running) {
+            $mqtt = null;
 
-            if ($username && $password) {
-                $connectionSettings = $connectionSettings
-                    ->setUsername($username)
-                    ->setPassword($password);
-            }
-
-            $connectionSettings = $connectionSettings
-                ->setKeepAliveInterval(60)
-                ->setConnectTimeout(10);
-
-            // Create MQTT client
-            $mqtt = new MqttClient($host, $port, 'laravel-listener-' . uniqid());
-            $mqtt->connect($connectionSettings, true);
-
-            $this->info("✅ Connected to MQTT Broker!");
-
-            // Get all devices and subscribe to their topics + /sub
-            $devices = Device::all();
-
-            // Track subscribed topics
-            $subscribedTopics = [];
-
-            if ($devices->isEmpty()) {
-                $this->warn("⚠️  No devices found. Create devices first via admin panel.");
-            } else {
-                foreach ($devices as $device) {
-                    $topicsToSubscribe = [];
-                    $topicsToSubscribe[] = rtrim($device->mqtt_topic, '/') . '/pub';
-                    if (!empty($device->mqtt_topic_status)) {
-                        $topicsToSubscribe[] = rtrim($device->mqtt_topic_status, '/');
-                    } elseif ($device->type === 'smart_farm') {
-                        // Smart Farm: auto-subscribe ke {base}/status meskipun kolom opsional kosong
-                        $topicsToSubscribe[] = rtrim($device->mqtt_topic, '/') . '/status';
-                    }
-
-                    foreach ($topicsToSubscribe as $subTopic) {
-                        $this->info("📡 Subscribed to: {$subTopic} (Device: {$device->name})");
-
-                        $mqtt->subscribe($subTopic, function ($topic, $message) {
-                            $this->processMessage($topic, $message);
-                        }, 0);
-                        
-                        $subscribedTopics[] = $subTopic;
-                    }
+            try {
+                // Pastikan koneksi database hidup (berguna jika proses berjalan berhari-hari)
+                try {
+                    DB::connection()->getPdo();
+                } catch (\Throwable $dbErr) {
+                    $this->warn("⚠️ Database connection lost, reconnecting...");
+                    DB::purge();
+                    DB::reconnect();
                 }
-            }
 
-            // Register loop event handler to dynamically check for new devices
-            $lastCheckTime = time();
-            $mqtt->registerLoopEventHandler(function (\PhpMqtt\Client\MqttClient $client, float $elapsedTime) use (&$lastCheckTime, &$subscribedTopics) {
-                // Check every 5 seconds
-                if (time() - $lastCheckTime >= 5) {
-                    $lastCheckTime = time();
-                    
-                    // Only fetch from DB if the cache flag was set by AdminDeviceController
-                    if (\Illuminate\Support\Facades\Cache::pull('mqtt_devices_changed')) {
-                        $this->info("🔄 Device changes detected! Updating subscriptions...");
-                        
-                        // Fetch current devices from DB
-                        $currentDevices = \App\Models\Device::all();
-                        
-                        foreach ($currentDevices as $device) {
-                            $topicsToSubscribe = [];
-                            $topicsToSubscribe[] = rtrim($device->mqtt_topic, '/') . '/pub';
-                            if (!empty($device->mqtt_topic_status)) {
-                                $topicsToSubscribe[] = rtrim($device->mqtt_topic_status, '/');
-                            } elseif ($device->type === 'smart_farm') {
-                                // Smart Farm: auto-subscribe ke {base}/status meskipun kolom opsional kosong
-                                $topicsToSubscribe[] = rtrim($device->mqtt_topic, '/') . '/status';
-                            }
-                            
-                            foreach ($topicsToSubscribe as $subTopic) {
-                                // If we haven't subscribed to this device's topic yet
-                                if (!in_array($subTopic, $subscribedTopics)) {
-                                    $this->info("🆕 New device detected dynamically! Subscribing to: {$subTopic} (Device: {$device->name})");
-                                    
-                                    $client->subscribe($subTopic, function ($topic, $message) {
-                                        $this->processMessage($topic, $message);
-                                    }, 0);
-                                    
-                                    $subscribedTopics[] = $subTopic;
-                                }
-                            }
+                // Setup connection settings
+                $connectionSettings = new ConnectionSettings();
+
+                if ($username && $password) {
+                    $connectionSettings = $connectionSettings
+                        ->setUsername($username)
+                        ->setPassword($password);
+                }
+
+                $connectionSettings = $connectionSettings
+                    ->setKeepAliveInterval(60)
+                    ->setConnectTimeout(10);
+
+                // Create MQTT client dengan client ID unik
+                $clientId = 'laravel-listener-' . substr(md5(uniqid(mt_rand(), true)), 0, 10);
+                $mqtt = new MqttClient($host, $port, $clientId);
+                $mqtt->connect($connectionSettings, true);
+
+                $this->info("✅ Connected to MQTT Broker ({$host}:{$port})!");
+
+                // Get all devices and subscribe to their topics + /sub
+                $devices = Device::all();
+                $subscribedTopics = [];
+
+                if ($devices->isEmpty()) {
+                    $this->warn("⚠️  No devices found. Waiting for devices...");
+                } else {
+                    foreach ($devices as $device) {
+                        $topicsToSubscribe = [];
+                        $topicsToSubscribe[] = rtrim($device->mqtt_topic, '/') . '/pub';
+                        if (!empty($device->mqtt_topic_status)) {
+                            $topicsToSubscribe[] = rtrim($device->mqtt_topic_status, '/');
+                        } elseif ($device->type === 'smart_farm') {
+                            // Smart Farm: auto-subscribe ke {base}/status meskipun kolom opsional kosong
+                            $topicsToSubscribe[] = rtrim($device->mqtt_topic, '/') . '/status';
+                        }
+
+                        foreach ($topicsToSubscribe as $subTopic) {
+                            $this->info("📡 Subscribed to: {$subTopic} (Device: {$device->name})");
+
+                            $mqtt->subscribe($subTopic, function ($topic, $message) {
+                                $this->processMessage($topic, $message);
+                            }, 0);
+
+                            $subscribedTopics[] = $subTopic;
                         }
                     }
                 }
-            });
 
-            $this->info("");
-            $this->info("👂 Listening for messages... (Dynamic auto-discovery enabled)");
-            $this->info("─────────────────────────────────────────────────");
+                // Register loop event handler to dynamically check for new devices
+                $lastCheckTime = time();
+                $mqtt->registerLoopEventHandler(function (\PhpMqtt\Client\MqttClient $client, float $elapsedTime) use (&$lastCheckTime, &$subscribedTopics) {
+                    // Check if process received termination signal
+                    if (!$this->running) {
+                        $client->interrupt();
+                        return;
+                    }
 
-            // Loop forever
-            $mqtt->loop(true);
+                    // Check every 5 seconds
+                    if (time() - $lastCheckTime >= 5) {
+                        $lastCheckTime = time();
 
-        } catch (\Exception $e) {
-            $this->error("❌ Error: " . $e->getMessage());
-            Log::error('MQTT Listener Error: ' . $e->getMessage());
-            return 1;
+                        try {
+                            // Only fetch from DB if the cache flag was set by AdminDeviceController
+                            if (\Illuminate\Support\Facades\Cache::pull('mqtt_devices_changed')) {
+                                $this->info("🔄 Device changes detected! Updating subscriptions...");
+
+                                // Fetch current devices from DB
+                                $currentDevices = \App\Models\Device::all();
+
+                                foreach ($currentDevices as $device) {
+                                    $topicsToSubscribe = [];
+                                    $topicsToSubscribe[] = rtrim($device->mqtt_topic, '/') . '/pub';
+                                    if (!empty($device->mqtt_topic_status)) {
+                                        $topicsToSubscribe[] = rtrim($device->mqtt_topic_status, '/');
+                                    } elseif ($device->type === 'smart_farm') {
+                                        $topicsToSubscribe[] = rtrim($device->mqtt_topic, '/') . '/status';
+                                    }
+
+                                    foreach ($topicsToSubscribe as $subTopic) {
+                                        if (!in_array($subTopic, $subscribedTopics)) {
+                                            $this->info("🆕 New device detected dynamically! Subscribing to: {$subTopic} (Device: {$device->name})");
+
+                                            $client->subscribe($subTopic, function ($topic, $message) {
+                                                $this->processMessage($topic, $message);
+                                            }, 0);
+
+                                            $subscribedTopics[] = $subTopic;
+                                        }
+                                    }
+                                }
+                            }
+                        } catch (\Throwable $e) {
+                            $this->warn("⚠️ Error checking dynamic devices: " . $e->getMessage());
+                        }
+                    }
+                });
+
+                $this->info("");
+                $this->info("👂 Listening for messages... (Auto-reconnect enabled)");
+                $this->info("─────────────────────────────────────────────────");
+
+                // Loop forever (or until interrupted)
+                $mqtt->loop(true);
+
+            } catch (\Throwable $e) {
+                $this->error("❌ Error: " . $e->getMessage());
+                Log::error('MQTT Listener Error: ' . $e->getMessage());
+
+                // Cleanly disconnect if possible
+                try {
+                    if ($mqtt) {
+                        $mqtt->disconnect();
+                    }
+                } catch (\Throwable $discErr) {
+                    // ignore disconnect error
+                }
+
+                if (!$this->running) {
+                    break;
+                }
+
+                $this->warn("⏳ Connection lost. Reconnecting in 5 seconds...");
+                sleep(5);
+            }
         }
 
+        $this->info("👋 MQTT Listener stopped.");
         return 0;
     }
 

@@ -28,8 +28,13 @@ docker exec $CONTAINER php artisan config:cache
 docker exec $CONTAINER php artisan route:cache
 docker exec $CONTAINER php artisan view:cache
 
-echo "🔄 Restarting container..."
-docker restart $CONTAINER
+echo "🔄 Restarting background workers via supervisor..."
+docker exec $CONTAINER supervisorctl restart mqtt-listener
+docker exec $CONTAINER supervisorctl restart queue-worker || true
+
+echo ""
+echo "📡 Checking Supervisor status:"
+docker exec $CONTAINER supervisorctl status
 
 echo ""
 echo "✅ Deploy selesai! Cek: https://swaratani.id"
