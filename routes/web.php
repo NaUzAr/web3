@@ -120,6 +120,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/', [ScheduleController::class, 'index'])->name('index');
         Route::post('/time', [ScheduleController::class, 'storeTimeSchedules'])->name('time.store');
         Route::delete('/{slotId}', [ScheduleController::class, 'destroy'])->name('destroy');
+        // Smart Farm: Siram manual & stop
+        Route::post('/siram-start', [ScheduleController::class, 'siramStart'])->name('siram.start');
+        Route::post('/siram-stop', [ScheduleController::class, 'siramStop'])->name('siram.stop');
     });
 
     // === USER RIWAYAT (Activity Log Frontend) ===

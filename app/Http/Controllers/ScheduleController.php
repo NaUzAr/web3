@@ -7,15 +7,18 @@ use App\Models\Device;
 use App\Models\UserDevice;
 use App\Models\DeviceOutput;
 use App\Services\MqttScheduleService;
+use App\Services\MqttSmartFarmService;
 use Illuminate\Support\Facades\Auth;
 
 class ScheduleController extends Controller
 {
     private $mqttService;
+    private $smartFarmService;
 
-    public function __construct(MqttScheduleService $mqttService)
+    public function __construct(MqttScheduleService $mqttService, MqttSmartFarmService $smartFarmService)
     {
         $this->mqttService = $mqttService;
+        $this->smartFarmService = $smartFarmService;
     }
 
     private function getDevice($id)
@@ -71,13 +74,19 @@ class ScheduleController extends Controller
 
     /**
      * Send schedule to device
-     * Supports modes: time, time_days, time_days_sector, time_duration, time_days_duration
+     * Supports modes: time, time_days, time_days_sector, time_duration, time_days_duration, irigasi_jadwal
      */
     public function storeTimeSchedules(Request $request, $userDeviceId)
     {
         $device = $this->getDevice($userDeviceId);
         $scheduleConfig = \App\Models\DeviceSchedule::where('device_id', $device->id)->firstOrFail();
 
+        // === SMART FARM: Format CMD:JADWAL_SET ===
+        if ($device->type === 'smart_farm' || $scheduleConfig->schedule_mode === 'irigasi_jadwal') {
+            return $this->storeSmartFarmSchedule($request, $device);
+        }
+
+        // === DEVICE LAIN: Format legacy <sch#...> ===
         // Flexible validation - accept both duration and off_time
         $rules = [
             'slot_id' => 'required|integer|min:1',
@@ -157,10 +166,78 @@ class ScheduleController extends Controller
         ], 500);
     }
 
-    // storeSensorRule removed for now as per route update or kept if needed but updated
-    // Keeping it commented or empty to avoid errors if called, 
-    // but routes commented it out. I will just omit it for now or return error 
-    // to strictly clean up.
+    /**
+     * Smart Farm: Simpan jadwal irigasi via CMD:JADWAL_SET
+     * 
+     * Format: CMD:JADWAL_SET:<idx>:<jam>:<menit>:<durasi>:<blok>:<literPupuk10>:<hari_bitmask>:<aktif>
+     */
+    private function storeSmartFarmSchedule(Request $request, Device $device)
+    {
+        $slotId = (int) $request->input('slot_id');
+        // Map slot 1-10 ke index 0-9 untuk STM32
+        $idx = ($slotId >= 1 && $slotId <= 10) ? ($slotId - 1) : $slotId;
+        $idx = max(0, min(9, $idx));
+
+        $validated = $request->validate([
+            'on_time' => 'required|date_format:H:i',
+            'duration' => 'nullable|integer|min:1|max:120',
+            'blok' => 'nullable|integer|min:1|max:3',
+            'sector' => 'nullable|integer|min:1|max:3',
+            'liter_pupuk' => 'nullable|numeric|min:0|max:50',    // liter asli (bukan x10)
+            'aktif' => 'nullable|boolean',
+        ]);
+
+        $blok = (int) ($validated['blok'] ?? $validated['sector'] ?? 1);
+        $duration = (int) ($validated['duration'] ?? 5);
+
+        // Parse time
+        $timeParts = explode(':', $validated['on_time']);
+        $jam = (int) $timeParts[0];
+        $menit = (int) $timeParts[1];
+
+        // Konversi liter pupuk ke x10 (2.5L -> 25)
+        $literPupuk10 = (int) round(($request->input('liter_pupuk') ?? 0) * 10);
+
+        // Konversi days ke bitmask (bisa array, string angka '1234567', atau null)
+        $hariBitmask = 127; // default setiap hari
+        if ($request->filled('days')) {
+            $hariBitmask = MqttSmartFarmService::daysToBitmask($request->input('days'));
+        }
+
+        $topic = $device->mqtt_topic_schedule ?: $device->mqtt_topic;
+
+        $success = $this->smartFarmService->sendJadwalSet($topic, $idx, [
+            'jam' => $jam,
+            'menit' => $menit,
+            'durasi' => $duration,
+            'blok' => $blok,
+            'liter_pupuk_10' => $literPupuk10,
+            'hari_bitmask' => $hariBitmask,
+            'aktif' => $request->input('aktif', 1),
+        ]);
+
+        if ($success) {
+            $daysText = $request->filled('days')
+                ? implode(', ', MqttSmartFarmService::bitmaskToDays($hariBitmask))
+                : 'Setiap hari';
+            $pupukText = $literPupuk10 > 0
+                ? ', Pupuk: ' . ($literPupuk10 / 10) . 'L'
+                : '';
+
+            $displaySlot = $idx + 1;
+            return response()->json([
+                'success' => true,
+                'message' => "Jadwal #{$displaySlot} berhasil dikirim! "
+                    . "(Blok {$blok}, {$validated['on_time']} selama {$duration} menit{$pupukText}, {$daysText})",
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Gagal mengirim jadwal ke device.',
+        ], 500);
+    }
+
     /**
      * Delete/Disable schedule slot
      */
@@ -170,12 +247,21 @@ class ScheduleController extends Controller
 
         $topic = $device->mqtt_topic_schedule ? $device->mqtt_topic_schedule : $device->mqtt_topic;
 
-        // MQTT command to delete
-        $success = $this->mqttService->deleteSchedule(
-            $topic,
-            $device->token,
-            (int) $slotId
-        );
+        // === SMART FARM: CMD:JADWAL_DEL ===
+        if ($device->type === 'smart_farm') {
+            $rawSlot = (int) $slotId;
+            $idx = ($rawSlot >= 1 && $rawSlot <= 10) ? ($rawSlot - 1) : $rawSlot;
+            $idx = max(0, min(9, $idx));
+            $success = $this->smartFarmService->sendJadwalDel($topic, $idx);
+        }
+        // === DEVICE LAIN: Format legacy ===
+        else {
+            $success = $this->mqttService->deleteSchedule(
+                $topic,
+                $device->token,
+                (int) $slotId
+            );
+        }
 
         if ($success) {
             return response()->json([
@@ -187,6 +273,74 @@ class ScheduleController extends Controller
         return response()->json([
             'success' => false,
             'message' => 'Gagal mengirim perintah hapus.'
+        ], 500);
+    }
+
+    /**
+     * Smart Farm: Jalankan jadwal irigasi secara manual
+     * 
+     * Format: CMD:SIRAM_START:<index>
+     */
+    public function siramStart(Request $request, $userDeviceId)
+    {
+        $device = $this->getDevice($userDeviceId);
+
+        if ($device->type !== 'smart_farm') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Fitur ini hanya untuk device Smart Farm.',
+            ], 400);
+        }
+
+        $validated = $request->validate([
+            'jadwal_index' => 'required|integer|min:0|max:9',
+        ]);
+
+        $topic = $device->mqtt_topic_schedule ?: $device->mqtt_topic;
+        $success = $this->smartFarmService->sendSiramStart($topic, $validated['jadwal_index']);
+
+        if ($success) {
+            return response()->json([
+                'success' => true,
+                'message' => "Perintah siram jadwal #{$validated['jadwal_index']} dikirim!",
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Gagal mengirim perintah siram.',
+        ], 500);
+    }
+
+    /**
+     * Smart Farm: Stop penyiraman yang sedang berjalan
+     * 
+     * Format: CMD:SIRAM_STOP
+     */
+    public function siramStop($userDeviceId)
+    {
+        $device = $this->getDevice($userDeviceId);
+
+        if ($device->type !== 'smart_farm') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Fitur ini hanya untuk device Smart Farm.',
+            ], 400);
+        }
+
+        $topic = $device->mqtt_topic_schedule ?: $device->mqtt_topic;
+        $success = $this->smartFarmService->sendSiramStop($topic);
+
+        if ($success) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Perintah stop penyiraman dikirim!',
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Gagal mengirim perintah stop.',
         ], 500);
     }
 }

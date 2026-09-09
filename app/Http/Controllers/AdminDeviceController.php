@@ -110,9 +110,10 @@ class AdminDeviceController extends Controller
             'mqtt_topic_status' => 'nullable|string|max:100',
             'mqtt_topic_output' => 'nullable|string|max:100',
             'mqtt_topic_schedule' => 'nullable|string|max:100',
+            'custom_token' => 'nullable|string|max:50|alpha_dash|unique:devices,token',
             'type' => 'required|string|in:' . $validTypes,
-            'sensors' => 'required|array|min:1',
-            'sensors.*.type' => 'required|string',
+            'sensors' => 'required_unless:type,smart_farm|nullable|array',
+            'sensors.*.type' => 'required_unless:type,smart_farm|nullable|string',
         ]);
 
         // Get sensor and output configs from Device model
@@ -120,11 +121,12 @@ class AdminDeviceController extends Controller
         $availableOutputs = Device::getAvailableOutputs();
 
         // B. Generate Token Unik & Nama Tabel
-        $token = Str::random(16);
+        // Gunakan custom_token jika ada, jika tidak generate random
+        $token = $request->custom_token ? $request->custom_token : Str::random(16);
         $tableName = 'log_' . $token;
 
         // C. Process sensors from form
-        $sensors = $request->sensors;
+        $sensors = $request->sensors ?? [];
         $sensorColumns = [];
         $sensorCounter = [];
 
@@ -240,7 +242,7 @@ class AdminDeviceController extends Controller
         }
 
         // G. Simpan Outputs ke device_outputs (tanpa automation fields - pindah ke schedules)
-        if ($request->has('outputs')) {
+        if ($request->has('outputs') && is_array($request->outputs)) {
             $outputCounter = [];
             foreach ($request->outputs as $output) {
                 if (empty($output['type']))
@@ -697,80 +699,93 @@ class AdminDeviceController extends Controller
 
         // Publish ke MQTT untuk kirim perintah ke device
         try {
-            $topic = $device->mqtt_topic_output ? $device->mqtt_topic_output : rtrim($device->mqtt_topic, '/') . '/sub';
+            // === SMART FARM: Gunakan protokol CMD:RELAY ===
+            if ($device->type === 'smart_farm' && str_starts_with($output->output_name, 'sf_')) {
+                $smartFarmService = app(\App\Services\MqttSmartFarmService::class);
+                $topic = $device->mqtt_topic_output ?: $device->mqtt_topic;
+                $smartFarmService->sendRelayByName($topic, $output->output_name, (int) $newValue);
 
-            // Custom format based on output name
-            $val = $newValue ? '1' : '0';
-            $name = strtolower($output->output_name);
-
-            // 1. Specific Pumps (Dosing & pH)
-            if (str_contains($name, 'pump_ab') || str_contains($name, 'dosing') || $name === 'st_dos') {
-                $message = "<pmpAB#{$val}#>";
-            } elseif (str_contains($name, 'ph_up') || str_contains($name, 'ph1') || $name === 'st_ph_u') {
-                $message = "<pmpPH#{$val}#>";
-            } elseif (str_contains($name, 'ph_down') || str_contains($name, 'ph2') || $name === 'st_ph_d') {
-                $message = "<pmpPH2#{$val}#>";
+                \Log::info("Smart Farm Admin Relay Control sent", [
+                    'output' => $output->output_name,
+                    'value' => $newValue,
+                ]);
             }
-            // 2. Main Pump (Pompa Utama / Irigasi)
-            elseif (str_contains($name, 'pompa') || str_contains($name, 'pump') || $name === 'st_pmp') {
-                if ($newValue) {
-                    // Format: <PMP_ON#waterType#zone#>
-                    $message = "<PMP_ON#0#0#>";
-                } else {
-                    $message = "<PMP_OFF#>";
-                }
-            }
-            // 3. Components
-            elseif (str_contains($name, 'air_input') || $name === 'st_air') {
-                $message = "<AIR#{$val}#>";
-            } elseif (str_contains($name, 'mix')) {
-                $message = "<MIX#{$val}#>";
-            } elseif (str_contains($name, 'fan') || $name === 'st_fa') {
-                $message = "<FAN#{$val}#>";
-            } elseif (str_contains($name, 'mist') || $name === 'st_mis') {
-                $message = "<MIS#{$val}#>";
-            } elseif (str_contains($name, 'lamp') || $name === 'st_lam') {
-                $message = "<LAM#{$val}#>";
-            } elseif ($name === 'sts_sld_op') {
-                $message = "<SLD_OP#{$val}#>";
-            } elseif ($name === 'sts_sld_tu') {
-                $message = "<SLD_TU#{$val}#>";
-            } elseif ($name === 'sts_cool') {
-                $message = "<COOL#{$val}#>";
-            }
-            // 4. Air Baku & Air Pupuk
-            elseif ($name === 'st_bak') {
-                $message = "<BAK#{$val}#>";
-            } elseif ($name === 'st_ppk') {
-                $message = "<PPK#{$val}#>";
-            }
-            // 5. Fallback
+            // === DEVICE LAIN: Format legacy <CMD#val#> ===
             else {
-                $message = sprintf('<%s#%s#>', $output->output_name, $val);
-            }
+                $topic = $device->mqtt_topic_output ? $device->mqtt_topic_output : rtrim($device->mqtt_topic, '/') . '/sub';
 
-            // MQTT Connection
-            $host = config('mqtt.host', env('MQTT_HOST', 'smartagri.web.id'));
-            $port = config('mqtt.port', env('MQTT_PORT', 1883));
-            $username = config('mqtt.username', env('MQTT_USERNAME'));
-            $password = config('mqtt.password', env('MQTT_PASSWORD'));
+                // Custom format based on output name
+                $val = $newValue ? '1' : '0';
+                $name = strtolower($output->output_name);
 
-            $connectionSettings = new \PhpMqtt\Client\ConnectionSettings();
-            if ($username && $password) {
+                // 1. Specific Pumps (Dosing & pH)
+                if (str_contains($name, 'pump_ab') || str_contains($name, 'dosing') || $name === 'st_dos') {
+                    $message = "<pmpAB#{$val}#>";
+                } elseif (str_contains($name, 'ph_up') || str_contains($name, 'ph1') || $name === 'st_ph_u') {
+                    $message = "<pmpPH#{$val}#>";
+                } elseif (str_contains($name, 'ph_down') || str_contains($name, 'ph2') || $name === 'st_ph_d') {
+                    $message = "<pmpPH2#{$val}#>";
+                }
+                // 2. Main Pump (Pompa Utama / Irigasi)
+                elseif (str_contains($name, 'pompa') || str_contains($name, 'pump') || $name === 'st_pmp') {
+                    if ($newValue) {
+                        $message = "<PMP_ON#0#0#>";
+                    } else {
+                        $message = "<PMP_OFF#>";
+                    }
+                }
+                // 3. Components
+                elseif (str_contains($name, 'air_input') || $name === 'st_air') {
+                    $message = "<AIR#{$val}#>";
+                } elseif (str_contains($name, 'mix')) {
+                    $message = "<MIX#{$val}#>";
+                } elseif (str_contains($name, 'fan') || $name === 'st_fa') {
+                    $message = "<FAN#{$val}#>";
+                } elseif (str_contains($name, 'mist') || $name === 'st_mis') {
+                    $message = "<MIS#{$val}#>";
+                } elseif (str_contains($name, 'lamp') || $name === 'st_lam') {
+                    $message = "<LAM#{$val}#>";
+                } elseif ($name === 'sts_sld_op') {
+                    $message = "<SLD_OP#{$val}#>";
+                } elseif ($name === 'sts_sld_tu') {
+                    $message = "<SLD_TU#{$val}#>";
+                } elseif ($name === 'sts_cool') {
+                    $message = "<COOL#{$val}#>";
+                }
+                // 4. Air Baku & Air Pupuk
+                elseif ($name === 'st_bak') {
+                    $message = "<BAK#{$val}#>";
+                } elseif ($name === 'st_ppk') {
+                    $message = "<PPK#{$val}#>";
+                }
+                // 5. Fallback
+                else {
+                    $message = sprintf('<%s#%s#>', $output->output_name, $val);
+                }
+
+                // MQTT Connection
+                $host = config('mqtt.host', env('MQTT_HOST', 'smartagri.web.id'));
+                $port = config('mqtt.port', env('MQTT_PORT', 1883));
+                $username = config('mqtt.username', env('MQTT_USERNAME'));
+                $password = config('mqtt.password', env('MQTT_PASSWORD'));
+
+                $connectionSettings = new \PhpMqtt\Client\ConnectionSettings();
+                if ($username && $password) {
+                    $connectionSettings = $connectionSettings
+                        ->setUsername($username)
+                        ->setPassword($password);
+                }
                 $connectionSettings = $connectionSettings
-                    ->setUsername($username)
-                    ->setPassword($password);
+                    ->setKeepAliveInterval(60)
+                    ->setConnectTimeout(10);
+
+                $mqtt = new \PhpMqtt\Client\MqttClient($host, $port, 'laravel-admin-control-' . uniqid());
+                $mqtt->connect($connectionSettings, true);
+                $mqtt->publish($topic, $message, 1);
+                $mqtt->disconnect();
+
+                \Log::info("MQTT Admin Output Control sent", ['topic' => $topic, 'message' => $message]);
             }
-            $connectionSettings = $connectionSettings
-                ->setKeepAliveInterval(60)
-                ->setConnectTimeout(10);
-
-            $mqtt = new \PhpMqtt\Client\MqttClient($host, $port, 'laravel-admin-control-' . uniqid());
-            $mqtt->connect($connectionSettings, true);
-            $mqtt->publish($topic, $message, 1);
-            $mqtt->disconnect();
-
-            \Log::info("MQTT Admin Output Control sent", ['topic' => $topic, 'message' => $message]);
         } catch (\Exception $e) {
             \Log::error("MQTT Admin Output Control failed: " . $e->getMessage());
         }

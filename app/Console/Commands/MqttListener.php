@@ -77,6 +77,9 @@ class MqttListener extends Command
                     $topicsToSubscribe[] = rtrim($device->mqtt_topic, '/') . '/pub';
                     if (!empty($device->mqtt_topic_status)) {
                         $topicsToSubscribe[] = rtrim($device->mqtt_topic_status, '/');
+                    } elseif ($device->type === 'smart_farm') {
+                        // Smart Farm: auto-subscribe ke {base}/status meskipun kolom opsional kosong
+                        $topicsToSubscribe[] = rtrim($device->mqtt_topic, '/') . '/status';
                     }
 
                     foreach ($topicsToSubscribe as $subTopic) {
@@ -110,6 +113,9 @@ class MqttListener extends Command
                             $topicsToSubscribe[] = rtrim($device->mqtt_topic, '/') . '/pub';
                             if (!empty($device->mqtt_topic_status)) {
                                 $topicsToSubscribe[] = rtrim($device->mqtt_topic_status, '/');
+                            } elseif ($device->type === 'smart_farm') {
+                                // Smart Farm: auto-subscribe ke {base}/status meskipun kolom opsional kosong
+                                $topicsToSubscribe[] = rtrim($device->mqtt_topic, '/') . '/status';
                             }
                             
                             foreach ($topicsToSubscribe as $subTopic) {
@@ -156,6 +162,18 @@ class MqttListener extends Command
         $this->line("           Raw: {$message}");
 
         try {
+            // === SMART FARM PROTOCOL: EVT:, OK:, ERR: ===
+            // Deteksi sebelum coba parse JSON
+            $trimmed = trim($message);
+            if (
+                str_starts_with($trimmed, 'EVT:') ||
+                str_starts_with($trimmed, 'OK:') ||
+                str_starts_with($trimmed, 'ERR:')
+            ) {
+                $this->processSmartFarmMessage($topic, $trimmed);
+                return;
+            }
+
             // Attempt to handle concatenated JSONs (e.g. {"a":1}{"b":2})
             // Use regex to find all JSON-like structures matching {...}
             if (preg_match_all('/(\{.*?\})/', $message, $matches)) {
@@ -220,9 +238,12 @@ class MqttListener extends Command
         }
 
         // Cari device berdasarkan topic ATAU token
-        // Topic yang diterima: {mqtt_topic}/pub (atau mqtt_topic_status), tapi di DB hanya {mqtt_topic}
-        $baseTopic = preg_replace('/\/pub$/', '', $topic);
+        // Topic yang diterima: {mqtt_topic}/pub atau {mqtt_topic}/status, tapi di DB hanya {mqtt_topic}
+        // Normalisasi: strip suffix /pub atau /status, dan coba dengan/tanpa leading slash
+        $baseTopic = preg_replace('/\/(pub|status|log)$/', '', $topic);
+        $baseTopicAlt = ltrim($baseTopic, '/'); // versi tanpa leading slash
         $device = Device::where('mqtt_topic', $baseTopic)
+            ->orWhere('mqtt_topic', $baseTopicAlt)
             ->orWhere('mqtt_topic', $topic)
             ->orWhere('mqtt_topic_status', $topic)
             ->first();
@@ -728,5 +749,166 @@ class MqttListener extends Command
             $this->error("           ❌ Error: " . $e->getMessage());
             Log::error('MQTT Device Status Error: ' . $e->getMessage());
         }
+    }
+
+    // =========================================================================
+    // SMART FARM PROTOCOL HANDLER
+    // =========================================================================
+
+    /**
+     * Proses pesan protokol Smart Farm (EVT:, OK:, ERR:)
+     * Dipanggil dari processMessage() saat pesan bukan JSON.
+     */
+    private function processSmartFarmMessage(string $topic, string $payload): void
+    {
+        // Cari device berdasarkan topic (strip /pub atau /status suffix)
+        // Normalisasi: coba dengan/tanpa leading slash
+        $baseTopic = preg_replace('/\/(pub|status|log)$/', '', $topic);
+        $baseTopicAlt = ltrim($baseTopic, '/'); // versi tanpa leading slash
+        $device = Device::where('mqtt_topic', $baseTopic)
+            ->orWhere('mqtt_topic', $baseTopicAlt)
+            ->orWhere('mqtt_topic', $topic)
+            ->first();
+
+        if (!$device) {
+            $this->warn("           ⚠️  Smart Farm: device not found for topic: {$topic}");
+            return;
+        }
+
+        // Update last seen
+        \Cache::put("device_{$device->id}_last_seen", now()->toIso8601String(), now()->addHours(1));
+
+        $parts = explode(':', $payload, 3);
+        $prefix = $parts[0]; // EVT, OK, ERR
+        $cmd    = $parts[1] ?? '';
+
+        // --- EVT:STATUS atau OK:STATUS ---
+        if (in_array($prefix, ['EVT', 'OK']) && $cmd === 'STATUS') {
+            $this->info("           🌾 Type: SMART FARM STATUS");
+            $status = $this->parseSmartFarmStatus($payload);
+
+            if (!$status) {
+                $this->warn("           ⚠️  Gagal parse status: {$payload}");
+                return;
+            }
+
+            $siram = (int) ($status['siram'] ?? 0);
+            $blok  = (int) ($status['blok']  ?? 0);
+            $pupuk = (string) ($status['pupuk'] ?? 'NONE');
+            $sisa  = $status['sisa']  ?? 0;
+            $error = (int) ($status['error'] ?? 0);
+
+            // Map status ke output_name → nilai
+            $outputStates = [
+                'sf_pompa' => $siram ? 1 : 0,
+                'sf_blok1' => ($siram && $blok == 1) ? 1 : 0,
+                'sf_blok2' => ($siram && $blok == 2) ? 1 : 0,
+                'sf_blok3' => ($siram && $blok == 3) ? 1 : 0,
+                'sf_pupuk' => ($pupuk === 'ON') ? 1 : 0,
+            ];
+
+            $this->line("           • Siram : " . ($siram ? '🟢 ON' : '🔴 OFF'));
+            $this->line("           • Blok  : {$blok}");
+            $this->line("           • Sisa  : {$sisa} detik");
+            $this->line("           • Pupuk : {$pupuk}");
+            $this->line("           • Error : " . ($error ? '🔴 ADA' : '🟢 Aman'));
+
+            // Update cache outputs
+            $cachedOutputs = \Cache::get("device_outputs_{$device->id}", []);
+            $formattedOutputs = [];
+            $updatesCount = 0;
+
+            foreach ($outputStates as $outputName => $value) {
+                $cachedOutputs[$outputName] = $value;
+
+                // Update DeviceOutput.current_value di database
+                $output = \App\Models\DeviceOutput::where('device_id', $device->id)
+                    ->where('output_name', $outputName)
+                    ->first();
+
+                if ($output) {
+                    $output->current_value = (float) $value;
+                    $output->save();
+                    $updatesCount++;
+                    $formattedOutputs[] = ['id' => $output->id, 'value' => $value];
+                }
+            }
+
+            // Simpan cache (24 jam)
+            \Cache::put("device_outputs_{$device->id}", $cachedOutputs, now()->addHours(24));
+
+            // Simpan status Smart Farm tambahan di cache
+            \Cache::put("device_sf_status_{$device->id}", [
+                'siram'      => $siram,
+                'blok'       => $blok,
+                'pupuk'      => $pupuk,
+                'sisa'       => $sisa,
+                'error'      => $error,
+                'jam'        => $status['jam'] ?? null,
+                'hari'       => $status['hari'] ?? null,
+                'updated_at' => now()->toIso8601String(),
+            ], now()->addHours(1));
+
+            $this->info("           ✅ Smart Farm: updated {$updatesCount} outputs in DB & cache");
+
+            // Broadcast ke WebSocket
+            $lastSeen = \Cache::get("device_{$device->id}_last_seen");
+            $sensorBuffer = \Cache::get("sensor_buffer_{$device->id}", []);
+            event(new \App\Events\DeviceStatusUpdated($device->id, $sensorBuffer, $formattedOutputs, $lastSeen));
+
+        // --- EVT:AUTO_OFF ---
+        } elseif ($prefix === 'EVT' && $cmd === 'AUTO_OFF') {
+            $rest = $parts[2] ?? '';
+            $this->info("           ⚡ Smart Farm AUTO_OFF: {$rest}");
+            Log::info("Smart Farm EVT:AUTO_OFF [{$device->name}] {$rest}");
+
+        // --- EVT:RSSI ---
+        } elseif ($prefix === 'EVT' && $cmd === 'RSSI') {
+            $rssi = (int) ($parts[2] ?? 0);
+            $signal = max(0, min(100, $rssi + 100));
+            $this->line("           📶 RSSI: {$rssi} dBm ({$signal}%)");
+
+        // --- OK responses ---
+        } elseif ($prefix === 'OK') {
+            $this->info("           ✅ Smart Farm OK: {$cmd}" . (isset($parts[2]) ? " → {$parts[2]}" : ''));
+            Log::info("Smart Farm OK [{$device->name}] {$payload}");
+
+        // --- ERR responses ---
+        } elseif ($prefix === 'ERR') {
+            $errMessages = [
+                'SEDANG_SIRAM'    => 'Penyiraman sedang berjalan',
+                'JADWAL_INVALID'  => 'Index jadwal tidak valid',
+                'TIDAK_SIRAM'     => 'Tidak ada penyiraman berjalan',
+                'POMPA_TANPA_BLOK'  => 'Pompa ON: tidak ada blok aktif',
+                'PUPUK_TANPA_POMPA' => 'Pupuk ON: pompa belum ON',
+                'PUPUK_TANPA_BLOK'  => 'Pupuk ON: tidak ada blok aktif',
+                'RELAY_FORMAT'    => 'Format perintah relay salah',
+                'JADWAL_FORMAT'   => 'Format jadwal salah',
+                'RTC_FORMAT'      => 'Format set RTC salah',
+            ];
+            $errMsg = $errMessages[$cmd] ?? $cmd;
+            $this->warn("           ❌ Smart Farm ERR: {$errMsg}");
+            Log::warning("Smart Farm ERR [{$device->name}] {$payload}");
+        }
+    }
+
+    /**
+     * Parse string EVT:STATUS atau OK:STATUS menjadi array asosiatif.
+     * Input:  "EVT:STATUS:siram=1:blok=2:sisa=1230:pupuk=ON:jam=0630:hari=3:error=0"
+     * Output: ['siram'=>1, 'blok'=>2, 'sisa'=>'1230', 'pupuk'=>'ON', ...]
+     */
+    private function parseSmartFarmStatus(string $line): ?array
+    {
+        // Hapus prefix EVT:STATUS: atau OK:STATUS:
+        $stripped = preg_replace('/^(EVT|OK):STATUS:/', '', $line);
+        if (empty($stripped)) return null;
+
+        $result = [];
+        foreach (explode(':', $stripped) as $part) {
+            if (!str_contains($part, '=')) continue;
+            [$key, $val] = explode('=', $part, 2);
+            $result[trim($key)] = is_numeric($val) ? (int) $val : trim($val);
+        }
+        return empty($result) ? null : $result;
     }
 }

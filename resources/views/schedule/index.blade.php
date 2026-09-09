@@ -429,7 +429,12 @@
                     Device: <strong>{{ $device->name }}</strong> | Target: <strong>{{ $scheduleConfig->output_key }}</strong>
                 </p>
             </div>
-            <div>
+            <div class="d-flex align-items-center gap-2">
+                @if($device->type === 'smart_farm')
+                    <button type="button" class="btn btn-danger btn-sm d-inline-flex align-items-center gap-1 shadow-sm" style="border-radius: 50px; padding: 0.6rem 1.25rem;" onclick="stopSiram()">
+                        <i class="bi bi-stop-circle-fill"></i> <span>Stop Siram</span>
+                    </button>
+                @endif
                 <a href="{{ ($isAdminView ?? false) ? route('admin.device.monitoring', $device->id) : route('monitoring.show', $userDevice->id) }}" class="btn btn-glass d-inline-flex align-items-center gap-2">
                     <i class="bi bi-arrow-left me-md-1"></i> <span class="d-none d-md-inline">Kembali ke Device</span>
                 </a>
@@ -440,10 +445,13 @@
 
             @php
                 $mode = $scheduleConfig->schedule_mode;
-                $isDuration = str_contains($mode, 'duration');
-                $isDays = str_contains($mode, 'days');
-                $isSector = str_contains($mode, 'sector');
-                $isType = str_contains($mode, 'type');
+                $isSmartFarm = ($device->type === 'smart_farm') || ($mode === 'irigasi_jadwal');
+                $isDuration = str_contains($mode, 'duration') || $isSmartFarm;
+                $isDays = str_contains($mode, 'days') || $isSmartFarm;
+                $isSector = str_contains($mode, 'sector') || $isSmartFarm;
+                $isType = str_contains($mode, 'type') && !$isSmartFarm;
+                $maxSlots = $isSmartFarm ? 10 : ($scheduleConfig->max_slots ?? 14);
+                $maxSectors = $isSmartFarm ? 3 : ($scheduleConfig->max_sectors ?? 1);
             @endphp
             
             {{-- Remove Add Button, use Fixed Slots --}}
@@ -459,7 +467,8 @@
                             @else
                                 <th class="text-center">Waktu Selesai</th>
                             @endif
-                            @if($isSector) <th class="text-center">Zona Tujuan</th> @endif
+                            @if($isSector) <th class="text-center">{{ $isSmartFarm ? 'Blok Irigasi' : 'Zona Tujuan' }}</th> @endif
+                            @if($isSmartFarm) <th class="text-center">Pupuk (L)</th> @endif
                             @if($isType) <th class="text-center">Input</th> @endif
                             @if($isDays) <th>Hari</th> @endif
                             <th class="text-center">Status</th>
@@ -467,7 +476,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @for($i = 1; $i <= ($scheduleConfig->max_slots ?? 14); $i++)
+                        @for($i = 1; $i <= $maxSlots; $i++)
                             @php 
                                 $key = "sch{$i}";
                                 $sch = $cachedSchedules[$key] ?? null;
@@ -495,15 +504,37 @@
                                 @endif
                                 
                                 @if($isSector) 
-                                    <td data-label="Zona Tujuan" class="text-center">
+                                    <td data-label="{{ $isSmartFarm ? 'Blok Irigasi' : 'Zona Tujuan' }}" class="text-center">
                                         @if($isActive)
+                                            @php
+                                                $blokVal = $sch['blok'] ?? $sch['sector'] ?? 1;
+                                            @endphp
                                             <span class="badge rounded-pill" style="background: rgba(14, 165, 233, 0.1); color: #0284c7; border: 1px solid rgba(14, 165, 233, 0.2);">
-                                                <i class="bi bi-geo-alt-fill me-1" style="color: #0ea5e9;"></i> Zona {{ isset($sch['sector']) ? (int)$sch['sector'] : 1 }}
+                                                <i class="bi bi-geo-alt-fill me-1" style="color: #0ea5e9;"></i> {{ $isSmartFarm ? 'Blok ' . $blokVal : 'Zona ' . $blokVal }}
                                             </span>
                                         @else
                                             <span style="color: var(--text-secondary);">-</span>
                                         @endif
                                     </td> 
+                                @endif
+
+                                @if($isSmartFarm)
+                                    <td data-label="Pupuk (L)" class="text-center">
+                                        @if($isActive)
+                                            @php
+                                                $pupukVal = $sch['liter_pupuk'] ?? (isset($sch['liter_pupuk_10']) ? ($sch['liter_pupuk_10']/10) : 0);
+                                            @endphp
+                                            @if($pupukVal > 0)
+                                                <span class="badge rounded-pill" style="background: rgba(234, 179, 8, 0.1); color: #ca8a04; border: 1px solid rgba(234, 179, 8, 0.2);">
+                                                    <i class="bi bi-droplet-half me-1"></i>{{ $pupukVal }} L
+                                                </span>
+                                            @else
+                                                <span class="text-muted small">Tanpa Pupuk</span>
+                                            @endif
+                                        @else
+                                            <span style="color: var(--text-secondary);">-</span>
+                                        @endif
+                                    </td>
                                 @endif
 
                                 @if($isType)
@@ -540,6 +571,11 @@
                                 
                                 <td data-label="">
                                     <div class="d-flex justify-content-end gap-2">
+                                        @if($isSmartFarm && $isActive)
+                                            <button class="btn btn-sm btn-success text-white" style="border-radius: 50px; padding: 6px 14px; font-weight: 500;" onclick="siramManual({{ $i - 1 }})" title="Jalankan Siram Sekarang">
+                                                <i class="bi bi-play-fill me-1"></i>Siram
+                                            </button>
+                                        @endif
                                         <button class="btn btn-sm" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #60a5fa; border-radius: 50px; padding: 6px 14px; font-weight: 500;" onclick='openScheduleModal({{ $i }}, @json($sch))' title="Edit Jadwal">
                                             <i class="bi bi-pencil-square me-1"></i> Edit
                                         </button>
@@ -603,18 +639,25 @@
                         </div>
                     </div>
 
-                    @if($isSector || $isType)
-                    <!-- Section: Sumber -->
+                    @if($isSector || $isType || $isSmartFarm)
+                    <!-- Section: Sumber & Output -->
                     <div class="form-section">
-                        <div class="form-section-title">💧 Sumber & Output</div>
+                        <div class="form-section-title">💧 {{ $isSmartFarm ? 'Pengaturan Irigasi' : 'Sumber & Output' }}</div>
                         @if($isSector)
                         <div class="mb-3">
-                            <label class="form-label fw-bold" style="color: #374151; font-size: 0.9rem;">Zona Tujuan</label>
+                            <label class="form-label fw-bold" style="color: #374151; font-size: 0.9rem;">{{ $isSmartFarm ? 'Pilih Blok Irigasi' : 'Zona Tujuan' }}</label>
                             <select id="sector" class="form-select form-select-dark">
-                                @for($s = 1; $s <= ($scheduleConfig->max_sectors ?? 1); $s++)
-                                    <option value="{{ $s }}">📍 Zona {{ $s }}</option>
+                                @for($s = 1; $s <= $maxSectors; $s++)
+                                    <option value="{{ $s }}">📍 {{ $isSmartFarm ? 'Blok ' . $s : 'Zona ' . $s }}</option>
                                 @endfor
                             </select>
+                        </div>
+                        @endif
+                        @if($isSmartFarm)
+                        <div class="mb-3">
+                            <label class="form-label fw-bold" style="color: #374151; font-size: 0.9rem;">Volume Pupuk (Liter)</label>
+                            <input type="number" step="0.1" min="0" max="50" id="liter_pupuk" class="form-control form-control-dark" placeholder="0 = tanpa pupuk" value="0">
+                            <div class="form-text text-muted" style="font-size: 0.75rem;">Isi 0 jika hanya menyiram air biasa tanpa pupuk.</div>
                         </div>
                         @endif
                         @if($isType)
@@ -701,7 +744,8 @@
         const isDays = {{ $isDays ? 'true' : 'false' }};
         const isSector = {{ $isSector ? 'true' : 'false' }};
         const isType = {{ $isType ? 'true' : 'false' }};
-        const maxSlots = {{ $scheduleConfig->max_slots ?? 14 }};
+        const isSmartFarm = {{ $isSmartFarm ? 'true' : 'false' }};
+        const maxSlots = {{ $maxSlots }};
 
         const modal = new bootstrap.Modal(document.getElementById('scheduleModal'));
 
@@ -740,6 +784,7 @@
             
             if(isSector) document.getElementById('sector').value = 1;
             if(isType) document.getElementById('schedule_type').value = 'BAKU';
+            if(document.getElementById('liter_pupuk')) document.getElementById('liter_pupuk').value = 0;
             if(isDays) document.querySelectorAll('.schedule-day-check').forEach(el => el.checked = false);
             
             if (data && data.is_active) {
@@ -754,8 +799,12 @@
                     document.getElementById('off_time').value = data.off_time ? data.off_time.substring(0, 5) : '';
                 }
                 
-                if(isSector) document.getElementById('sector').value = data.sector !== undefined ? data.sector : 1;
+                if(isSector) document.getElementById('sector').value = data.blok !== undefined ? data.blok : (data.sector !== undefined ? data.sector : 1);
                 if(isType) document.getElementById('schedule_type').value = data.name || 'BAKU';
+                if(document.getElementById('liter_pupuk')) {
+                    const pupuk = data.liter_pupuk !== undefined ? data.liter_pupuk : (data.liter_pupuk_10 ? (data.liter_pupuk_10 / 10) : 0);
+                    document.getElementById('liter_pupuk').value = pupuk;
+                }
                 
                 if(isDays && data.days) {
                     let daysArr = Array.isArray(data.days) ? data.days : (data.days ? data.days.split(',') : []);
@@ -835,6 +884,12 @@
             if(isSector) payload.sector = document.getElementById('sector').value;
             if(isType) payload.schedule_type = document.getElementById('schedule_type').value;
 
+            if(isSmartFarm) {
+                payload.blok = document.getElementById('sector').value;
+                const pupukEl = document.getElementById('liter_pupuk');
+                if(pupukEl) payload.liter_pupuk = parseFloat(pupukEl.value) || 0;
+            }
+
             if(isDays) {
                 let days = [];
                 document.querySelectorAll('.schedule-day-check:checked').forEach(el => days.push(el.value));
@@ -870,6 +925,37 @@
                 btn.disabled = false;
                 btnText.innerText = 'Simpan Jadwal';
                 loader.classList.add('d-none');
+            }
+        }
+
+        // Smart Farm: Manual Siram
+        async function siramManual(idx) {
+            if(!confirm(`Mulai penyiraman sekarang menggunakan pengaturan Jadwal #${idx + 1}?`)) return;
+            try {
+                const res = await fetch('{{ route("schedule.siram.start", [$userDevice->id], false) }}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+                    body: JSON.stringify({ jadwal_index: idx })
+                });
+                const data = await res.json();
+                alert(data.message || (data.success ? 'Perintah berhasil dikirim' : 'Gagal'));
+            } catch(e) {
+                alert('Error: ' + e.message);
+            }
+        }
+
+        // Smart Farm: Stop Siram
+        async function stopSiram() {
+            if(!confirm('Hentikan semua proses penyiraman yang sedang berjalan?')) return;
+            try {
+                const res = await fetch('{{ route("schedule.siram.stop", [$userDevice->id], false) }}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken }
+                });
+                const data = await res.json();
+                alert(data.message || (data.success ? 'Penyiraman dihentikan' : 'Gagal'));
+            } catch(e) {
+                alert('Error: ' + e.message);
             }
         }
     </script>

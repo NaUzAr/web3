@@ -131,6 +131,7 @@ class Device extends Model
             'aws' => 'AWS (Automatic Weather Station)',
             'smart_gh' => 'Smart GH (Smart Greenhouse)',
             'smart_gh_v2' => 'Smart GH V2',
+            'smart_farm' => 'Smart Farm (Irigasi Multi-Zona)',
             // Tambahkan tipe baru di sini:
             // 'water_quality' => 'Water Quality Sensor',
             // 'air_quality' => 'Air Quality Sensor',
@@ -203,6 +204,9 @@ class Device extends Model
                 'ni_LUX' => 1,
                 'co2' => 1,
             ],
+            'smart_farm' => [
+                // Tanpa sensor — hanya relay kontrol irigasi
+            ],
             // Tambahkan default sensor untuk tipe baru:
             // 'water_quality' => ['water_level' => 1, 'ph' => 1, 'temperature' => 1],
         ];
@@ -260,6 +264,16 @@ class Device extends Model
                 'supports_zones' => true,
                 'default_water_type' => 1  // 1 = Air Baku, 2 = Air Pupuk
             ],
+
+            // ===== Smart Farm (Irigasi Multi-Zona) =====
+            // Coil 0: Pompa Utama
+            'sf_pompa' => ['label' => 'Pompa Utama', 'type' => 'boolean', 'unit' => '', 'icon' => 'bi-droplet-fill', 'coil' => 0],
+            // Coil 1-3: Blok/Zona Irigasi
+            'sf_blok1' => ['label' => 'Blok 1 (Zona 1)', 'type' => 'boolean', 'unit' => '', 'icon' => 'bi-grid', 'coil' => 1],
+            'sf_blok2' => ['label' => 'Blok 2 (Zona 2)', 'type' => 'boolean', 'unit' => '', 'icon' => 'bi-grid', 'coil' => 2],
+            'sf_blok3' => ['label' => 'Blok 3 (Zona 3)', 'type' => 'boolean', 'unit' => '', 'icon' => 'bi-grid', 'coil' => 3],
+            // Coil 4: Pompa Pupuk
+            'sf_pupuk' => ['label' => 'Pompa Pupuk', 'type' => 'boolean', 'unit' => '', 'icon' => 'bi-flower1', 'coil' => 4],
         ];
     }
 
@@ -308,6 +322,13 @@ class Device extends Model
                 'sts_sld_op' => 1,
                 'sts_sld_tu' => 1,
                 'sts_cool' => 1,
+            ],
+            'smart_farm' => [
+                'sf_pompa' => 1,
+                'sf_blok1' => 1,
+                'sf_blok2' => 1,
+                'sf_blok3' => 1,
+                'sf_pupuk' => 1,
             ],
             // Tambahkan default output untuk tipe baru:
         ];
@@ -414,6 +435,11 @@ class Device extends Model
                 'label' => 'Waktu + Hari + Durasi + Sektor + Jenis',
                 'description' => 'Set jam, durasi, hari, sektor, dan jenis (Pupuk/Air Baku)',
                 'icon' => 'bi-list-check'
+            ],
+            'irigasi_jadwal' => [
+                'label' => 'Jadwal Irigasi (Smart Farm)',
+                'description' => 'Jam, durasi, blok, volume pupuk, dan pilihan hari (maks 10 slot)',
+                'icon' => 'bi-calendar-event'
             ],
         ];
     }

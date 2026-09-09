@@ -460,26 +460,8 @@
                                     value="{{ $device->mqtt_topic }}" required>
                             </div>
 
-                            <!-- ADDITIONAL TOPICS FOR SMART GH V2 -->
-                            <div id="additionalMqttTopics" style="display: {{ $device->type === 'smart_gh_v2' ? 'block' : 'none' }};">
-                                <div class="alert alert-info-custom py-2 mb-3">
-                                    <small><i class="bi bi-info-circle me-1"></i>
-                                        Smart GH V2 membutuhkan 3 topik MQTT khusus untuk memisahkan jalur data.
-                                    </small>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label"><i class="bi bi-broadcast-pin me-1"></i> Alamat Topik Status (Opsional)</label>
-                                    <input type="text" name="mqtt_topic_status" class="form-control" value="{{ $device->mqtt_topic_status }}" placeholder="Contoh: sensor/kebun/status">
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label"><i class="bi bi-broadcast-pin me-1"></i> Alamat Topik Output (Opsional)</label>
-                                    <input type="text" name="mqtt_topic_output" class="form-control" value="{{ $device->mqtt_topic_output }}" placeholder="Contoh: sensor/kebun/cmd">
-                                </div>
-                                <div class="mb-4">
-                                    <label class="form-label"><i class="bi bi-broadcast-pin me-1"></i> Alamat Topik Schedule (Opsional)</label>
-                                    <input type="text" name="mqtt_topic_schedule" class="form-control" value="{{ $device->mqtt_topic_schedule }}" placeholder="Contoh: sensor/kebun/schedule">
-                                </div>
-                            </div>
+
+
 
                             <div class="d-flex gap-3 mt-4">
                                 <a href="{{ route('admin.devices.index') }}" class="btn btn-glass">

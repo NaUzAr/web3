@@ -1027,7 +1027,7 @@
             </div>
         @endif
 
-        @if($latestData)
+        @if($latestData && $sensors->count() > 0)
             <!-- Sensor Panel -->
             <div class="sensor-panel mb-4">
                 <h5 class="card-title mb-4" style="color: var(--text-main);">
@@ -1043,66 +1043,62 @@
                         $bgColor = 'var(--primary-gradient)';
                         $stdUnit = $sensor->unit;
 
-                        if (str_contains($labelLower, 'suhu udara') || str_contains($labelLower, 'suhu ruangan') || $labelLower === 'suhu' || str_contains($labelLower, 'temperature')) {
+                        if (str_contains($labelLower, 'suhu') || str_contains($labelLower, 'temperature')) {
                             $icon = 'bi-thermometer-half';
                             $bgColor = '#FF5733';
                             $stdUnit = '°C';
-                        } elseif (str_contains($labelLower, 'kelembapan udara') || str_contains($labelLower, 'kelembaban udara') || $labelLower === 'kelembaban' || $labelLower === 'kelembapan' || str_contains($labelLower, 'humidity')) {
+                        } elseif (str_contains($labelLower, 'kelembapan') || str_contains($labelLower, 'kelembaban') || str_contains($labelLower, 'humidity')) {
                             $icon = 'bi-droplet';
                             $bgColor = '#3498DB';
                             $stdUnit = '%';
                         } elseif (str_contains($labelLower, 'curah hujan') || str_contains($labelLower, 'rain')) {
                             $icon = 'bi-cloud-rain';
-                            $bgColor = '#5DADE2';
+                            $bgColor = '#1ABC9C';
                             $stdUnit = 'mm';
-                        } elseif (str_contains($labelLower, 'kecepatan angin') || str_contains($labelLower, 'wind speed')) {
+                        } elseif (str_contains($labelLower, 'kecepatan angin') || str_contains($labelLower, 'wind speed') || str_contains($labelLower, 'wind')) {
                             $icon = 'bi-wind';
-                            $bgColor = '#85C1E9';
-                            $stdUnit = 'km/h';
+                            $bgColor = '#9B59B6';
+                            $stdUnit = 'm/s';
                         } elseif (str_contains($labelLower, 'arah angin') || str_contains($labelLower, 'wind dir')) {
                             $icon = 'bi-compass';
-                            $bgColor = '#7FB3D5';
+                            $bgColor = '#34495E';
                             $stdUnit = '°';
-                        } elseif (str_contains($labelLower, 'tekanan udara') || str_contains($labelLower, 'pressure')) {
-                            $icon = 'bi-speedometer';
-                            $bgColor = '#2E86C1';
-                            $stdUnit = 'hPa';
-                        } elseif (str_contains($labelLower, 'indeks uv') || str_contains($labelLower, ' uv')) {
-                            $icon = 'bi-brightness-high';
-                            $bgColor = '#F1C40F';
-                            $stdUnit = '';
-                        } elseif (str_contains($labelLower, 'intensitas cahaya') || str_contains($labelLower, 'cahaya') || str_contains($labelLower, 'light')) {
+                        } elseif (str_contains($labelLower, 'radiasi matahari') || str_contains($labelLower, 'solar') || str_contains($labelLower, 'cahaya') || str_contains($labelLower, 'lux')) {
                             $icon = 'bi-sun';
-                            $bgColor = '#F7DC6F';
-                            $stdUnit = 'lux';
-                        } elseif (str_contains($labelLower, 'kelembaban tanah') || str_contains($labelLower, 'kelembapan tanah') || str_contains($labelLower, 'soil moisture')) {
-                            $icon = 'bi-moisture';
+                            $bgColor = '#F39C12';
+                            $stdUnit = 'W/m²';
+                        } elseif (str_contains($labelLower, 'tekanan') || str_contains($labelLower, 'pressure')) {
+                            $icon = 'bi-speedometer2';
+                            $bgColor = '#E67E22';
+                            $stdUnit = 'hPa';
+                        } elseif (str_contains($labelLower, 'ph')) {
+                            $icon = 'bi-droplet-half';
+                            $bgColor = '#16A085';
+                            $stdUnit = 'pH';
+                        } elseif (str_contains($labelLower, 'tds') || str_contains($labelLower, 'ppm')) {
+                            $icon = 'bi-water';
+                            $bgColor = '#2980B9';
+                            $stdUnit = 'ppm';
+                        } elseif (str_contains($labelLower, 'ec') || str_contains($labelLower, 'konduktivitas')) {
+                            $icon = 'bi-lightning';
+                            $bgColor = '#8E44AD';
+                            $stdUnit = 'µS/cm';
+                        } elseif (str_contains($labelLower, 'water level') || str_contains($labelLower, 'tinggi air') || str_contains($labelLower, 'level air')) {
+                            $icon = 'bi-water';
+                            $bgColor = '#0ea5e9';
+                            $stdUnit = 'cm';
+                        } elseif (str_contains($labelLower, 'suhu air') || str_contains($labelLower, 'water temp')) {
+                            $icon = 'bi-thermometer';
+                            $bgColor = '#0284c7';
+                            $stdUnit = '°C';
+                        } elseif (str_contains($labelLower, 'co2')) {
+                            $icon = 'bi-cloud';
+                            $bgColor = '#64748b';
+                            $stdUnit = 'ppm';
+                        } elseif (str_contains($labelLower, 'baterai') || str_contains($labelLower, 'battery')) {
+                            $icon = 'bi-battery-charging';
                             $bgColor = '#27AE60';
                             $stdUnit = '%';
-                        } elseif (str_contains($labelLower, 'suhu tanah') || str_contains($labelLower, 'soil temp')) {
-                            $icon = 'bi-thermometer';
-                            $bgColor = '#D35400';
-                            $stdUnit = '°C';
-                        } elseif (str_contains($labelLower, 'level air') || str_contains($labelLower, 'water level') || str_contains($labelLower, 'ketinggian air') || str_contains($labelLower, 'jarak')) {
-                            $icon = 'bi-water';
-                            $bgColor = '#1ABC9C';
-                            $stdUnit = 'cm';
-                        } elseif (str_contains($labelLower, 'co2') || str_contains($labelLower, 'karbon')) {
-                            $icon = 'bi-cloud';
-                            $bgColor = '#7D3C98';
-                            $stdUnit = 'ppm';
-                        } elseif (str_contains($labelLower, 'ec ') || $labelLower === 'ec' || str_contains($labelLower, 'electrical conductivity')) {
-                            $icon = 'bi-lightning';
-                            $bgColor = '#16A085';
-                            $stdUnit = 'mS/cm';
-                        } elseif (str_contains($labelLower, 'tds') || str_contains($labelLower, 'salinitas') || str_contains($labelLower, 'nutrisi')) {
-                            $icon = 'bi-droplet-fill';
-                            $bgColor = '#48C9B0';
-                            $stdUnit = 'ppm';
-                        } elseif (str_contains($labelLower, 'ph')) {
-                            $icon = 'bi-speedometer2';
-                            $bgColor = '#8E44AD';
-                            $stdUnit = '';
                         }
                     @endphp
                     <div class="col-6 col-md-4 col-lg-3">
@@ -1115,13 +1111,11 @@
                             </div>
                             <div class="sensor-value-container">
                                 <div class="sensor-value" id="sensor-val-{{ $sensor->id }}">
-                                    @if($value !== null)
-                                        {{ number_format($value, 1) }}
-                                    @else
-                                        --
-                                    @endif
+                                    {{ $value !== null ? (is_numeric($value) ? number_format($value, 1) : $value) : '-' }}
                                 </div>
-                                <div class="sensor-unit">{{ $stdUnit }}</div>
+                                @if($stdUnit)
+                                    <div class="sensor-unit">{{ $stdUnit }}</div>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -1141,6 +1135,13 @@
                         // Sort outputs by priority then name (excluding multi_zone)
                         $sortedOutputs = $outputs->where('output_type', '!=', 'multi_zone')->sortBy(function ($output) {
                             $name = strtolower($output->output_name);
+
+                            // Smart Farm Relays
+                            if ($name === 'sf_pompa') return 10;
+                            if ($name === 'sf_blok1') return 11;
+                            if ($name === 'sf_blok2') return 12;
+                            if ($name === 'sf_blok3') return 13;
+                            if ($name === 'sf_pupuk') return 14;
 
                             // Paling bawah khusus Air Baku Valve dan Air Pupuk Valve
                             if (in_array($name, ['st_bak', 'st_ppk']))

@@ -365,26 +365,16 @@
                                 <div class="form-text">Device akan mengirim data ke topik ini.</div>
                             </div>
 
-                            <!-- ADDITIONAL TOPICS FOR SMART GH V2 -->
-                            <div id="additionalMqttTopics" style="display: none;">
-                                <div class="alert alert-info-custom py-2 mb-3">
-                                    <small><i class="bi bi-info-circle me-1"></i>
-                                        Smart GH V2 membutuhkan 3 topik MQTT khusus untuk memisahkan jalur data.
-                                    </small>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label"><i class="bi bi-broadcast-pin me-1"></i> Alamat Topik Status (Opsional)</label>
-                                    <input type="text" name="mqtt_topic_status" class="form-control" placeholder="Contoh: sensor/kebun/status">
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label"><i class="bi bi-broadcast-pin me-1"></i> Alamat Topik Output (Opsional)</label>
-                                    <input type="text" name="mqtt_topic_output" class="form-control" placeholder="Contoh: sensor/kebun/cmd">
-                                </div>
-                                <div class="mb-4">
-                                    <label class="form-label"><i class="bi bi-broadcast-pin me-1"></i> Alamat Topik Schedule (Opsional)</label>
-                                    <input type="text" name="mqtt_topic_schedule" class="form-control" placeholder="Contoh: sensor/kebun/schedule">
-                                </div>
+
+
+
+                            <!-- Token Device (Optional) -->
+                            <div class="mb-4">
+                                <label class="form-label"><i class="bi bi-key me-1"></i> Token Device (Opsional)</label>
+                                <input type="text" name="custom_token" class="form-control" placeholder="Kosongkan untuk auto-generate">
+                                <div class="form-text">Biarkan kosong agar sistem men-generate secara otomatis. Jika diisi manual, gunakan kombinasi huruf dan angka tanpa spasi.</div>
                             </div>
+
 
                             <!-- STEP 3: DAFTAR SENSOR -->
                             <div class="mb-4">
@@ -819,10 +809,12 @@
         // Schedule Functions - Removed legacy code
 
         function updateSubmitButton() {
-            const typeSelected = document.getElementById('deviceType').value !== '';
+            const type = document.getElementById('deviceType').value;
+            const typeSelected = type !== '';
             const sensorCount = document.querySelectorAll('.sensor-row:not(.output-row)').length;
             const allSensorsSelected = Array.from(document.querySelectorAll('.sensor-select')).every(s => s.value !== '');
-            document.getElementById('submitBtn').disabled = !(typeSelected && sensorCount > 0 && allSensorsSelected);
+            const isSmartFarm = type === 'smart_farm';
+            document.getElementById('submitBtn').disabled = !(typeSelected && (isSmartFarm || (sensorCount > 0 && allSensorsSelected)));
         }
 
         function selectDeviceType(type) {
@@ -830,11 +822,8 @@
             document.querySelector(`[data-type="${type}"]`).classList.add('selected');
             document.getElementById('deviceType').value = type;
 
-            // Show additional topics only for smart_gh_v2
-            const additionalMqttTopics = document.getElementById('additionalMqttTopics');
-            if (additionalMqttTopics) {
-                additionalMqttTopics.style.display = type === 'smart_gh_v2' ? 'block' : 'none';
-            }
+
+
 
             // Only add default sensors if no sensors exist yet
             const sensorContainer = document.getElementById('sensorContainer');
@@ -865,7 +854,7 @@
             const type = document.getElementById('deviceType').value;
             const sensors = document.querySelectorAll('.sensor-row:not(.output-row)').length;
             if (!type) { e.preventDefault(); alert('Pilih tipe alat terlebih dahulu!'); return false; }
-            if (sensors === 0) { e.preventDefault(); alert('Tambahkan minimal 1 sensor!'); return false; }
+            if (type !== 'smart_farm' && sensors === 0) { e.preventDefault(); alert('Tambahkan minimal 1 sensor!'); return false; }
         });
     </script>
 
