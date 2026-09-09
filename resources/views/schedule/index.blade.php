@@ -329,84 +329,272 @@
         }
 
         /* ========= Mobile Responsive ========= */
+        .day-picker-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+            width: 100%;
+        }
+
+        .day-picker-grid > div {
+            width: 100%;
+        }
+
+        .header-actions-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .header-actions-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
         @media (max-width: 768px) {
+            .page-header {
+                flex-direction: column;
+                align-items: stretch !important;
+                padding: 1.25rem 1rem !important;
+                border-radius: 18px !important;
+                margin-bottom: 1.25rem !important;
+                gap: 1rem !important;
+            }
+
+            .page-header h2 {
+                font-size: 1.35rem;
+            }
+
+            .header-actions-wrapper {
+                flex-direction: column;
+                width: 100%;
+                gap: 0.6rem;
+            }
+
+            .header-actions-row {
+                display: flex;
+                gap: 0.4rem;
+                width: 100%;
+            }
+
+            .header-actions-row .btn {
+                flex: 1;
+                justify-content: center;
+                padding: 0.65rem 0.4rem;
+                font-size: 0.82rem;
+                font-weight: 600;
+                border-radius: 12px !important;
+                white-space: nowrap;
+            }
+
+            #sync-status-indicator {
+                width: 100%;
+                justify-content: center;
+                padding: 0.55rem 0.75rem !important;
+                font-size: 0.8rem !important;
+                border-radius: 10px !important;
+                text-align: center;
+            }
+
             .glass-card {
-                padding: 1.25rem;
-                border-radius: 16px;
+                padding: 1rem;
+                border-radius: 18px;
             }
 
-            .glass-card h4 {
-                font-size: 1.15rem;
+            /* Table to Modern Mobile Card */
+            .table-responsive {
+                overflow: visible !important;
             }
 
-            /* Table → Card Layout */
             .table-glass thead {
                 display: none;
+            }
+
+            .table-glass tbody {
+                display: flex;
+                flex-direction: column;
+                gap: 0.85rem;
             }
 
             .table-glass tbody tr {
                 display: block;
                 background: var(--glass-bg);
+                backdrop-filter: blur(15px);
                 border: 1px solid var(--glass-border);
-                border-radius: 16px;
-                padding: 1rem;
-                margin-bottom: 1rem;
-                box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+                border-radius: 18px;
+                padding: 1rem 1.1rem;
+                margin-bottom: 0;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+                transition: all 0.2s ease;
+            }
+
+            .table-glass tbody tr.slot-active {
+                border-left: 4px solid #10b981;
+                background: linear-gradient(180deg, rgba(16, 185, 129, 0.03) 0%, rgba(255, 255, 255, 0.05) 100%);
+            }
+
+            .table-glass tbody tr.slot-empty {
+                border-left: 4px solid #9ca3af;
+                opacity: 0.9;
+                background: rgba(0, 0, 0, 0.02);
+            }
+
+            /* Slot Header Row (Jadwal number on left, Status pill on right) */
+            .table-glass tbody td[data-label="Jadwal"] {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-bottom: 1px dashed var(--glass-border);
+                padding: 0 0 0.6rem 0;
+                margin-bottom: 0.6rem;
+            }
+
+            .table-glass tbody td[data-label="Jadwal"]::before {
+                display: none !important;
+            }
+
+            /* Status column is already shown in slot header on mobile */
+            .table-glass tbody td[data-label="Status"] {
+                display: none !important;
             }
 
             .table-glass tbody td {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                padding: 0.4rem 0.5rem;
+                padding: 0.35rem 0;
                 border: none;
                 font-size: 0.9rem;
             }
 
             .table-glass tbody td::before {
                 content: attr(data-label);
-                font-weight: 600;
-                font-size: 0.8rem;
+                font-weight: 500;
+                font-size: 0.82rem;
                 color: var(--text-secondary);
-                margin-right: 1rem;
+                margin-right: 0.75rem;
                 flex-shrink: 0;
             }
 
+            /* Hide empty rows on mobile for empty slots */
+            .table-glass tbody tr.slot-empty td[data-label="Waktu Mulai"],
+            .table-glass tbody tr.slot-empty td[data-label="Durasi"],
+            .table-glass tbody tr.slot-empty td[data-label="Waktu Selesai"],
+            .table-glass tbody tr.slot-empty td[data-label="Blok Irigasi"],
+            .table-glass tbody tr.slot-empty td[data-label="Zona Tujuan"],
+            .table-glass tbody tr.slot-empty td[data-label="Pupuk (L)"],
+            .table-glass tbody tr.slot-empty td[data-label="Input"],
+            .table-glass tbody tr.slot-empty td[data-label="Hari"] {
+                display: none !important;
+            }
+
+            /* Action Buttons Row */
             .table-glass tbody td:last-child {
-                justify-content: flex-end;
-                padding-top: 0.5rem;
+                display: block;
+                padding: 0.75rem 0 0 0;
                 border-top: 1px solid var(--glass-border);
-                margin-top: 0.25rem;
+                margin-top: 0.6rem;
             }
 
-            /* Day selector */
+            .table-glass tbody td:last-child::before {
+                display: none !important;
+            }
+
+            .table-glass tbody td:last-child .d-flex {
+                display: flex !important;
+                gap: 8px !important;
+                width: 100%;
+            }
+
+            .table-glass tbody td:last-child .btn {
+                flex: 1;
+                min-height: 42px;
+                border-radius: 12px !important;
+                font-weight: 600;
+                font-size: 0.9rem;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            /* Delete button is compact square on mobile */
+            .table-glass tbody td:last-child .btn:has(.bi-trash),
+            .table-glass tbody td:last-child .btn:has(.bi-trash3) {
+                flex: 0 0 44px;
+                padding: 0;
+            }
+
+            /* Day selector: 7 columns grid on mobile */
+            .day-picker-grid {
+                gap: 4px !important;
+            }
+
             .schedule-day-label {
-                width: 44px;
-                height: 44px;
-                font-size: 0.85rem;
+                width: 100% !important;
+                height: 42px !important;
+                font-size: 0.8rem !important;
+                font-weight: 700 !important;
+                border-radius: 10px !important;
             }
 
-            /* Modal form touch-friendly */
+            /* Duration Quick Chips on mobile */
+            .duration-quick {
+                display: grid;
+                grid-template-columns: repeat(5, 1fr);
+                gap: 6px;
+            }
+
+            .duration-chip {
+                min-width: unset;
+                padding: 8px 0;
+                font-size: 0.85rem;
+                border-radius: 10px;
+            }
+
+            /* Modal Bottom Sheet */
+            .modal-content-glass {
+                border-radius: 24px 24px 0 0 !important;
+                max-height: 88vh;
+            }
+
+            .modal-body-custom {
+                padding: 0 1rem 1rem;
+            }
+
+            .form-section {
+                padding: 1rem;
+                border-radius: 14px;
+                margin-bottom: 0.85rem;
+            }
+
             .form-control-dark, .form-select-dark {
-                font-size: 1.1rem;
-                min-height: 52px;
+                font-size: 16px !important; /* Prevents auto-zoom in iOS Safari */
+                min-height: 48px;
             }
 
-            /* Alert compact */
-            .alert {
-                font-size: 0.85rem;
+            .modal-actions {
+                padding: 0.85rem 1rem 1.25rem;
+                gap: 0.5rem;
+            }
+
+            .btn-save-schedule, .btn-cancel-schedule, .btn-delete-schedule {
+                min-height: 46px;
+                border-radius: 12px;
+                font-size: 0.95rem;
             }
         }
 
         @media (max-width: 400px) {
-            .glass-card {
-                padding: 1rem;
+            .header-actions-row .btn {
+                font-size: 0.75rem;
+                padding: 0.6rem 0.3rem;
             }
 
             .schedule-day-label {
-                width: 38px;
-                height: 38px;
-                line-height: 36px;
+                font-size: 0.75rem !important;
             }
         }
     </style>
@@ -429,21 +617,27 @@
                     Device: <strong>{{ $device->name }}</strong> | Target: <strong>{{ $scheduleConfig->output_key }}</strong>
                 </p>
             </div>
-            <div class="d-flex align-items-center gap-2 flex-wrap">
+            <div class="header-actions-wrapper">
                 @if($device->type === 'smart_farm')
                     <span id="sync-status-indicator" class="badge rounded-pill d-inline-flex align-items-center gap-1" style="display: none !important; font-size: 0.78rem; padding: 0.55rem 0.9rem; background: rgba(14, 165, 233, 0.12); color: #0284c7; border: 1px solid rgba(14, 165, 233, 0.25);">
                         <i class="bi bi-arrow-repeat spin-icon" id="indicator-spin-icon"></i> <span id="sync-status-text">Sinkron ke alat...</span>
                     </span>
-                    <button type="button" id="btn-sync-jadwal" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1 shadow-sm" style="border-radius: 50px; padding: 0.6rem 1.25rem; font-weight: 600;" onclick="syncJadwalDevice()" title="Tarik seluruh jadwal dari memori alat (EEPROM)">
-                        <i class="bi bi-arrow-repeat" id="icon-sync-jadwal"></i> <span>Tarik dari Alat</span>
-                    </button>
-                    <button type="button" class="btn btn-danger btn-sm d-inline-flex align-items-center gap-1 shadow-sm" style="border-radius: 50px; padding: 0.6rem 1.25rem;" onclick="stopSiram()">
-                        <i class="bi bi-stop-circle-fill"></i> <span>Stop Siram</span>
-                    </button>
+                    <div class="header-actions-row">
+                        <button type="button" id="btn-sync-jadwal" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1 shadow-sm" style="border-radius: 50px; padding: 0.6rem 1.15rem; font-weight: 600;" onclick="syncJadwalDevice()" title="Tarik seluruh jadwal dari memori alat (EEPROM)">
+                            <i class="bi bi-arrow-repeat" id="icon-sync-jadwal"></i> <span>Tarik dari Alat</span>
+                        </button>
+                        <button type="button" class="btn btn-danger btn-sm d-inline-flex align-items-center gap-1 shadow-sm" style="border-radius: 50px; padding: 0.6rem 1.15rem;" onclick="stopSiram()">
+                            <i class="bi bi-stop-circle-fill"></i> <span>Stop Siram</span>
+                        </button>
+                        <a href="{{ ($isAdminView ?? false) ? route('admin.device.monitoring', $device->id) : route('monitoring.show', $userDevice->id) }}" class="btn btn-glass d-inline-flex align-items-center gap-1">
+                            <i class="bi bi-arrow-left"></i> <span>Kembali</span>
+                        </a>
+                    </div>
+                @else
+                    <a href="{{ ($isAdminView ?? false) ? route('admin.device.monitoring', $device->id) : route('monitoring.show', $userDevice->id) }}" class="btn btn-glass d-inline-flex align-items-center gap-2">
+                        <i class="bi bi-arrow-left me-md-1"></i> <span class="d-none d-md-inline">Kembali ke Device</span>
+                    </a>
                 @endif
-                <a href="{{ ($isAdminView ?? false) ? route('admin.device.monitoring', $device->id) : route('monitoring.show', $userDevice->id) }}" class="btn btn-glass d-inline-flex align-items-center gap-2">
-                    <i class="bi bi-arrow-left me-md-1"></i> <span class="d-none d-md-inline">Kembali ke Device</span>
-                </a>
             </div>
         </div>
 
@@ -494,10 +688,21 @@
                                     $days = is_array($sch['days']) ? implode(', ', $sch['days']) : $sch['days'];
                                 }
                             @endphp
-                            <tr id="row-slot-{{ $i }}">
+                            <tr id="row-slot-{{ $i }}" class="{{ $isActive ? 'slot-active' : 'slot-empty' }}">
                                 <td data-label="Jadwal">
                                     <span class="badge rounded-pill" style="background: rgba(14, 95, 138, 0.1); color: var(--primary); border: 1px solid rgba(14, 95, 138, 0.2); padding: 6px 12px; font-weight: 700;">
                                         Jadwal {{ $i }}
+                                    </span>
+                                    <span class="d-md-none mobile-status-badge">
+                                        @if($isActive)
+                                            <span class="badge rounded-pill shadow-sm" style="background: rgba(16, 185, 129, 0.15); color: #059669; border: 1px solid rgba(16, 185, 129, 0.3); padding: 4px 10px; font-size: 0.75rem;">
+                                                <i class="bi bi-check-circle-fill me-1"></i> Aktif
+                                            </span>
+                                        @else
+                                            <span class="badge rounded-pill" style="background: rgba(107, 114, 128, 0.1); color: var(--text-secondary); border: 1px solid rgba(107, 114, 128, 0.2); padding: 4px 10px; font-size: 0.75rem;">
+                                                Kosong
+                                            </span>
+                                        @endif
                                     </span>
                                 </td>
                                 
@@ -637,6 +842,13 @@
                                 @if($isDuration)
                                     <label class="form-label fw-bold text-center d-block" style="color: #374151; font-size: 0.9rem;">Durasi (menit)</label>
                                     <input type="number" id="duration" class="form-control form-control-dark" min="1" value="5">
+                                    <div class="duration-quick mt-2">
+                                        <div class="duration-chip" onclick="setDuration(1)">1m</div>
+                                        <div class="duration-chip active" onclick="setDuration(5)">5m</div>
+                                        <div class="duration-chip" onclick="setDuration(10)">10m</div>
+                                        <div class="duration-chip" onclick="setDuration(15)">15m</div>
+                                        <div class="duration-chip" onclick="setDuration(30)">30m</div>
+                                    </div>
                                 @else
                                     <label class="form-label fw-bold text-center d-block" style="color: #374151; font-size: 0.9rem;">Waktu Selesai</label>
                                     <input type="time" id="off_time" class="form-control form-control-dark">
@@ -682,7 +894,7 @@
                     <!-- Section: Hari -->
                     <div class="form-section">
                         <div class="form-section-title">📅 Pilih Hari Aktif</div>
-                        <div class="d-flex flex-wrap justify-content-center gap-2">
+                        <div class="day-picker-grid">
                             @foreach(['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'] as $key => $day)
                                 @php 
                                     $val = ($day == 'Min') ? 7 : ($key);
@@ -758,8 +970,7 @@
         // Duration Quick Select
         function setDuration(val) {
             document.getElementById('duration').value = val;
-            document.querySelectorAll('.duration-chip').forEach(c => c.classList.remove('active'));
-            event.target.classList.add('active');
+            highlightDuration(val);
         }
 
         function highlightDuration(val) {
@@ -1023,6 +1234,21 @@
             if (!row) return;
 
             const isActive = sch && (sch.is_active == 1 || sch.is_active === true);
+            row.className = isActive ? 'slot-active' : 'slot-empty';
+
+            const mobileStatusBadge = row.querySelector('.mobile-status-badge');
+            if (mobileStatusBadge) {
+                mobileStatusBadge.innerHTML = isActive ? `
+                    <span class="badge rounded-pill shadow-sm" style="background: rgba(16, 185, 129, 0.15); color: #059669; border: 1px solid rgba(16, 185, 129, 0.3); padding: 4px 10px; font-size: 0.75rem;">
+                        <i class="bi bi-check-circle-fill me-1"></i> Aktif
+                    </span>
+                ` : `
+                    <span class="badge rounded-pill" style="background: rgba(107, 114, 128, 0.1); color: var(--text-secondary); border: 1px solid rgba(107, 114, 128, 0.2); padding: 4px 10px; font-size: 0.75rem;">
+                        Kosong
+                    </span>
+                `;
+            }
+
             const onTime = (isActive && sch.on_time) ? sch.on_time.substring(0, 5) : '-';
             const duration = (isActive && sch.duration) ? `${sch.duration} Menit` : '-';
             const offTime = (isActive && sch.off_time) ? sch.off_time : '-';

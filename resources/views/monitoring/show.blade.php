@@ -619,24 +619,83 @@
 
         /* ========= Mobile Responsive ========= */
         @media (max-width: 768px) {
-            .container.py-4 {
-                padding: 0.75rem 0.5rem !important;
+            .container {
+                padding-left: 0.75rem !important;
+                padding-right: 0.75rem !important;
             }
 
             /* Page Header compact */
             .page-header {
-                padding: 1rem 1.25rem;
-                border-radius: 14px;
-                margin-bottom: 1.25rem;
+                padding: 1.15rem 1rem !important;
+                border-radius: 18px !important;
+                margin-bottom: 1.25rem !important;
+                gap: 0.85rem !important;
             }
 
             .device-title {
-                font-size: 1.1rem;
+                font-size: 1.25rem;
             }
 
             .device-type-badge {
                 font-size: 0.75rem;
                 padding: 0.25rem 0.75rem;
+            }
+
+            /* Header Action Buttons on Mobile */
+            .header-actions-group {
+                width: 100%;
+                display: flex !important;
+                gap: 0.4rem !important;
+            }
+
+            .header-actions-group .btn-action-custom {
+                flex: 1;
+                justify-content: center;
+                padding: 0.65rem 0.35rem !important;
+                font-size: 0.82rem !important;
+                font-weight: 600;
+                border-radius: 12px !important;
+                text-align: center;
+                white-space: nowrap;
+                min-height: 42px;
+            }
+
+            .header-actions-group .btn-action-custom span {
+                display: inline !important;
+            }
+
+            /* Smart Farm Status Card on Mobile */
+            #sf-status-card {
+                padding: 1rem !important;
+                border-radius: 16px !important;
+                margin-bottom: 1.25rem !important;
+            }
+
+            #sf-status-card .d-flex.flex-wrap.align-items-center.justify-content-between {
+                flex-direction: column;
+                align-items: stretch !important;
+                gap: 0.85rem !important;
+            }
+
+            #sf-status-card .sf-actions-group {
+                display: flex;
+                width: 100%;
+                gap: 0.5rem;
+            }
+
+            #sf-status-card .sf-actions-group .btn {
+                flex: 1;
+                justify-content: center;
+                padding: 0.65rem 0.5rem !important;
+                font-size: 0.85rem !important;
+                font-weight: 600;
+                border-radius: 12px !important;
+                min-height: 42px;
+            }
+
+            /* Prevent auto-zoom in iOS Safari */
+            input, select, textarea {
+                font-size: 16px !important;
             }
 
             /* Sensor Cards compact */
@@ -761,12 +820,18 @@
         }
 
         @media (max-width: 400px) {
-            .container.py-4 {
-                padding: 0.5rem 0.35rem !important;
+            .container {
+                padding-left: 0.5rem !important;
+                padding-right: 0.5rem !important;
             }
 
             .page-header {
-                padding: 0.75rem 1rem;
+                padding: 0.85rem 0.75rem !important;
+            }
+
+            .header-actions-group .btn-action-custom {
+                font-size: 0.75rem !important;
+                padding: 0.55rem 0.25rem !important;
             }
 
             .sensor-card {
@@ -999,18 +1064,18 @@
                     @endif
                 </p>
             </div>
-            <div class="d-flex gap-2 align-items-center flex-wrap justify-content-md-end">
+            <div class="d-flex gap-2 align-items-center flex-wrap justify-content-md-end header-actions-group">
                 <a href="{{ isset($isAdminView) && $isAdminView ? route('admin.device.history', $device->id) : route('monitoring.history', $userDevice->id) }}" class="btn btn-history btn-action-custom">
-                    <i class="bi bi-clock-history me-sm-1"></i> <span class="d-none d-sm-inline">Riwayat Data</span>
+                    <i class="bi bi-clock-history me-1"></i> <span>Riwayat Data</span>
                 </a>
                 @if($scheduleConfig ?? false)
                     <a href="{{ ($isAdminView ?? false) ? route('schedule.index', $device->id) : route('schedule.index', $userDevice->id) }}" class="btn btn-app btn-action-custom">
-                        <i class="bi bi-calendar-check me-sm-1"></i> <span class="d-none d-sm-inline">Jadwal</span>
+                        <i class="bi bi-calendar-check me-1"></i> <span>Jadwal</span>
                     </a>
                 @endif
                 @if($hasAutomation ?? false)
                     <a href="{{ ($isAdminView ?? false) ? route('automasi.index', $device->id) : route('automasi.index', $userDevice->id) }}" class="btn btn-automation btn-action-custom">
-                        <i class="bi bi-cpu me-sm-1"></i> <span class="d-none d-sm-inline">Otomasi</span>
+                        <i class="bi bi-cpu me-1"></i> <span>Otomasi</span>
                     </a>
                 @endif
             </div>
@@ -1172,7 +1237,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="d-flex align-items-center gap-2">
+                    <div class="d-flex align-items-center gap-2 sf-actions-group">
                         @if($isSiram)
                             <button type="button" id="sf-btn-stop" class="btn btn-danger btn-sm d-inline-flex align-items-center gap-2 shadow-sm" style="border-radius: 50px; padding: 0.6rem 1.4rem; font-weight: 600;" onclick="stopSiramQuick()">
                                 <i class="bi bi-stop-circle-fill"></i> Stop Siram
