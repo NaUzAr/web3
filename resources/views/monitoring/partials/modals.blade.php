@@ -145,14 +145,9 @@
                                         <div class="sf-modal-blok-avatar" style="background: rgba(16, 185, 129, 0.15); color: #059669; border: 1.5px solid rgba(16, 185, 129, 0.3); font-weight: 800; font-size: 1.15rem;">
                                             1
                                         </div>
-                                        <div>
-                                            <div class="d-flex align-items-center gap-2">
-                                                <span class="fw-bold text-dark" style="font-size: 0.95rem;">Blok 1</span>
-                                                <span class="badge rounded-pill" style="background: rgba(16, 185, 129, 0.12); color: #059669; font-size: 0.68rem; font-weight: 800; border: 1px solid rgba(16, 185, 129, 0.25);">ZONA 1</span>
-                                            </div>
-                                            <div class="small text-muted" style="font-size: 0.76rem; margin-top: 2px;">
-                                                <i class="bi bi-cpu text-muted me-1"></i>Katup Solenoid #1 &bull; Tanaman Utama
-                                            </div>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="fw-bold text-dark" style="font-size: 0.95rem;">Blok 1</span>
+                                            <span class="badge rounded-pill" style="background: rgba(16, 185, 129, 0.12); color: #059669; font-size: 0.68rem; font-weight: 800; border: 1px solid rgba(16, 185, 129, 0.25);">ZONA 1</span>
                                         </div>
                                     </div>
                                     <input class="form-check-input fs-5 m-0" type="radio" name="sf_target_blok" id="sf-blok-1" value="1" checked>
@@ -163,14 +158,9 @@
                                         <div class="sf-modal-blok-avatar" style="background: rgba(14, 165, 233, 0.15); color: #0284c7; border: 1.5px solid rgba(14, 165, 233, 0.3); font-weight: 800; font-size: 1.15rem;">
                                             2
                                         </div>
-                                        <div>
-                                            <div class="d-flex align-items-center gap-2">
-                                                <span class="fw-bold text-dark" style="font-size: 0.95rem;">Blok 2</span>
-                                                <span class="badge rounded-pill" style="background: rgba(14, 165, 233, 0.12); color: #0284c7; font-size: 0.68rem; font-weight: 800; border: 1px solid rgba(14, 165, 233, 0.25);">ZONA 2</span>
-                                            </div>
-                                            <div class="small text-muted" style="font-size: 0.76rem; margin-top: 2px;">
-                                                <i class="bi bi-cpu text-muted me-1"></i>Katup Solenoid #2 &bull; Hortikultura / Sayur
-                                            </div>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="fw-bold text-dark" style="font-size: 0.95rem;">Blok 2</span>
+                                            <span class="badge rounded-pill" style="background: rgba(14, 165, 233, 0.12); color: #0284c7; font-size: 0.68rem; font-weight: 800; border: 1px solid rgba(14, 165, 233, 0.25);">ZONA 2</span>
                                         </div>
                                     </div>
                                     <input class="form-check-input fs-5 m-0" type="radio" name="sf_target_blok" id="sf-blok-2" value="2">
@@ -181,14 +171,9 @@
                                         <div class="sf-modal-blok-avatar" style="background: rgba(139, 92, 246, 0.15); color: #7c3aed; border: 1.5px solid rgba(139, 92, 246, 0.3); font-weight: 800; font-size: 1.15rem;">
                                             3
                                         </div>
-                                        <div>
-                                            <div class="d-flex align-items-center gap-2">
-                                                <span class="fw-bold text-dark" style="font-size: 0.95rem;">Blok 3</span>
-                                                <span class="badge rounded-pill" style="background: rgba(139, 92, 246, 0.12); color: #7c3aed; font-size: 0.68rem; font-weight: 800; border: 1px solid rgba(139, 92, 246, 0.25);">ZONA 3</span>
-                                            </div>
-                                            <div class="small text-muted" style="font-size: 0.76rem; margin-top: 2px;">
-                                                <i class="bi bi-cpu text-muted me-1"></i>Katup Solenoid #3 &bull; Bibit & Pembesaran
-                                            </div>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="fw-bold text-dark" style="font-size: 0.95rem;">Blok 3</span>
+                                            <span class="badge rounded-pill" style="background: rgba(139, 92, 246, 0.12); color: #7c3aed; font-size: 0.68rem; font-weight: 800; border: 1px solid rgba(139, 92, 246, 0.25);">ZONA 3</span>
                                         </div>
                                     </div>
                                     <input class="form-check-input fs-5 m-0" type="radio" name="sf_target_blok" id="sf-blok-3" value="3">

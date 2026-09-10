@@ -367,9 +367,6 @@
                                                                 {{ $b['zone'] }}
                                                             </span>
                                                         </div>
-                                                        <div class="text-muted" style="font-size: 0.72rem; margin-top: 1px;">
-                                                            <i class="bi bi-cpu text-muted me-1"></i>{{ $b['valve'] }}
-                                                        </div>
                                                     </div>
                                                 </div>
 
