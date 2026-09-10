@@ -1080,7 +1080,27 @@
         function confirmDeleteSchedule(slotId) {
             slotToDelete = slotId;
             document.getElementById('deleteSlotName').innerText = `Jadwal ${slotId}`;
+            
+            // Selalu reset status tombol saat modal dibuka
+            const btn = document.getElementById('confirmDeleteBtn');
+            if (btn) {
+                btn.innerHTML = 'Hapus';
+                btn.disabled = false;
+            }
+            
             deleteConfirmModal.show();
+        }
+
+        // Reset tombol saat modal ditutup
+        if (deleteConfirmModalEl) {
+            deleteConfirmModalEl.addEventListener('hidden.bs.modal', function () {
+                const btn = document.getElementById('confirmDeleteBtn');
+                if (btn) {
+                    btn.innerHTML = 'Hapus';
+                    btn.disabled = false;
+                }
+                slotToDelete = null;
+            });
         }
         
         document.getElementById('confirmDeleteBtn').addEventListener('click', async function() {
@@ -1108,15 +1128,15 @@
                     }, 1500);
                 } else { 
                     alert('Gagal: ' + data.message); 
-                    this.innerHTML = 'Hapus';
-                    this.disabled = false;
                     deleteConfirmModal.hide();
                 }
             } catch (e) { 
                 alert('Error: ' + e.message); 
+                deleteConfirmModal.hide();
+            } finally {
+                // Selalu kembalikan teks dan status tombol ke normal
                 this.innerHTML = 'Hapus';
                 this.disabled = false;
-                deleteConfirmModal.hide();
             }
         });
 
