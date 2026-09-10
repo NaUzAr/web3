@@ -123,6 +123,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Smart Farm: Siram manual, stop, dan tarik jadwal
         Route::post('/siram-start', [ScheduleController::class, 'siramStart'])->name('siram.start');
         Route::post('/siram-stop', [ScheduleController::class, 'siramStop'])->name('siram.stop');
+        Route::post('/reset-error', [ScheduleController::class, 'resetError'])->name('reset.error');
+        Route::post('/set-rtc', [ScheduleController::class, 'setRtc'])->name('set.rtc');
         Route::post('/sync', [ScheduleController::class, 'syncFromDevice'])->name('sync');
         Route::get('/data', [ScheduleController::class, 'getSchedulesData'])->name('data');
     });

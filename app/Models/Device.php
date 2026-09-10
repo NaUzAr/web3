@@ -39,7 +39,15 @@ class Device extends Model
      */
     public function isOnline(): bool
     {
-        return $this->last_seen_at && $this->last_seen_at->diffInMinutes(now()) < 5;
+        $lastSeen = \Illuminate\Support\Facades\Cache::get("device_{$this->id}_last_seen", $this->last_seen_at);
+        if ($lastSeen) {
+            try {
+                return \Carbon\Carbon::parse($lastSeen)->greaterThanOrEqualTo(now()->subMinutes(5));
+            } catch (\Throwable $e) {
+                return false;
+            }
+        }
+        return false;
     }
 
     /**
@@ -47,10 +55,15 @@ class Device extends Model
      */
     public function lastSeenText(): string
     {
-        if (!$this->last_seen_at) {
+        $lastSeen = \Illuminate\Support\Facades\Cache::get("device_{$this->id}_last_seen", $this->last_seen_at);
+        if (!$lastSeen) {
             return 'Belum pernah terhubung';
         }
-        return $this->last_seen_at->diffForHumans();
+        try {
+            return \Carbon\Carbon::parse($lastSeen)->diffForHumans();
+        } catch (\Throwable $e) {
+            return 'Belum pernah terhubung';
+        }
     }
 
     /**

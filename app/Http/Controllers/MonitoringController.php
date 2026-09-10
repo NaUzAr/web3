@@ -138,21 +138,20 @@ class MonitoringController extends Controller
 
         // Check if device is online (last seen within 5 minutes)
         $lastSeen = \Cache::get("device_{$device->id}_last_seen", $device->last_seen_at);
-        
-        // Prioritaskan timestamp data sensor terakhir untuk menentukan status ONLINE
-        if (isset($latestData->recorded_at) && $latestData->recorded_at) {
+        $isOnline = $device->isOnline();
+        if (!$isOnline && isset($latestData->recorded_at) && $latestData->recorded_at) {
             $isOnline = \Carbon\Carbon::parse($latestData->recorded_at)->greaterThanOrEqualTo(now()->subMinutes(5));
-        } else {
-            $isOnline = $lastSeen ? \Carbon\Carbon::parse($lastSeen)->greaterThanOrEqualTo(now()->subMinutes(5)) : false;
         }
 
         // Ambil status Smart Farm jika device bertipe smart_farm
         $sfStatus = null;
+        $sfTimezone = 'WIB';
         if ($device->type === 'smart_farm') {
             $sfStatus = \Cache::get("device_sf_status_{$device->id}");
+            $sfTimezone = \Cache::get("device_timezone_{$device->id}", 'WIB');
         }
 
-        return view('monitoring.show', compact('userDevice', 'device', 'sensors', 'outputs', 'latestData', 'scheduleConfig', 'hasAutomation', 'isOnline', 'lastSeen', 'sfStatus'));
+        return view('monitoring.show', compact('userDevice', 'device', 'sensors', 'outputs', 'latestData', 'scheduleConfig', 'hasAutomation', 'isOnline', 'lastSeen', 'sfStatus', 'sfTimezone'));
     }
 
     /**
@@ -845,8 +844,20 @@ class MonitoringController extends Controller
             return (int) str_replace('sch', '', $item['key']);
         })->values();
 
+        $lastSeen = \Cache::get("device_{$device->id}_last_seen", $device->last_seen_at);
+        $isOnline = $device->isOnline();
+        if (!$isOnline && isset($latestSensorData->recorded_at) && $latestSensorData->recorded_at) {
+            $isOnline = \Carbon\Carbon::parse($latestSensorData->recorded_at)->greaterThanOrEqualTo(now()->subMinutes(5));
+        }
+
+        $sfStatus = ($device->type === 'smart_farm') ? \Cache::get("device_sf_status_{$device->id}") : null;
+
         return response()->json([
             'success' => true,
+            'is_online' => $isOnline,
+            'last_seen' => $lastSeen ? \Carbon\Carbon::parse($lastSeen)->toIso8601String() : null,
+            'last_seen_text' => $device->lastSeenText(),
+            'sf_status' => $sfStatus,
             'outputs' => $outputs,
             'sensors' => $latestSensorData,
             'schedules' => $schedules,

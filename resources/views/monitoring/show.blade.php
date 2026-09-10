@@ -420,6 +420,445 @@
             color: white;
         }
 
+        /* Smart Farm Blok Selection Cards */
+        .sf-blok-card {
+            background: #ffffff;
+            border: 2px solid #e5e7eb !important;
+            transition: all 0.2s ease;
+        }
+        .sf-blok-card:hover {
+            border-color: #10b981 !important;
+            background: rgba(16, 185, 129, 0.04);
+        }
+        .sf-blok-card:has(input:checked) {
+            border-color: #10b981 !important;
+            background: rgba(16, 185, 129, 0.08);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+        }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .spin-icon { animation: spin 1s linear infinite; display: inline-block; }
+
+        /* Timezone Selection Cards */
+        .sf-tz-card {
+            background: #ffffff;
+            border: 2px solid #e5e7eb !important;
+            transition: all 0.2s ease;
+        }
+        .sf-tz-card:hover {
+            border-color: #0ea5e9 !important;
+            background: rgba(14, 165, 233, 0.04);
+        }
+        .sf-tz-card:has(input:checked) {
+            border-color: #0ea5e9 !important;
+            background: rgba(14, 165, 233, 0.08);
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.15);
+        }
+
+        /* Smart Farm Grouped UI & Architecture Styling */
+        .sf-hero-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 22px;
+            padding: 1.5rem 1.8rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.04);
+            backdrop-filter: blur(20px);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .sf-hero-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #10b981, #0ea5e9, #8b5cf6);
+        }
+
+        /* Pipeline Visualizer Strip */
+        .sf-pipeline-card {
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid rgba(229, 231, 235, 0.8);
+            border-radius: 18px;
+            padding: 1.1rem 1.25rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+            backdrop-filter: blur(10px);
+        }
+
+        .pipeline-scroll-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 4px;
+        }
+
+        .pipeline-scroll-wrapper::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .pipeline-scroll-wrapper::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+        }
+
+        .pipeline-track {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            gap: 6px;
+        }
+
+        @media (max-width: 768px) {
+            .pipeline-track {
+                min-width: 470px;
+            }
+        }
+
+        .pipeline-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+            min-width: 76px;
+        }
+
+        .pipeline-node-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            color: #6b7280;
+            background: #f3f4f6;
+            border: 1.5px solid #e5e7eb;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .pipeline-node.active .pipeline-node-icon {
+            color: #ffffff;
+            transform: scale(1.08);
+        }
+
+        .pipeline-node.active.node-pompa .pipeline-node-icon {
+            background: linear-gradient(135deg, #0284c7, #38bdf8);
+            border-color: #0284c7;
+            box-shadow: 0 6px 18px rgba(14, 165, 233, 0.35);
+        }
+
+        .pipeline-node.active.node-pupuk .pipeline-node-icon {
+            background: linear-gradient(135deg, #d97706, #fbbf24);
+            border-color: #f59e0b;
+            box-shadow: 0 6px 18px rgba(245, 158, 11, 0.35);
+        }
+
+        .pipeline-node.active.node-blok1 .pipeline-node-icon {
+            background: linear-gradient(135deg, #059669, #34d399);
+            border-color: #10b981;
+            box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35);
+        }
+
+        .pipeline-node.active.node-blok2 .pipeline-node-icon {
+            background: linear-gradient(135deg, #0284c7, #38bdf8);
+            border-color: #0ea5e9;
+            box-shadow: 0 6px 18px rgba(14, 165, 233, 0.35);
+        }
+
+        .pipeline-node.active.node-blok3 .pipeline-node-icon {
+            background: linear-gradient(135deg, #7c3aed, #a78bfa);
+            border-color: #8b5cf6;
+            box-shadow: 0 6px 18px rgba(139, 92, 246, 0.35);
+        }
+
+        .pipeline-node-label {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #374151;
+            margin-top: 5px;
+            white-space: nowrap;
+        }
+
+        .pipeline-node-status {
+            font-size: 0.68rem;
+            font-weight: 600;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .pipeline-node.active .pipeline-node-status {
+            color: #059669;
+            font-weight: 700;
+        }
+
+        .pipeline-connector {
+            flex: 1;
+            height: 3px;
+            background: #e5e7eb;
+            position: relative;
+            border-radius: 2px;
+            margin-top: -20px;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .pipeline-connector.active {
+            background: #10b981;
+        }
+
+        .pipeline-connector.active::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent);
+            animation: waterFlow 1.2s infinite linear;
+        }
+
+        @keyframes waterFlow {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Hub Containers */
+        .sf-hub-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 22px;
+            padding: 1.4rem;
+            height: 100%;
+            box-shadow: 0 4px 18px -2px rgba(0, 0, 0, 0.03);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+        }
+
+        .sf-hub-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.15rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .sf-hub-title {
+            font-size: 1.02rem;
+            font-weight: 800;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0;
+        }
+
+        .sf-hub-subtitle {
+            font-size: 0.77rem;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        /* Actuator Control Cards (for Pompa & Pupuk) */
+        .sf-actuator-card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 1.15rem;
+            margin-bottom: 0.85rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .sf-actuator-card:last-child {
+            margin-bottom: 0;
+        }
+
+        .sf-actuator-card:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+        }
+
+        .sf-actuator-card.active-pump {
+            border-color: #0ea5e9;
+            background: linear-gradient(135deg, #ffffff 0%, rgba(14, 165, 233, 0.05) 100%);
+            box-shadow: 0 6px 18px rgba(14, 165, 233, 0.12);
+        }
+
+        .sf-actuator-card.active-dosing {
+            border-color: #f59e0b;
+            background: linear-gradient(135deg, #ffffff 0%, rgba(245, 158, 11, 0.05) 100%);
+            box-shadow: 0 6px 18px rgba(245, 158, 11, 0.12);
+        }
+
+        .sf-actuator-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+            transition: transform 0.3s ease;
+        }
+
+        .sf-actuator-card .output-status,
+        .sf-zone-card .output-status {
+            margin: 0 !important;
+            letter-spacing: 0.3px;
+            font-size: 0.72rem !important;
+            font-weight: 700 !important;
+            padding: 0.3rem 0.65rem !important;
+            border-radius: 50px !important;
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.2;
+        }
+
+        .sf-actuator-card .output-status.on,
+        .sf-zone-card .output-status.on {
+            background: rgba(16, 185, 129, 0.12) !important;
+            color: #059669 !important;
+            border: 1px solid rgba(16, 185, 129, 0.25) !important;
+        }
+
+        .sf-actuator-card .output-status.off,
+        .sf-zone-card .output-status.off {
+            background: rgba(239, 68, 68, 0.08) !important;
+            color: #dc2626 !important;
+            border: 1px solid rgba(239, 68, 68, 0.2) !important;
+        }
+
+        /* Zone Card */
+        .sf-zone-card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 1.15rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            height: 100%;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+        }
+
+        .sf-zone-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px -3px rgba(0, 0, 0, 0.07);
+        }
+
+        .sf-zone-card.active-flow {
+            border-color: #10b981;
+            box-shadow: 0 8px 22px -3px rgba(16, 185, 129, 0.22);
+        }
+
+        .sf-zone-badge-num {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 0.92rem;
+            flex-shrink: 0;
+        }
+
+        .sf-flow-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 3px 9px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            background: rgba(16, 185, 129, 0.12);
+            color: #059669;
+            animation: flowGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes flowGlow {
+            0%, 100% { opacity: 0.95; transform: scale(1); }
+            50% { opacity: 0.55; transform: scale(0.96); }
+        }
+
+        /* Duration Pills for Siram Modal */
+        .sf-dur-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .sf-dur-pill {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0.65rem 0.5rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s ease;
+            background: #ffffff;
+        }
+
+        .sf-dur-pill:hover {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.04);
+        }
+
+        .sf-dur-pill:has(input:checked) {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.15);
+        }
+
+        .sf-dur-pill .dur-num {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #1f2937;
+            line-height: 1;
+        }
+
+        .sf-dur-pill .dur-unit {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        .sf-dur-pill:has(input:checked) .dur-num {
+            color: #059669;
+        }
+
+        .sf-dur-pill:has(input:checked) .dur-unit {
+            color: #059669;
+        }
+
         .date-pill {
             background: rgba(255, 255, 255, 0.7);
             border: 1px solid var(--glass-border);
@@ -666,8 +1105,8 @@
 
             /* Smart Farm Status Card on Mobile */
             #sf-status-card {
-                padding: 1rem !important;
-                border-radius: 16px !important;
+                padding: 1.15rem 1rem !important;
+                border-radius: 18px !important;
                 margin-bottom: 1.25rem !important;
             }
 
@@ -678,19 +1117,31 @@
             }
 
             #sf-status-card .sf-actions-group {
-                display: flex;
+                display: grid !important;
+                grid-template-columns: 1fr 1fr;
                 width: 100%;
                 gap: 0.5rem;
             }
 
+            #sf-status-card .sf-actions-group #sf-btn-start,
+            #sf-status-card .sf-actions-group #sf-btn-stop {
+                grid-column: span 2;
+                font-size: 0.92rem !important;
+                min-height: 44px;
+            }
+
             #sf-status-card .sf-actions-group .btn {
-                flex: 1;
                 justify-content: center;
-                padding: 0.65rem 0.5rem !important;
-                font-size: 0.85rem !important;
+                padding: 0.6rem 0.45rem !important;
+                font-size: 0.82rem !important;
                 font-weight: 600;
                 border-radius: 12px !important;
-                min-height: 42px;
+                min-height: 40px;
+            }
+
+            .sf-hub-card {
+                padding: 1.1rem !important;
+                border-radius: 18px !important;
             }
 
             /* Prevent auto-zoom in iOS Safari */
@@ -1057,7 +1508,9 @@
                 </div>
                 <p class="mb-0 mt-2" style="color: var(--text-secondary);" id="last-update-text">
                     <span class="live-dot me-2" id="live-dot" style="display: {{ ($isOnline ?? false) ? 'inline-block' : 'none' }};"></span>
-                    @if($latestData && $latestData->recorded_at)
+                    @if($lastSeen)
+                        Terakhir aktif: {{ \Carbon\Carbon::parse($lastSeen)->diffForHumans() }}
+                    @elseif($latestData && $latestData->recorded_at)
                         Terakhir update: {{ \Carbon\Carbon::parse($latestData->recorded_at)->diffForHumans() }}
                     @else
                         Menunggu data...
@@ -1065,13 +1518,15 @@
                 </p>
             </div>
             <div class="d-flex gap-2 align-items-center flex-wrap justify-content-md-end header-actions-group">
-                <a href="{{ isset($isAdminView) && $isAdminView ? route('admin.device.history', $device->id) : route('monitoring.history', $userDevice->id) }}" class="btn btn-history btn-action-custom">
-                    <i class="bi bi-clock-history me-1"></i> <span>Riwayat Data</span>
-                </a>
-                @if($scheduleConfig ?? false)
-                    <a href="{{ ($isAdminView ?? false) ? route('schedule.index', $device->id) : route('schedule.index', $userDevice->id) }}" class="btn btn-app btn-action-custom">
-                        <i class="bi bi-calendar-check me-1"></i> <span>Jadwal</span>
+                @if($device->type !== 'smart_farm')
+                    <a href="{{ isset($isAdminView) && $isAdminView ? route('admin.device.history', $device->id) : route('monitoring.history', $userDevice->id) }}" class="btn btn-history btn-action-custom">
+                        <i class="bi bi-clock-history me-1"></i> <span>Riwayat Data</span>
                     </a>
+                    @if($scheduleConfig ?? false)
+                        <a href="{{ ($isAdminView ?? false) ? route('schedule.index', $device->id) : route('schedule.index', $userDevice->id) }}" class="btn btn-app btn-action-custom">
+                            <i class="bi bi-calendar-check me-1"></i> <span>Jadwal</span>
+                        </a>
+                    @endif
                 @endif
                 @if($hasAutomation ?? false)
                     <a href="{{ ($isAdminView ?? false) ? route('automasi.index', $device->id) : route('automasi.index', $userDevice->id) }}" class="btn btn-automation btn-action-custom">
@@ -1199,30 +1654,56 @@
                 $sisaDetikMod = $sisaDetik % 60;
                 $sfError = !empty($sfStatus['error']);
                 $sfJam = $sfStatus['jam'] ?? null;
+                $sfTimezone = $sfStatus['timezone'] ?? \Cache::get("device_timezone_{$device->id}", 'WIB');
                 $jamFormatted = $sfJam && strlen((string)$sfJam) === 4 ? substr((string)$sfJam, 0, 2) . ':' . substr((string)$sfJam, 2, 2) : null;
+
+                $sfPompa = $outputs->firstWhere('output_name', 'sf_pompa');
+                $sfBlok1 = $outputs->firstWhere('output_name', 'sf_blok1');
+                $sfBlok2 = $outputs->firstWhere('output_name', 'sf_blok2');
+                $sfBlok3 = $outputs->firstWhere('output_name', 'sf_blok3');
+                $sfPupuk = $outputs->firstWhere('output_name', 'sf_pupuk');
+
+                $isPompaActive = (bool) (($sfPompa && $sfPompa->current_value) || $isSiram);
+                $otherOutputs = $outputs->whereNotIn('output_name', ['sf_pompa', 'sf_blok1', 'sf_blok2', 'sf_blok3', 'sf_pupuk']);
             @endphp
-            <!-- Smart Farm Live Irrigation Status Card -->
-            <div class="glass-card mb-4 p-4 shadow-sm" id="sf-status-card" style="border-radius: 20px; border: 1px solid rgba(255,255,255,0.4); background: var(--glass-bg);">
+
+            <!-- ==================================================== -->
+            <!-- 🌿 SMART FARM CONTROL CENTER: UNIFIED ARCHITECTURE   -->
+            <!-- ==================================================== -->
+
+            @php
+                $isPupukActive = (bool) (($sfPupuk && $sfPupuk->current_value) || ($isSiram && $siramPupuk));
+            @endphp
+
+            <!-- LEVEL 1: HERO STATUS & OPERATIONAL COMMAND BAR -->
+            <div class="sf-hero-card mb-4" id="sf-status-card">
                 <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
                     <div class="d-flex align-items-center gap-3">
-                        <div class="d-flex align-items-center justify-content-center" id="sf-icon-wrapper" style="width: 52px; height: 52px; border-radius: 16px; background: {{ $isSiram ? 'linear-gradient(135deg, #059669, #10b981)' : 'linear-gradient(135deg, #0284c7, #38bdf8)' }}; color: white; font-size: 1.6rem; box-shadow: 0 8px 16px -4px rgba(0,0,0,0.15);">
-                            <i class="bi {{ $isSiram ? 'bi-droplet-fill' : 'bi-water' }}" id="sf-icon-main"></i>
+                        <div class="d-flex align-items-center justify-content-center" id="sf-icon-wrapper" style="width: 58px; height: 58px; border-radius: 18px; background: {{ ($isSiram || $isPompaActive) ? 'linear-gradient(135deg, #059669, #10b981)' : 'linear-gradient(135deg, #0284c7, #38bdf8)' }}; color: white; font-size: 1.75rem; box-shadow: 0 8px 22px -4px rgba(0,0,0,0.18);">
+                            <i class="bi {{ ($isSiram || $isPompaActive) ? 'bi-droplet-fill' : 'bi-water' }}" id="sf-icon-main"></i>
                         </div>
                         <div>
                             <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
-                                <span class="badge rounded-pill {{ $isSiram ? 'bg-success text-white' : 'bg-secondary text-white' }}" id="sf-badge-siram" style="padding: 6px 14px; font-weight: 700; letter-spacing: 0.5px;">
-                                    <i class="bi {{ $isSiram ? 'bi-play-circle-fill' : 'bi-pause-circle' }} me-1" id="sf-icon-badge"></i>
-                                    <span id="sf-text-siram">{{ $isSiram ? "SEDANG MENYIRAM (BLOK {$siramBlok})" : 'SIAGA (STANDBY)' }}</span>
+                                <span class="badge rounded-pill {{ ($isSiram || $isPompaActive) ? 'bg-success text-white' : 'bg-secondary text-white' }}" id="sf-badge-siram" style="padding: 6px 14px; font-weight: 700; letter-spacing: 0.5px;">
+                                    <i class="bi {{ ($isSiram || $isPompaActive) ? 'bi-play-circle-fill' : 'bi-pause-circle' }} me-1" id="sf-icon-badge"></i>
+                                    <span id="sf-text-siram">
+                                        @if($isSiram)
+                                            SEDANG MENYIRAM (BLOK {{ $siramBlok }})
+                                        @elseif($isPompaActive)
+                                            SEDANG MENYIRAM (MANUAL)
+                                        @else
+                                            SIAGA (STANDBY)
+                                        @endif
+                                    </span>
                                 </span>
-                                @if($jamFormatted)
-                                    <span class="badge rounded-pill bg-light text-muted border small" id="sf-badge-jam" title="Waktu internal RTC controller">
-                                        <i class="bi bi-clock me-1"></i>RTC: {{ $jamFormatted }}
-                                    </span>
-                                @endif
+                                <span class="badge rounded-pill bg-light text-muted border small d-inline-flex align-items-center gap-1 shadow-sm" id="sf-badge-jam" title="Waktu RTC alat. Klik untuk sinkronkan zona waktu!" style="cursor: pointer; transition: all 0.2s;" onclick="openRtcSyncModal()">
+                                    <i class="bi bi-clock text-primary"></i>RTC: <span id="sf-text-jam">{{ $jamFormatted ? ($jamFormatted . ' ' . $sfTimezone) : '--:--' }}</span>
+                                    <i class="bi bi-arrow-repeat ms-1 text-muted" id="sf-icon-sync-rtc"></i>
+                                </span>
                                 @if($sfError)
-                                    <span class="badge rounded-pill bg-danger text-white small" id="sf-badge-error">
-                                        <i class="bi bi-exclamation-triangle-fill me-1"></i>Error Relay
-                                    </span>
+                                    <button type="button" class="badge rounded-pill bg-danger text-white small border-0 d-inline-flex align-items-center gap-1 shadow-sm" id="sf-badge-error" title="Klik untuk Reset Error Relay pada alat" onclick="resetRelayErrorQuick()" style="cursor: pointer;">
+                                        <i class="bi bi-exclamation-triangle-fill"></i> Error Relay (Klik Reset)
+                                    </button>
                                 @endif
                             </div>
                             <div class="small text-muted" id="sf-detail-siram">
@@ -1231,222 +1712,459 @@
                                     @if($siramPupuk)
                                         &bull; <span class="text-warning fw-bold"><i class="bi bi-droplet-half me-1"></i>Pupuk Aktif</span>
                                     @endif
+                                @elseif($isPompaActive)
+                                    Penyiraman manual sedang berjalan aktif.
                                 @else
-                                    Sistem irigasi multi-zona siap. Pompa dan solenoid dalam kondisi standby.
+                                    Sistem irigasi multi-zona siap. Pompa dan katup solenoid dalam kondisi siaga.
                                 @endif
                             </div>
                         </div>
                     </div>
-                    <div class="d-flex align-items-center gap-2 sf-actions-group">
-                        @if($isSiram)
-                            <button type="button" id="sf-btn-stop" class="btn btn-danger btn-sm d-inline-flex align-items-center gap-2 shadow-sm" style="border-radius: 50px; padding: 0.6rem 1.4rem; font-weight: 600;" onclick="stopSiramQuick()">
+
+                    <!-- Quick Operation Buttons -->
+                    <div class="d-flex align-items-center gap-2 flex-wrap sf-actions-group" id="sf-actions-container">
+                        @if($isSiram || $isPompaActive)
+                            <button type="button" id="sf-btn-stop" class="btn btn-danger btn-sm d-inline-flex align-items-center gap-2 shadow-sm" style="border-radius: 50px; padding: 0.65rem 1.4rem; font-weight: 700;" onclick="stopSiramQuick()">
                                 <i class="bi bi-stop-circle-fill"></i> Stop Siram
                             </button>
+                        @else
+                            <button type="button" id="sf-btn-start" class="btn btn-success btn-sm d-inline-flex align-items-center gap-2 shadow-sm" style="border-radius: 50px; padding: 0.65rem 1.4rem; font-weight: 700; background: linear-gradient(135deg, #10b981, #059669);" onclick="openSmartFarmSiramModal()">
+                                <i class="bi bi-play-circle-fill"></i> Siram Manual
+                            </button>
                         @endif
-                        <a href="{{ ($isAdminView ?? false) ? route('schedule.index', $device->id) : route('schedule.index', $userDevice->id) }}" class="btn btn-glass btn-sm d-inline-flex align-items-center gap-2 shadow-sm" style="border-radius: 50px; padding: 0.6rem 1.4rem; font-weight: 600;">
+                        <a href="{{ ($isAdminView ?? false) ? route('schedule.index', $device->id) : route('schedule.index', $userDevice->id) }}" class="btn btn-glass btn-sm d-inline-flex align-items-center gap-2 shadow-sm" style="border-radius: 50px; padding: 0.65rem 1.3rem; font-weight: 600;">
                             <i class="bi bi-calendar-check text-primary"></i> Kelola Jadwal
                         </a>
+                        <button type="button" class="btn btn-light btn-sm d-inline-flex align-items-center gap-1 border shadow-sm" style="border-radius: 50px; padding: 0.65rem 1.1rem; font-weight: 600; color: #4b5563;" onclick="openRtcSyncModal()" title="Sinkronkan Waktu RTC Device">
+                            <i class="bi bi-clock-history text-primary"></i> Jam RTC
+                        </button>
                     </div>
                 </div>
             </div>
-        @endif
 
-        @if($outputs->count() > 0)
-            <!-- Output Control Panel -->
-            <div class="output-panel">
-                <h5 class="card-title mb-4" style="color: var(--text-main);">
-                    <i class="bi bi-sliders me-2 text-primary"></i>Kontrol Output
-                </h5>
-                <div class="row g-4">
-                    @php
-                        // Sort outputs by priority then name (excluding multi_zone)
-                        $sortedOutputs = $outputs->where('output_type', '!=', 'multi_zone')->sortBy(function ($output) {
-                            $name = strtolower($output->output_name);
+            <!-- LEVEL 2: LIVE IRRIGATION PIPELINE VISUALIZER -->
+            <div class="sf-pipeline-card mb-4">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="small fw-bold text-muted d-flex align-items-center gap-1" style="font-size: 0.76rem; letter-spacing: 0.5px; text-transform: uppercase;">
+                        <i class="bi bi-diagram-3-fill text-primary"></i> Alur Distribusi Irigasi & Fertigasi
+                    </span>
+                    <span class="small text-muted" style="font-size: 0.72rem;">
+                        <i class="bi bi-shield-check text-success"></i> Auto-Interlock RS485
+                    </span>
+                </div>
+                <div class="pipeline-scroll-wrapper">
+                    <div class="pipeline-track">
+                        <!-- Node 1: Pompa Utama -->
+                        <div class="pipeline-node node-pompa {{ $isPompaActive ? 'active' : '' }}" id="pipe-node-pompa">
+                            <div class="pipeline-node-icon" style="color: #0284c7; background: rgba(2, 132, 199, 0.08); border-color: rgba(2, 132, 199, 0.2);">
+                                <i class="bi bi-water"></i>
+                            </div>
+                            <div class="pipeline-node-label">Pompa Utama</div>
+                            <div class="pipeline-node-status" id="pipe-status-pompa">{{ $isPompaActive ? 'MEMOMPA' : 'OFF' }}</div>
+                        </div>
 
-                            // Smart Farm Relays
-                            if ($name === 'sf_pompa') return 10;
-                            if ($name === 'sf_blok1') return 11;
-                            if ($name === 'sf_blok2') return 12;
-                            if ($name === 'sf_blok3') return 13;
-                            if ($name === 'sf_pupuk') return 14;
+                        <!-- Connector 1 -->
+                        <div class="pipeline-connector {{ $isPompaActive ? 'active' : '' }}" id="pipe-conn-1"></div>
 
-                            // Paling bawah khusus Air Baku Valve dan Air Pupuk Valve
-                            if (in_array($name, ['st_bak', 'st_ppk']))
-                                return 100;
+                        <!-- Node 2: Dosing Pupuk -->
+                        <div class="pipeline-node node-pupuk {{ $isPupukActive ? 'active' : '' }}" id="pipe-node-pupuk">
+                            <div class="pipeline-node-icon" style="color: #d97706; background: rgba(217, 119, 6, 0.08); border-color: rgba(217, 119, 6, 0.2);">
+                                <i class="bi bi-flask-fill"></i>
+                            </div>
+                            <div class="pipeline-node-label">Injeksi Pupuk</div>
+                            <div class="pipeline-node-status" id="pipe-status-pupuk">{{ $isPupukActive ? 'INJEKSI' : 'STANDBY' }}</div>
+                        </div>
 
-                            // Display-only status outputs
-                            if (str_starts_with($name, 'st_'))
-                                return 95;
+                        <!-- Connector 2 -->
+                        <div class="pipeline-connector {{ $isPompaActive ? 'active' : '' }}" id="pipe-conn-2"></div>
 
-                            // Priority Mapping
-                            if (str_contains($name, 'pompa') || str_contains($name, 'pump') && !str_contains($name, 'ab') && !str_contains($name, 'ph'))
-                                return 10;
-                            if (str_contains($name, 'pump_ab') || str_contains($name, 'dosing'))
-                                return 20;
-                            if (str_contains($name, 'ph_up') || str_contains($name, 'ph1'))
-                                return 30; // pH Up (pmpPH)
-                            if (str_contains($name, 'ph_down') || str_contains($name, 'ph2'))
-                                return 31; // pH Down (pmpPH2)
+                        <!-- Node 3: Blok 1 -->
+                        @php
+                            $isB1Flow = ($sfBlok1?->current_value && $isPompaActive) || ($isSiram && $siramBlok == 1);
+                            $isB2Flow = ($sfBlok2?->current_value && $isPompaActive) || ($isSiram && $siramBlok == 2);
+                            $isB3Flow = ($sfBlok3?->current_value && $isPompaActive) || ($isSiram && $siramBlok == 3);
+                        @endphp
+                        <div class="pipeline-node node-blok1 {{ $isB1Flow ? 'active' : '' }}" id="pipe-node-blok1">
+                            <div class="pipeline-node-icon" style="color: #059669; background: rgba(16, 185, 129, 0.08); border-color: rgba(16, 185, 129, 0.2);">
+                                <i class="bi bi-grid-fill"></i>
+                            </div>
+                            <div class="pipeline-node-label">Blok 1</div>
+                            <div class="pipeline-node-status" id="pipe-status-blok1">{{ $isB1Flow ? 'MENGALIR' : ($sfBlok1?->current_value ? 'BUKA' : 'TUTUP') }}</div>
+                        </div>
 
-                            // Environment controls
-                            if (str_contains($name, 'mist'))
-                                return 50;
-                            if (str_contains($name, 'fan'))
-                                return 51;
-                            if (str_contains($name, 'air'))
-                                return 52;
-                            if (str_contains($name, 'lamp'))
-                                return 53;
-                            if (str_contains($name, 'mix'))
-                                return 54;
+                        <!-- Node 4: Blok 2 -->
+                        <div class="pipeline-node node-blok2 {{ $isB2Flow ? 'active' : '' }}" id="pipe-node-blok2">
+                            <div class="pipeline-node-icon" style="color: #0284c7; background: rgba(14, 165, 233, 0.08); border-color: rgba(14, 165, 233, 0.2);">
+                                <i class="bi bi-grid-fill"></i>
+                            </div>
+                            <div class="pipeline-node-label">Blok 2</div>
+                            <div class="pipeline-node-status" id="pipe-status-blok2">{{ $isB2Flow ? 'MENGALIR' : ($sfBlok2?->current_value ? 'BUKA' : 'TUTUP') }}</div>
+                        </div>
 
-                            return 99; // Default priority
-                        })->values();
-                    @endphp
+                        <!-- Node 5: Blok 3 -->
+                        <div class="pipeline-node node-blok3 {{ $isB3Flow ? 'active' : '' }}" id="pipe-node-blok3">
+                            <div class="pipeline-node-icon" style="color: #7c3aed; background: rgba(139, 92, 246, 0.08); border-color: rgba(139, 92, 246, 0.2);">
+                                <i class="bi bi-grid-fill"></i>
+                            </div>
+                            <div class="pipeline-node-label">Blok 3</div>
+                            <div class="pipeline-node-status" id="pipe-status-blok3">{{ $isB3Flow ? 'MENGALIR' : ($sfBlok3?->current_value ? 'BUKA' : 'TUTUP') }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                    {{-- Dynamic Irrigation Pump Cards (from database) --}}
-                    @php
-                        $irrigationPumps = $outputs->where('output_type', 'multi_zone');
-                    @endphp
-
-                    @foreach($irrigationPumps as $pump)
-                        <div class="col-6 col-md-4 col-lg-3">
-                            <div class="output-card-special" id="output-card-irrigation-{{ $pump->id }}">
-                                <div class="card-header-flex">
-                                    <div class="output-icon-special" style="background: linear-gradient(135deg, #0ea5e9, #0284c7);">
-                                        <i class="bi bi-droplet-fill"></i>
-                                    </div>
-                                    <div class="output-label">{{ $pump->output_label }}</div>
-                                </div>
-                                
-                                <div class="output-status {{ $pump->current_value ? 'on' : 'off' }}" id="pump-status-{{ $pump->id }}">
-                                    {{ $pump->current_value ? 'ON' : 'OFF' }}
-                                </div>
-
-                                <div class="segmented-control">
-                                    <button type="button" class="segmented-btn {{ $pump->current_value ? 'active-on' : '' }}"
-                                        onclick="openIrrigationModal({{ $pump->id }}, {{ $pump->max_sectors ?? 1 }})"
-                                        id="btn-on-{{ $pump->id }}">
-                                        ON
-                                    </button>
-                                    <button type="button" class="segmented-btn {{ !$pump->current_value ? 'active-off' : '' }}"
-                                        onclick="sendIrrigationPumpOff({{ $pump->id }})" id="btn-off-{{ $pump->id }}">
-                                        OFF
-                                    </button>
+            <!-- LEVEL 3: DUA HUB KONTROL UTAMA (SIDE-BY-SIDE GRID) -->
+            <div class="row g-4 mb-4">
+                <!-- ============================================== -->
+                <!-- HUB 1: SUPLAI AIR & FERTIGASI (KOLOM KIRI - 5)  -->
+                <!-- ============================================== -->
+                <div class="col-12 col-lg-5">
+                    <div class="sf-hub-card h-100">
+                        <div class="sf-hub-header">
+                            <div>
+                                <h6 class="sf-hub-title">
+                                    <i class="bi bi-droplet-half text-primary"></i> Suplai Air & Fertigasi
+                                </h6>
+                                <div class="sf-hub-subtitle">
+                                    Kontrol pompa air utama dan injeksi nutrisi cair
                                 </div>
                             </div>
+                            <span class="badge rounded-pill bg-light text-muted border px-2 py-1 small">2 Unit</span>
                         </div>
-                    @endforeach
 
-                    @foreach($sortedOutputs as $output)
+                        <!-- 1.1 POMPA UTAMA (AIR) -->
+                        @if($sfPompa)
+                        <div class="sf-actuator-card {{ $isPompaActive ? 'active-pump' : '' }}" id="output-card-{{ $sfPompa->id }}">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="sf-actuator-icon" style="background: {{ $isPompaActive ? 'linear-gradient(135deg, #0284c7, #38bdf8)' : 'rgba(2, 132, 199, 0.1)' }}; color: {{ $isPompaActive ? '#ffffff' : '#0284c7' }}; border: 1px solid {{ $isPompaActive ? '#0284c7' : 'rgba(2, 132, 199, 0.2)' }};">
+                                        <i class="bi bi-water"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark" style="font-size: 0.95rem;">Pompa Utama</div>
+                                        <div class="text-muted" style="font-size: 0.76rem;">Suplai air utama ke pipa</div>
+                                    </div>
+                                </div>
+                                <span id="output-status-{{ $sfPompa->id }}" class="output-status {{ $isPompaActive ? 'on' : 'off' }} badge rounded-pill px-2.5 py-1 small m-0" data-on-text="MEMOMPA" data-off-text="OFF">
+                                    {{ $isPompaActive ? 'MEMOMPA' : 'OFF' }}
+                                </span>
+                            </div>
+
+                            <div class="segmented-control mt-2">
+                                <button type="button" class="segmented-btn {{ $isPompaActive ? 'active-on' : '' }}" onclick="openSmartFarmSiramModal()" id="btn-on-{{ $sfPompa->id }}">
+                                    <i class="bi bi-power me-1"></i> ON
+                                </button>
+                                <button type="button" class="segmented-btn {{ !$isPompaActive ? 'active-off' : '' }}" onclick="stopSmartFarmSiram()" id="btn-off-{{ $sfPompa->id }}">
+                                    OFF
+                                </button>
+                            </div>
+                        </div>
+                        @endif
+
+                        <!-- 1.2 INJEKSI PUPUK CAIR -->
+                        @if($sfPupuk)
                         @php
-                            $outIcon = $output->icon;
-                            $outBgColor = $output->color;
-                            
-                            $isStatusOnly = str_starts_with($output->output_name, 'sts_') || in_array($output->output_name, ['st_bak', 'st_ppk']);
-                            $bgColorHex = (strpos($outBgColor, '#') === 0) ? $outBgColor : '#0ea5e9';
+                            $isPupukOn = (bool) ($sfPupuk->current_value ?? 0);
                         @endphp
+                        <div class="sf-actuator-card {{ $isPupukOn ? 'active-dosing' : '' }}" id="output-card-{{ $sfPupuk->id }}">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="sf-actuator-icon" style="background: {{ $isPupukOn ? 'linear-gradient(135deg, #d97706, #f59e0b)' : 'rgba(217, 119, 6, 0.1)' }}; color: {{ $isPupukOn ? '#ffffff' : '#d97706' }}; border: 1px solid {{ $isPupukOn ? '#f59e0b' : 'rgba(217, 119, 6, 0.2)' }};">
+                                        <i class="bi bi-flask-fill"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark" style="font-size: 0.95rem;">Injeksi Pupuk</div>
+                                        <div class="text-muted" style="font-size: 0.76rem;"><i class="bi bi-shield-check text-warning me-1"></i>Dosing nutrisi ke pipa</div>
+                                    </div>
+                                </div>
+                                <span id="output-status-{{ $sfPupuk->id }}" class="output-status {{ $isPupukOn ? 'on' : 'off' }} badge rounded-pill px-2.5 py-1 small m-0" data-on-text="INJEKSI AKTIF" data-off-text="STANDBY">
+                                    {{ $isPupukOn ? 'INJEKSI AKTIF' : 'STANDBY' }}
+                                </span>
+                            </div>
+
+                            <div class="segmented-control mt-2">
+                                <button type="button" class="segmented-btn {{ $isPupukOn ? 'active-on' : '' }}" onclick="setOutput({{ $sfPupuk->id }}, true)" id="btn-on-{{ $sfPupuk->id }}">
+                                    <i class="bi bi-power me-1"></i> ON
+                                </button>
+                                <button type="button" class="segmented-btn {{ !$isPupukOn ? 'active-off' : '' }}" onclick="setOutput({{ $sfPupuk->id }}, false)" id="btn-off-{{ $sfPupuk->id }}">
+                                    OFF
+                                </button>
+                            </div>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- ==================================================== -->
+                <!-- HUB 2: DISTRIBUSI ZONA LAHAN (KOLOM KANAN - 7)       -->
+                <!-- ==================================================== -->
+                <div class="col-12 col-lg-7">
+                    <div class="sf-hub-card h-100">
+                        <div class="sf-hub-header">
+                            <div>
+                                <h6 class="sf-hub-title">
+                                    <i class="bi bi-grid-3x3-gap-fill text-success"></i> Distribusi Zona Lahan (Katup Solenoid)
+                                </h6>
+                                <div class="sf-hub-subtitle">
+                                    Buka katup untuk mengalirkan air ke blok kebun yang dituju
+                                </div>
+                            </div>
+                            <span class="badge rounded-pill bg-light text-muted border px-2 py-1 small">3 Zona Lahan</span>
+                        </div>
+
+                        <div class="row g-3 h-100">
+                            @php
+                                $blocks = [
+                                    ['num' => 1, 'obj' => $sfBlok1, 'color' => '#10b981', 'bg' => 'rgba(16, 185, 129, 0.12)', 'border' => '#10b981'],
+                                    ['num' => 2, 'obj' => $sfBlok2, 'color' => '#0ea5e9', 'bg' => 'rgba(14, 165, 233, 0.12)', 'border' => '#0ea5e9'],
+                                    ['num' => 3, 'obj' => $sfBlok3, 'color' => '#8b5cf6', 'bg' => 'rgba(139, 92, 246, 0.12)', 'border' => '#8b5cf6'],
+                                ];
+                            @endphp
+
+                            @foreach($blocks as $b)
+                                @php
+                                    $blk = $b['obj'];
+                                    $isBlkOn = (bool) ($blk?->current_value ?? 0);
+                                    $isFlowing = ($isBlkOn && $isPompaActive) || ($isSiram && $siramBlok == $b['num']);
+                                @endphp
+                                <div class="col-12 col-sm-6 col-xl-4">
+                                    <div class="sf-zone-card {{ $isFlowing ? 'active-flow' : '' }}" id="output-card-{{ $blk?->id }}">
+                                        <div>
+                                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <div class="sf-zone-badge-num" style="background: {{ $b['bg'] }}; color: {{ $b['color'] }};">
+                                                        {{ $b['num'] }}
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-bold text-dark" style="font-size: 0.92rem;">Blok {{ $b['num'] }}</div>
+                                                        <div class="text-muted" style="font-size: 0.72rem;">Zona {{ $b['num'] }}</div>
+                                                    </div>
+                                                </div>
+
+                                                <span class="sf-flow-indicator" id="sf-flow-blok{{ $b['num'] }}" style="display: {{ $isFlowing ? 'inline-flex' : 'none' }};">
+                                                    <i class="bi bi-droplet-fill"></i> Mengalir
+                                                </span>
+                                            </div>
+
+                                            <div class="d-flex align-items-center justify-content-between p-2 px-2.5 rounded-3 mb-2.5" style="background: #f9fafb; border: 1px solid #f3f4f6;">
+                                                <span class="text-muted fw-semibold" style="font-size: 0.74rem;">Status Katup:</span>
+                                                <span class="output-status {{ $isBlkOn ? 'on' : 'off' }} fw-bold m-0"
+                                                    id="output-status-{{ $blk?->id }}"
+                                                    data-on-text="TERBUKA"
+                                                    data-off-text="TERTUTUP"
+                                                    style="letter-spacing: 0.3px; font-size: 0.74rem;">
+                                                    {{ $isBlkOn ? 'TERBUKA' : 'TERTUTUP' }}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            @if($blk)
+                                            <div class="segmented-control mb-2">
+                                                <button type="button" class="segmented-btn {{ $isBlkOn ? 'active-on' : '' }}"
+                                                    onclick="setOutput({{ $blk->id }}, true)" id="btn-on-{{ $blk->id }}">
+                                                    BUKA
+                                                </button>
+                                                <button type="button" class="segmented-btn {{ !$isBlkOn ? 'active-off' : '' }}"
+                                                    onclick="setOutput({{ $blk->id }}, false)" id="btn-off-{{ $blk->id }}">
+                                                    TUTUP
+                                                </button>
+                                            </div>
+                                            @endif
+
+                                            <button type="button" class="btn btn-sm btn-outline-success w-100 rounded-pill py-1.5 d-flex align-items-center justify-content-center gap-1"
+                                                style="font-size: 0.78rem; font-weight: 600;"
+                                                onclick="openSmartFarmSiramModal({{ $b['num'] }})">
+                                                <i class="bi bi-play-circle"></i> Siram Blok {{ $b['num'] }}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Output Tambahan Lainnya (Jika Ada) -->
+            @if($otherOutputs->count() > 0)
+            <div class="output-panel mb-4">
+                <h5 class="card-title mb-3" style="color: var(--text-main);">
+                    <i class="bi bi-sliders me-2 text-primary"></i>Output Tambahan Lainnya
+                </h5>
+                <div class="row g-4">
+                    @foreach($otherOutputs as $output)
                         <div class="col-6 col-md-4 col-lg-3">
                             <div class="output-card" id="output-card-{{ $output->id }}">
                                 <div class="card-header-flex">
-                                    <div class="output-icon" style="background: {{ $outBgColor }};">
-                                        <i class="bi {{ $outIcon }}"></i>
+                                    <div class="output-icon" style="background: {{ $output->color }};">
+                                        <i class="bi {{ $output->icon }}"></i>
                                     </div>
                                     <div class="output-label">{{ $output->output_label }}</div>
                                 </div>
-
-                                @if($output->output_type === 'boolean')
-                                    @if(in_array($output->output_name, ['st_bak', 'st_ppk']))
-                                        {{-- Display-only status for Air Baku & Air Pupuk Valve --}}
-                                        <div class="output-status {{ $output->current_value ? 'on' : 'off' }}"
-                                            id="output-status-{{ $output->id }}">
-                                            Otomatis
-                                        </div>
-                                        <div class="d-flex justify-content-center mt-auto">
-                                            <span class="badge rounded-pill px-3 py-1 {{ $output->current_value ? 'bg-success' : 'bg-secondary' }}" id="badge-status-{{ $output->id }}">
-                                                <i class="bi {{ $output->current_value ? 'bi-check-circle' : 'bi-x-circle' }} me-1"></i>
-                                                {{ $output->current_value ? 'ON' : 'OFF' }}
-                                            </span>
-                                        </div>
-                                    @else
-                                        @php
-                                            $outName = strtolower($output->output_name);
-                                            $isShading = str_contains($outName, 'shading') || str_contains($outName, 'net');
-                                            $onText = $isShading ? 'OPEN' : 'ON';
-                                            $offText = $isShading ? 'CLOSE' : 'OFF';
-                                        @endphp
-                                        <div class="output-status {{ $output->current_value ? 'on' : 'off' }}"
-                                            id="output-status-{{ $output->id }}"
-                                            data-on-text="{{ $onText }}"
-                                            data-off-text="{{ $offText }}">
-                                            {{ $output->current_value ? $onText : $offText }}
-                                        </div>
-                                        
-                                        {{-- ON/OFF Buttons for Boolean --}}
-                                        @php
-                                            $isDosingPump = str_contains($outName, 'pump_ab') || str_contains($outName, 'dosing') || $outName === 'st_dos';
-                                            $isPhUp = str_contains($outName, 'ph_up') || str_contains($outName, 'ph1') || $outName === 'st_ph_u';
-                                            $isPhDown = str_contains($outName, 'ph_down') || str_contains($outName, 'ph2') || $outName === 'st_ph_d';
-                                            
-                                            $isModalPump = $isPhUp || $isPhDown || $isDosingPump;
-                                            $pumpType = $isDosingPump ? 'dosing' : ($isPhUp ? 'ph_up' : ($isPhDown ? 'ph_down' : ''));
-                                        @endphp
-
-                                        @if($isModalPump)
-                                            {{-- Dosing/pH: ON opens popup with Manual & mL options --}}
-                                            <div class="segmented-control">
-                                                <button type="button"
-                                                    class="segmented-btn {{ $output->current_value ? 'active-on' : '' }}"
-                                                    onclick="openPhControlModal({{ $output->id }}, '{{ $pumpType }}')" id="btn-on-{{ $output->id }}">
-                                                    ON
-                                                </button>
-                                                <button type="button"
-                                                    class="segmented-btn {{ !$output->current_value ? 'active-off' : '' }}"
-                                                    onclick="setOutput({{ $output->id }}, false)" id="btn-off-{{ $output->id }}">
-                                                    OFF
-                                                </button>
-                                            </div>
-                                        @else
-                                            {{-- Normal Boolean ON/OFF --}}
-                                            <div class="segmented-control">
-                                                <button type="button"
-                                                    class="segmented-btn {{ $output->current_value ? 'active-on' : '' }}"
-                                                    onclick="setOutput({{ $output->id }}, true)" id="btn-on-{{ $output->id }}">
-                                                    {{ $onText }}
-                                                </button>
-                                                <button type="button"
-                                                    class="segmented-btn {{ !$output->current_value ? 'active-off' : '' }}"
-                                                    onclick="setOutput({{ $output->id }}, false)" id="btn-off-{{ $output->id }}">
-                                                    {{ $offText }}
-                                                </button>
-                                            </div>
-                                        @endif
-                                    @endif
-                                @else
-                                    <!-- Range Slider for Number/Percentage -->
-                                    <div class="output-status on">
-                                        {{ $output->output_type === 'percentage' ? '0-100%' : '0-180°' }}
-                                    </div>
-                                    <div class="range-value text-center" id="output-value-{{ $output->id }}">
-                                        {{ (int) $output->current_value }}{{ $output->unit }}
-                                    </div>
-                                    <input type="range" class="range-slider mt-auto" id="output-{{ $output->id }}"
-                                        data-output-id="{{ $output->id }}" data-output-type="{{ $output->output_type }}" min="0"
-                                        max="{{ $output->output_type === 'percentage' ? 100 : 180 }}"
-                                        value="{{ (int) $output->current_value }}"
-                                        oninput="updateRangeValue({{ $output->id }}, this.value, '{{ $output->unit }}')"
-                                        onchange="toggleOutput({{ $output->id }}, this.value)">
-                                @endif
+                                <div class="output-status {{ $output->current_value ? 'on' : 'off' }}" id="output-status-{{ $output->id }}">
+                                    {{ $output->current_value ? 'ON' : 'OFF' }}
+                                </div>
+                                <div class="segmented-control">
+                                    <button type="button" class="segmented-btn {{ $output->current_value ? 'active-on' : '' }}" onclick="setOutput({{ $output->id }}, true)" id="btn-on-{{ $output->id }}">ON</button>
+                                    <button type="button" class="segmented-btn {{ !$output->current_value ? 'active-off' : '' }}" onclick="setOutput({{ $output->id }}, false)" id="btn-off-{{ $output->id }}">OFF</button>
+                                </div>
                             </div>
                         </div>
                     @endforeach
                 </div>
             </div>
-        @endif
-
-        @if($latestData)
+            @endif
 
         @else
+            <!-- Standard Output Control Panel for Other Devices -->
+            @if($outputs->count() > 0)
+                <div class="output-panel">
+                    <h5 class="card-title mb-4" style="color: var(--text-main);">
+                        <i class="bi bi-sliders me-2 text-primary"></i>Kontrol Output
+                    </h5>
+                    <div class="row g-4">
+                        @php
+                            $sortedOutputs = $outputs->where('output_type', '!=', 'multi_zone')->sortBy(function ($output) {
+                                $name = strtolower($output->output_name);
+                                if (in_array($name, ['st_bak', 'st_ppk'])) return 100;
+                                if (str_starts_with($name, 'st_')) return 95;
+                                if (str_contains($name, 'pompa') || str_contains($name, 'pump') && !str_contains($name, 'ab') && !str_contains($name, 'ph')) return 10;
+                                if (str_contains($name, 'pump_ab') || str_contains($name, 'dosing')) return 20;
+                                if (str_contains($name, 'ph_up') || str_contains($name, 'ph1')) return 30;
+                                if (str_contains($name, 'ph_down') || str_contains($name, 'ph2')) return 31;
+                                if (str_contains($name, 'mist')) return 50;
+                                if (str_contains($name, 'fan')) return 51;
+                                if (str_contains($name, 'air')) return 52;
+                                if (str_contains($name, 'lamp')) return 53;
+                                if (str_contains($name, 'mix')) return 54;
+                                return 99;
+                            })->values();
+
+                            $irrigationPumps = $outputs->where('output_type', 'multi_zone');
+                        @endphp
+
+                        @foreach($irrigationPumps as $pump)
+                            <div class="col-6 col-md-4 col-lg-3">
+                                <div class="output-card-special" id="output-card-irrigation-{{ $pump->id }}">
+                                    <div class="card-header-flex">
+                                        <div class="output-icon-special" style="background: linear-gradient(135deg, #0ea5e9, #0284c7);">
+                                            <i class="bi bi-droplet-fill"></i>
+                                        </div>
+                                        <div class="output-label">{{ $pump->output_label }}</div>
+                                    </div>
+                                    
+                                    <div class="output-status {{ $pump->current_value ? 'on' : 'off' }}" id="pump-status-{{ $pump->id }}">
+                                        {{ $pump->current_value ? 'ON' : 'OFF' }}
+                                    </div>
+
+                                    <div class="segmented-control">
+                                        <button type="button" class="segmented-btn {{ $pump->current_value ? 'active-on' : '' }}"
+                                            onclick="openIrrigationModal({{ $pump->id }}, {{ $pump->max_sectors ?? 1 }})"
+                                            id="btn-on-{{ $pump->id }}">
+                                            ON
+                                        </button>
+                                        <button type="button" class="segmented-btn {{ !$pump->current_value ? 'active-off' : '' }}"
+                                            onclick="sendIrrigationPumpOff({{ $pump->id }})" id="btn-off-{{ $pump->id }}">
+                                            OFF
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+
+                        @foreach($sortedOutputs as $output)
+                            @php
+                                $outIcon = $output->icon;
+                                $outBgColor = $output->color;
+                                $isStatusOnly = str_starts_with($output->output_name, 'sts_') || in_array($output->output_name, ['st_bak', 'st_ppk']);
+                            @endphp
+                            <div class="col-6 col-md-4 col-lg-3">
+                                <div class="output-card" id="output-card-{{ $output->id }}">
+                                    <div class="card-header-flex">
+                                        <div class="output-icon" style="background: {{ $outBgColor }};">
+                                            <i class="bi {{ $outIcon }}"></i>
+                                        </div>
+                                        <div class="output-label">{{ $output->output_label }}</div>
+                                    </div>
+
+                                    @if($output->output_type === 'boolean')
+                                        @if(in_array($output->output_name, ['st_bak', 'st_ppk']))
+                                            <div class="output-status {{ $output->current_value ? 'on' : 'off' }}" id="output-status-{{ $output->id }}">
+                                                Otomatis
+                                            </div>
+                                            <div class="d-flex justify-content-center mt-auto">
+                                                <span class="badge rounded-pill px-3 py-1 {{ $output->current_value ? 'bg-success' : 'bg-secondary' }}" id="badge-status-{{ $output->id }}">
+                                                    <i class="bi {{ $output->current_value ? 'bi-check-circle' : 'bi-x-circle' }} me-1"></i>
+                                                    {{ $output->current_value ? 'ON' : 'OFF' }}
+                                                </span>
+                                            </div>
+                                        @else
+                                            @php
+                                                $outName = strtolower($output->output_name);
+                                                $isShading = str_contains($outName, 'shading') || str_contains($outName, 'net');
+                                                $onText = $isShading ? 'OPEN' : 'ON';
+                                                $offText = $isShading ? 'CLOSE' : 'OFF';
+                                                $isDosingPump = str_contains($outName, 'pump_ab') || str_contains($outName, 'dosing') || $outName === 'st_dos';
+                                                $isPhUp = str_contains($outName, 'ph_up') || str_contains($outName, 'ph1') || $outName === 'st_ph_u';
+                                                $isPhDown = str_contains($outName, 'ph_down') || str_contains($outName, 'ph2') || $outName === 'st_ph_d';
+                                                $isModalPump = $isPhUp || $isPhDown || $isDosingPump;
+                                                $pumpType = $isDosingPump ? 'dosing' : ($isPhUp ? 'ph_up' : ($isPhDown ? 'ph_down' : ''));
+                                            @endphp
+                                            <div class="output-status {{ $output->current_value ? 'on' : 'off' }}"
+                                                id="output-status-{{ $output->id }}"
+                                                data-on-text="{{ $onText }}"
+                                                data-off-text="{{ $offText }}">
+                                                {{ $output->current_value ? $onText : $offText }}
+                                            </div>
+                                            
+                                            @if($isModalPump)
+                                                <div class="segmented-control">
+                                                    <button type="button" class="segmented-btn {{ $output->current_value ? 'active-on' : '' }}"
+                                                        onclick="openPhControlModal({{ $output->id }}, '{{ $pumpType }}')" id="btn-on-{{ $output->id }}">
+                                                        ON
+                                                    </button>
+                                                    <button type="button" class="segmented-btn {{ !$output->current_value ? 'active-off' : '' }}"
+                                                        onclick="setOutput({{ $output->id }}, false)" id="btn-off-{{ $output->id }}">
+                                                        OFF
+                                                    </button>
+                                                </div>
+                                            @else
+                                                <div class="segmented-control">
+                                                    <button type="button" class="segmented-btn {{ $output->current_value ? 'active-on' : '' }}"
+                                                        onclick="setOutput({{ $output->id }}, true)" id="btn-on-{{ $output->id }}">
+                                                        {{ $onText }}
+                                                    </button>
+                                                    <button type="button" class="segmented-btn {{ !$output->current_value ? 'active-off' : '' }}"
+                                                        onclick="setOutput({{ $output->id }}, false)" id="btn-off-{{ $output->id }}">
+                                                        {{ $offText }}
+                                                    </button>
+                                                </div>
+                                            @endif
+                                        @endif
+                                    @else
+                                        <div class="output-status on">
+                                            {{ $output->output_type === 'percentage' ? '0-100%' : '0-180°' }}
+                                        </div>
+                                        <div class="range-value text-center" id="output-value-{{ $output->id }}">
+                                            {{ (int) $output->current_value }}{{ $output->unit }}
+                                        </div>
+                                        <input type="range" class="range-slider mt-auto" id="output-{{ $output->id }}"
+                                            data-output-id="{{ $output->id }}" data-output-type="{{ $output->output_type }}" min="0"
+                                            max="{{ $output->output_type === 'percentage' ? 100 : 180 }}"
+                                            value="{{ (int) $output->current_value }}"
+                                            oninput="updateRangeValue({{ $output->id }}, this.value, '{{ $output->unit }}')"
+                                            onchange="toggleOutput({{ $output->id }}, this.value)">
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+        @endif
+
+        @if(!$latestData && $device->type !== 'smart_farm')
             <!-- No Data -->
             <div class="glass-card">
                 <div class="no-data">
@@ -1606,6 +2324,256 @@
             </div>
         </div>
 
+        @if($device->type === 'smart_farm')
+        <!-- Smart Farm: Siram Manual Modal (Bottom Sheet Style) -->
+        <div class="modal fade" id="sfSiramModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content modal-content-glass">
+                    <div class="modal-handle"></div>
+                    <div class="modal-header-custom">
+                        <h5 style="font-weight: 800; color: #1f2937;">
+                            <i class="bi bi-droplet-half me-2" style="color: #10b981;"></i>Siram Manual (Irigasi)
+                        </h5>
+                        <div class="subtitle" style="font-size: 0.85rem; color: #6b7280;">Buka katup blok terlebih dahulu, lalu nyalakan pompa utama</div>
+                    </div>
+                    <div class="modal-body-custom">
+                        <!-- VIEW 1: FORM PEMILIHAN BLOK -->
+                        <div id="sf-form-view">
+                            <label class="form-label fw-bold mb-2" style="color: #374151; font-size: 0.9rem;">
+                                <i class="bi bi-geo-alt-fill me-1 text-success"></i> Pilih Blok yang Ingin Disiram:
+                            </label>
+                            
+                            <div class="d-flex flex-column gap-2 mb-3">
+                                <label class="p-3 border rounded-3 d-flex align-items-center justify-content-between sf-blok-card" style="cursor: pointer;" for="sf-blok-1">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px; background: rgba(16, 185, 129, 0.15); color: #059669; font-weight: 700;">1</div>
+                                        <div>
+                                            <div class="fw-bold text-dark">Blok 1 (Zona 1)</div>
+                                            <div class="small text-muted">Buka katup solenoid blok 1</div>
+                                        </div>
+                                    </div>
+                                    <input class="form-check-input fs-5 m-0" type="radio" name="sf_target_blok" id="sf-blok-1" value="1" checked>
+                                </label>
+
+                                <label class="p-3 border rounded-3 d-flex align-items-center justify-content-between sf-blok-card" style="cursor: pointer;" for="sf-blok-2">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px; background: rgba(14, 165, 233, 0.15); color: #0284c7; font-weight: 700;">2</div>
+                                        <div>
+                                            <div class="fw-bold text-dark">Blok 2 (Zona 2)</div>
+                                            <div class="small text-muted">Buka katup solenoid blok 2</div>
+                                        </div>
+                                    </div>
+                                    <input class="form-check-input fs-5 m-0" type="radio" name="sf_target_blok" id="sf-blok-2" value="2">
+                                </label>
+
+                                <label class="p-3 border rounded-3 d-flex align-items-center justify-content-between sf-blok-card" style="cursor: pointer;" for="sf-blok-3">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px; background: rgba(139, 92, 246, 0.15); color: #7c3aed; font-weight: 700;">3</div>
+                                        <div>
+                                            <div class="fw-bold text-dark">Blok 3 (Zona 3)</div>
+                                            <div class="small text-muted">Buka katup solenoid blok 3</div>
+                                        </div>
+                                    </div>
+                                    <input class="form-check-input fs-5 m-0" type="radio" name="sf_target_blok" id="sf-blok-3" value="3">
+                                </label>
+                            </div>
+
+                            <!-- Pilihan Durasi -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold mb-2" style="color: #374151; font-size: 0.9rem;">
+                                    <i class="bi bi-hourglass-split me-1 text-primary"></i> Durasi Penyiraman:
+                                </label>
+                                <div class="sf-dur-grid">
+                                    <label class="sf-dur-pill" for="sf-dur-3">
+                                        <input type="radio" name="sf_duration" id="sf-dur-3" value="3" class="d-none">
+                                        <span class="dur-num">3</span>
+                                        <span class="dur-unit">Menit</span>
+                                    </label>
+                                    <label class="sf-dur-pill" for="sf-dur-5">
+                                        <input type="radio" name="sf_duration" id="sf-dur-5" value="5" class="d-none" checked>
+                                        <span class="dur-num">5</span>
+                                        <span class="dur-unit">Menit</span>
+                                    </label>
+                                    <label class="sf-dur-pill" for="sf-dur-10">
+                                        <input type="radio" name="sf_duration" id="sf-dur-10" value="10" class="d-none">
+                                        <span class="dur-num">10</span>
+                                        <span class="dur-unit">Menit</span>
+                                    </label>
+                                    <label class="sf-dur-pill" for="sf-dur-15">
+                                        <input type="radio" name="sf_duration" id="sf-dur-15" value="15" class="d-none">
+                                        <span class="dur-num">15</span>
+                                        <span class="dur-unit">Menit</span>
+                                    </label>
+                                    <label class="sf-dur-pill" for="sf-dur-30">
+                                        <input type="radio" name="sf_duration" id="sf-dur-30" value="30" class="d-none">
+                                        <span class="dur-num">30</span>
+                                        <span class="dur-unit">Menit</span>
+                                    </label>
+                                    <label class="sf-dur-pill" for="sf-dur-0">
+                                        <input type="radio" name="sf_duration" id="sf-dur-0" value="0" class="d-none">
+                                        <span class="dur-num"><i class="bi bi-infinity"></i></span>
+                                        <span class="dur-unit">Manual</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Opsi Pupuk -->
+                            <div class="d-flex align-items-center justify-content-between p-3 mb-3" style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 16px;">
+                                <div>
+                                    <div style="font-weight: 700; color: #92400e; font-size: 0.92rem;">
+                                        <i class="bi bi-droplet-half me-1"></i> Sertakan Pompa Pupuk
+                                    </div>
+                                    <div style="font-size: 0.78rem; color: #78350f;">
+                                        Nyalakan injeksi pupuk bersamaan dengan pompa utama
+                                    </div>
+                                </div>
+                                <div class="form-check form-switch m-0 fs-4">
+                                    <input class="form-check-input" type="checkbox" id="sf-siram-pupuk" style="cursor: pointer;">
+                                </div>
+                            </div>
+
+                            <div class="modal-actions">
+                                <button type="button" class="btn" onclick="executeSmartFarmSiram()"
+                                    style="background: linear-gradient(135deg, #10b981, #059669); border-radius: 14px; padding: 0.8rem; font-size: 1rem; font-weight: 700; width: 100%; color: #fff; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);">
+                                    <i class="bi bi-play-circle-fill me-2"></i> Mulai Menyiram
+                                </button>
+                                <button type="button" class="btn mt-2"
+                                    style="background: #f3f4f6; color: #6b7280; border-radius: 12px; padding: 0.65rem; font-size: 0.95rem; font-weight: 600; width: 100%; border: none;"
+                                    data-bs-dismiss="modal">Batal</button>
+                            </div>
+                        </div>
+
+                        <!-- VIEW 2: LOADING & SEQUENCE ANIMATION -->
+                        <div id="sf-loading-view" style="display: none;" class="py-3">
+                            <div class="text-center mb-4">
+                                <div class="position-relative d-inline-block">
+                                    <div class="spinner-grow text-success" style="width: 64px; height: 64px;" role="status"></div>
+                                    <i class="bi bi-water position-absolute top-50 start-50 translate-middle fs-3 text-success" id="sf-status-icon"></i>
+                                </div>
+                                <h6 class="fw-bold mt-3 mb-1" id="sf-status-headline" style="color: #1f2937;">Menyiapkan Siram Manual...</h6>
+                                <p class="small text-muted mb-0" id="sf-status-subline">Urutan: Blok dibuka dulu &rarr; Pompa utama menyala</p>
+                            </div>
+
+                            <!-- Progress Bar -->
+                            <div class="progress mb-4" style="height: 8px; border-radius: 10px; background: rgba(0,0,0,0.05);">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" id="sf-progress-bar" role="progressbar" style="width: 0%; transition: width 0.6s ease;"></div>
+                            </div>
+
+                            <!-- Step Items -->
+                            <div class="d-flex flex-column gap-2">
+                                <div id="sf-step-1" class="d-flex align-items-center gap-3 p-3 rounded-3 bg-light border">
+                                    <div class="spinner-border spinner-border-sm text-success" role="status"></div>
+                                    <div>
+                                        <div class="fw-bold text-dark">Langkah 1: Membuka Katup Blok <span id="sf-target-blok-label">1</span></div>
+                                        <div class="small text-muted">Mengaktifkan solenoid katup via MQTT...</div>
+                                    </div>
+                                </div>
+
+                                <div id="sf-step-2" class="d-flex align-items-center gap-3 p-3 rounded-3 bg-light border opacity-50">
+                                    <i class="bi bi-circle text-muted fs-5"></i>
+                                    <div>
+                                        <div class="fw-bold text-dark">Langkah 2: Menyalakan Pompa Utama</div>
+                                        <div class="small text-muted">Menunggu katup siap sebelum pompa menyala...</div>
+                                    </div>
+                                </div>
+
+                                <div id="sf-step-3" class="d-flex align-items-center gap-3 p-3 rounded-3 bg-light border opacity-50" style="display: none;">
+                                    <i class="bi bi-circle text-muted fs-5"></i>
+                                    <div>
+                                        <div class="fw-bold text-dark">Langkah 3: Menyalakan Pompa Pupuk</div>
+                                        <div class="small text-muted">Injeksi nutrisi pupuk...</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Sinkronisasi Zona Waktu RTC (WIB / WITA / WIT) -->
+        <div class="modal fade" id="sfRtcSyncModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content modal-content-glass">
+                    <div class="modal-handle"></div>
+                    <div class="modal-header-custom">
+                        <h5 style="font-weight: 800; color: #1f2937;">
+                            <i class="bi bi-clock-history me-2" style="color: #0ea5e9;"></i>Sinkronkan Waktu RTC Alat
+                        </h5>
+                        <div class="subtitle" style="font-size: 0.85rem; color: #6b7280;">Pilih zona waktu sesuai lokasi kebun/alat Anda</div>
+                    </div>
+                    <div class="modal-body-custom">
+                        <label class="form-label fw-bold mb-2" style="color: #374151; font-size: 0.9rem;">
+                            <i class="bi bi-geo-alt-fill me-1 text-primary"></i> Zona Waktu Lokasi Alat:
+                        </label>
+
+                        <div class="d-flex flex-column gap-2 mb-3">
+                            <!-- WIB -->
+                            <label class="p-3 border rounded-3 d-flex align-items-center justify-content-between sf-tz-card" style="cursor: pointer;" for="sf-tz-wib">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; background: rgba(14, 165, 233, 0.15); color: #0284c7; font-weight: 800; font-size: 0.85rem;">WIB</div>
+                                    <div>
+                                        <div class="fw-bold text-dark">WIB (UTC+7)</div>
+                                        <div class="small text-muted">Sumatera, Jawa, Kalbar, Kalteng</div>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge bg-light text-dark border px-2 py-1 fs-6 fw-bold" id="sf-tz-clock-wib">--:--:--</span>
+                                    <input class="form-check-input fs-5 m-0" type="radio" name="sf_target_tz" id="sf-tz-wib" value="WIB" {{ ($sfTimezone ?? 'WIB') === 'WIB' ? 'checked' : '' }}>
+                                </div>
+                            </label>
+
+                            <!-- WITA -->
+                            <label class="p-3 border rounded-3 d-flex align-items-center justify-content-between sf-tz-card" style="cursor: pointer;" for="sf-tz-wita">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; background: rgba(16, 185, 129, 0.15); color: #059669; font-weight: 800; font-size: 0.85rem;">WITA</div>
+                                    <div>
+                                        <div class="fw-bold text-dark">WITA (UTC+8)</div>
+                                        <div class="small text-muted">Bali, NTB, NTT, Kalimantan, Sulawesi</div>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge bg-light text-dark border px-2 py-1 fs-6 fw-bold" id="sf-tz-clock-wita">--:--:--</span>
+                                    <input class="form-check-input fs-5 m-0" type="radio" name="sf_target_tz" id="sf-tz-wita" value="WITA" {{ ($sfTimezone ?? '') === 'WITA' ? 'checked' : '' }}>
+                                </div>
+                            </label>
+
+                            <!-- WIT -->
+                            <label class="p-3 border rounded-3 d-flex align-items-center justify-content-between sf-tz-card" style="cursor: pointer;" for="sf-tz-wit">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; background: rgba(139, 92, 246, 0.15); color: #7c3aed; font-weight: 800; font-size: 0.85rem;">WIT</div>
+                                    <div>
+                                        <div class="fw-bold text-dark">WIT (UTC+9)</div>
+                                        <div class="small text-muted">Maluku, Papua</div>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge bg-light text-dark border px-2 py-1 fs-6 fw-bold" id="sf-tz-clock-wit">--:--:--</span>
+                                    <input class="form-check-input fs-5 m-0" type="radio" name="sf_target_tz" id="sf-tz-wit" value="WIT" {{ ($sfTimezone ?? '') === 'WIT' ? 'checked' : '' }}>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="alert alert-info py-2 px-3 small d-flex align-items-center gap-2 mb-3" style="border-radius: 12px; background: rgba(14, 165, 233, 0.08); border: 1px solid rgba(14, 165, 233, 0.2); color: #0369a1;">
+                            <i class="bi bi-info-circle-fill fs-5"></i>
+                            <div>Waktu RTC alat akan disesuaikan secara presisi dengan zona waktu yang Anda pilih di atas.</div>
+                        </div>
+
+                        <div class="modal-actions">
+                            <button type="button" class="btn" id="btn-submit-rtc-sync" onclick="sendRtcSync()"
+                                style="background: linear-gradient(135deg, #0ea5e9, #0284c7); border-radius: 14px; padding: 0.8rem; font-size: 1rem; font-weight: 700; width: 100%; color: #fff; box-shadow: 0 4px 14px rgba(14, 165, 233, 0.35);">
+                                <i class="bi bi-send-check-fill me-2"></i> Kirim Waktu ke Alat
+                            </button>
+                            <button type="button" class="btn mt-2"
+                                style="background: #f3f4f6; color: #6b7280; border-radius: 12px; padding: 0.65rem; font-size: 0.95rem; font-weight: 600; width: 100%; border: none;"
+                                data-bs-dismiss="modal">Batal</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
+
         <script>
             // Setup CSRF token for AJAX requests
             const csrfToken = '{{ csrf_token() }}';
@@ -1617,7 +2585,234 @@
                 return isAdminView ? `/admin/device/${deviceId}` : `/monitoring/device/${userDeviceId}`;
             }
 
+            // Smart Farm Output IDs Mapping
+            const sfOutputMap = {
+                pompa: {{ $outputs->firstWhere('output_name', 'sf_pompa')?->id ?? 'null' }},
+                blok1: {{ $outputs->firstWhere('output_name', 'sf_blok1')?->id ?? 'null' }},
+                blok2: {{ $outputs->firstWhere('output_name', 'sf_blok2')?->id ?? 'null' }},
+                blok3: {{ $outputs->firstWhere('output_name', 'sf_blok3')?->id ?? 'null' }},
+                pupuk: {{ $outputs->firstWhere('output_name', 'sf_pupuk')?->id ?? 'null' }},
+            };
 
+            // Async setOutput for sequential automation
+            async function setOutputAsync(outputId, isOn) {
+                const url = getBaseUrl() + `/output/${outputId}/toggle`;
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken
+                    },
+                    body: JSON.stringify({ value: isOn })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    setOptimisticUI(outputId, isOn);
+                }
+                return data;
+            }
+
+            let manualSiramTimer = null;
+            let manualSiramInterval = null;
+
+            // Open Smart Farm Siram Manual Modal
+            function openSmartFarmSiramModal(targetBlok = null) {
+                const formView = document.getElementById('sf-form-view');
+                const loadingView = document.getElementById('sf-loading-view');
+                const progressBar = document.getElementById('sf-progress-bar');
+                if (formView) formView.style.display = 'block';
+                if (loadingView) loadingView.style.display = 'none';
+                if (progressBar) progressBar.style.width = '0%';
+
+                if (targetBlok) {
+                    const radio = document.getElementById(`sf-blok-${targetBlok}`);
+                    if (radio) radio.checked = true;
+                }
+
+                const modal = new bootstrap.Modal(document.getElementById('sfSiramModal'));
+                modal.show();
+            }
+
+            // Execute Smart Farm Siram Sequence: Blok ON -> Loading Delay -> Pompa ON
+            async function executeSmartFarmSiram() {
+                const selectedBlok = document.querySelector('input[name="sf_target_blok"]:checked')?.value || 1;
+                const selectedDurasi = parseInt(document.querySelector('input[name="sf_duration"]:checked')?.value || 5);
+                const includePupuk = document.getElementById('sf-siram-pupuk')?.checked || false;
+
+                const blokOutputId = sfOutputMap[`blok${selectedBlok}`];
+                const pompaOutputId = sfOutputMap['pompa'];
+                const pupukOutputId = sfOutputMap['pupuk'];
+
+                if (!pompaOutputId || !blokOutputId) {
+                    alert('Data output Smart Farm belum lengkap di sistem.');
+                    return;
+                }
+
+                // Switch view to loading animation
+                document.getElementById('sf-form-view').style.display = 'none';
+                document.getElementById('sf-loading-view').style.display = 'block';
+                const blokLabel = document.getElementById('sf-target-blok-label');
+                if (blokLabel) blokLabel.innerText = selectedBlok;
+
+                const step1 = document.getElementById('sf-step-1');
+                const step2 = document.getElementById('sf-step-2');
+                const step3 = document.getElementById('sf-step-3');
+                const progressBar = document.getElementById('sf-progress-bar');
+                const statusIcon = document.getElementById('sf-status-icon');
+                const statusHeadline = document.getElementById('sf-status-headline');
+                const statusSubline = document.getElementById('sf-status-subline');
+
+                try {
+                    // --- STEP 1: Buka Katup Solenoid Blok ---
+                    step1.classList.remove('opacity-50');
+                    step1.innerHTML = `
+                        <div class="spinner-border spinner-border-sm text-success" role="status"></div>
+                        <div>
+                            <div class="fw-bold text-dark">Langkah 1: Membuka Katup Blok ${selectedBlok}...</div>
+                            <div class="small text-muted">Mengaktifkan solenoid katup via MQTT</div>
+                        </div>
+                    `;
+                    progressBar.style.width = '25%';
+
+                    await setOutputAsync(blokOutputId, true);
+
+                    step1.innerHTML = `
+                        <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                        <div>
+                            <div class="fw-bold text-success">Langkah 1: Katup Blok ${selectedBlok} Berhasil Dibuka</div>
+                            <div class="small text-muted">Jalur pipa terbuka & siap dialiri</div>
+                        </div>
+                    `;
+                    progressBar.style.width = '50%';
+
+                    // Animasi jeda sebentar (1.2 detik)
+                    statusHeadline.innerText = 'Menunggu aliran siap...';
+                    statusSubline.innerText = 'Memberi jeda agar katup terbuka sempurna';
+                    await new Promise(r => setTimeout(r, 1200));
+
+                    // --- STEP 2: Nyalakan Pompa Utama ---
+                    step2.classList.remove('opacity-50');
+                    step2.innerHTML = `
+                        <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                        <div>
+                            <div class="fw-bold text-dark">Langkah 2: Menyalakan Pompa Utama...</div>
+                            <div class="small text-muted">Mengalirkan air ke Blok ${selectedBlok}</div>
+                        </div>
+                    `;
+                    progressBar.style.width = '75%';
+
+                    await setOutputAsync(pompaOutputId, true);
+
+                    step2.innerHTML = `
+                        <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                        <div>
+                            <div class="fw-bold text-success">Langkah 2: Pompa Utama Menyala</div>
+                            <div class="small text-muted">Air sedang mengalir ke Blok ${selectedBlok}</div>
+                        </div>
+                    `;
+
+                    // --- STEP 3 (Opsional): Nyalakan Pompa Pupuk ---
+                    if (includePupuk && pupukOutputId) {
+                        step3.style.display = 'flex';
+                        step3.classList.remove('opacity-50');
+                        step3.innerHTML = `
+                            <div class="spinner-border spinner-border-sm text-warning" role="status"></div>
+                            <div>
+                                <div class="fw-bold text-dark">Langkah 3: Menyalakan Pompa Pupuk...</div>
+                                <div class="small text-muted">Mengaktifkan injeksi nutrisi</div>
+                            </div>
+                        `;
+                        await new Promise(r => setTimeout(r, 800));
+                        await setOutputAsync(pupukOutputId, true);
+                        step3.innerHTML = `
+                            <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                            <div>
+                                <div class="fw-bold text-success">Langkah 3: Pompa Pupuk Aktif</div>
+                                <div class="small text-muted">Injeksi nutrisi berjalan</div>
+                            </div>
+                        `;
+                    }
+
+                    progressBar.style.width = '100%';
+                    statusIcon.className = 'bi bi-check-circle-fill position-absolute top-50 start-50 translate-middle fs-3 text-success';
+                    statusHeadline.innerText = `Penyiraman Blok ${selectedBlok} Berhasil Dijalankan! 🎉`;
+                    statusSubline.innerText = selectedDurasi > 0 ? `Durasi: ${selectedDurasi} menit (otomatis stop)` : 'Penyiraman manual tanpa batas waktu.';
+
+                    // Durasi dalam detik
+                    const durasiDetik = selectedDurasi * 60;
+
+                    // Update UI live status card
+                    updateSmartFarmLiveStatus({
+                        siram: 1,
+                        blok: parseInt(selectedBlok),
+                        pupuk: includePupuk ? 'ON' : 'NONE',
+                        sisa: durasiDetik
+                    });
+
+                    // Update flow indicators pada kartu zona blok
+                    [1, 2, 3].forEach(num => {
+                        const flowBadge = document.getElementById(`sf-flow-blok${num}`);
+                        if (flowBadge) flowBadge.style.display = (num == selectedBlok) ? 'inline-flex' : 'none';
+                        const outId = sfOutputMap[`blok${num}`];
+                        const cardEl = document.getElementById(`output-card-${outId}`);
+                        if (cardEl) {
+                            if (num == selectedBlok) cardEl.classList.add('active-flow');
+                            else cardEl.classList.remove('active-flow');
+                        }
+                    });
+
+                    // Countdown & Auto-Stop timer jika durasi > 0
+                    if (manualSiramTimer) clearTimeout(manualSiramTimer);
+                    if (manualSiramInterval) clearInterval(manualSiramInterval);
+
+                    if (durasiDetik > 0) {
+                        let remainingSec = durasiDetik;
+                        manualSiramInterval = setInterval(() => {
+                            remainingSec--;
+                            if (remainingSec <= 0) {
+                                clearInterval(manualSiramInterval);
+                            } else {
+                                const m = Math.floor(remainingSec / 60);
+                                const s = remainingSec % 60;
+                                const sisaEl = document.getElementById('sf-sisa-waktu');
+                                if (sisaEl) sisaEl.innerText = `${m}m ${s}s`;
+                            }
+                        }, 1000);
+
+                        manualSiramTimer = setTimeout(() => {
+                            stopSmartFarmSiram(false);
+                        }, durasiDetik * 1000);
+                    }
+
+                    await new Promise(r => setTimeout(r, 1200));
+                    const modalEl = document.getElementById('sfSiramModal');
+                    const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                    if (modalInstance) modalInstance.hide();
+
+                } catch (err) {
+                    console.error('Siram manual error:', err);
+                    alert('Gagal memulai penyiraman: ' + err.message);
+                    document.getElementById('sf-form-view').style.display = 'block';
+                    document.getElementById('sf-loading-view').style.display = 'none';
+                }
+            }
+
+            // Stop Smart Farm Siram (Matikan Pompa & Blok)
+            async function stopSmartFarmSiram(askConfirm = true) {
+                if (askConfirm && !confirm('Hentikan penyiraman dan matikan Pompa Utama?')) return;
+                if (manualSiramTimer) clearTimeout(manualSiramTimer);
+                if (manualSiramInterval) clearInterval(manualSiramInterval);
+
+                [1, 2, 3].forEach(num => {
+                    const flowBadge = document.getElementById(`sf-flow-blok${num}`);
+                    if (flowBadge) flowBadge.style.display = 'none';
+                    const outId = sfOutputMap[`blok${num}`];
+                    const cardEl = document.getElementById(`output-card-${outId}`);
+                    if (cardEl) cardEl.classList.remove('active-flow');
+                });
+
+                await stopSiramQuick(false);
+            }
 
             // Set output ON/OFF (for buttons)
             function setOutput(outputId, isOn) {
@@ -2090,18 +3285,29 @@
             const btnOff = document.getElementById(`btn-off-${outputId}`);
 
             if (btnOn && btnOff) {
+                const statusEl = document.getElementById(`output-status-${outputId}`);
                 if (isOn) {
                     btnOn.className = 'segmented-btn active-on';
                     btnOff.className = 'segmented-btn';
+                    if (statusEl) {
+                        statusEl.classList.remove('off');
+                        statusEl.classList.add('on');
+                        statusEl.innerText = statusEl.getAttribute('data-on-text') || 'ON';
+                    }
                 } else {
                     btnOn.className = 'segmented-btn';
                     btnOff.className = 'segmented-btn active-off';
+                    if (statusEl) {
+                        statusEl.classList.remove('on');
+                        statusEl.classList.add('off');
+                        statusEl.innerText = statusEl.getAttribute('data-off-text') || 'OFF';
+                    }
                 }
             }
         }
         
-        // Auto-reload status every 60 seconds (as a fallback, since WebSockets handle real-time)
-        setInterval(fetchStatus, 60000);
+        // Auto-reload status every 30 seconds (as fallback and periodic heartbeat verification)
+        setInterval(fetchStatus, 30000);
 
         async function fetchStatus() {
             try {
@@ -2113,11 +3319,19 @@
                 const data = await response.json();
 
                 if (data.success) {
+                    if (data.is_online) {
+                        setDeviceOnline(data.last_seen_text);
+                    } else if (data.is_online === false) {
+                        setDeviceOffline();
+                    }
                     if (data.outputs) {
                         updateOutputs(data.outputs);
                     }
                     if (data.sensors) {
                         updateSensors(data.sensors);
+                    }
+                    if (data.sf_status) {
+                        updateSmartFarmLiveStatus(data.sf_status);
                     }
                 }
             } catch (error) {
@@ -2125,17 +3339,17 @@
             }
         }
         
-        // Timeout timer for offline detection
+        // Timeout timer for offline detection (3 minutes without updates)
         let offlineTimer = null;
         
         function resetOfflineTimer() {
             if (offlineTimer) clearTimeout(offlineTimer);
             offlineTimer = setTimeout(() => {
                 setDeviceOffline();
-            }, 60000); // 1 minute without updates = Offline
+            }, 180000); // 3 minutes without updates = Offline
         }
         
-        function setDeviceOnline() {
+        function setDeviceOnline(lastSeenText = null) {
             const badge = document.getElementById('conn-badge');
             if (badge) {
                 badge.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
@@ -2143,6 +3357,12 @@
             }
             const dot = document.getElementById('live-dot');
             if (dot) dot.style.display = 'inline-block';
+
+            const lastUpdateEl = document.getElementById('last-update-text');
+            if (lastUpdateEl) {
+                const text = lastSeenText || 'Baru saja';
+                lastUpdateEl.innerHTML = `<span class="live-dot me-2" id="live-dot" style="display: inline-block;"></span> Terakhir aktif: ${text}`;
+            }
             resetOfflineTimer();
         }
         
@@ -2166,15 +3386,7 @@
                     .listen('DeviceStatusUpdated', (e) => {
                         console.log('Realtime Update:', e);
                         
-                        if ((e.sensors && Object.keys(e.sensors).length > 0) || (e.outputs && e.outputs.length > 0) || e.smartFarmStatus) {
-                            setDeviceOnline();
-                            
-                            // Update last update text
-                            const lastUpdateEl = document.getElementById('last-update-text');
-                            if (lastUpdateEl) {
-                                lastUpdateEl.innerHTML = `<span class="live-dot me-2" id="live-dot" style="display: inline-block;"></span> Terakhir update: Baru saja`;
-                            }
-                        }
+                        setDeviceOnline('Baru saja');
 
                         if (e.sensors && Object.keys(e.sensors).length > 0) {
                             updateSensors(e.sensors);
@@ -2205,7 +3417,17 @@
             const iconMain = document.getElementById('sf-icon-main');
             const detailSiram = document.getElementById('sf-detail-siram');
             const badgeJam = document.getElementById('sf-badge-jam');
-            const btnStop = document.getElementById('sf-btn-stop');
+            const actionsContainer = document.getElementById('sf-actions-container');
+            let btnStop = document.getElementById('sf-btn-stop');
+            let btnStart = document.getElementById('sf-btn-start');
+
+            // Pipeline Elements
+            const pNodePompa = document.getElementById('pipe-node-pompa');
+            const pNodePupuk = document.getElementById('pipe-node-pupuk');
+            const pConn1 = document.getElementById('pipe-conn-1');
+            const pConn2 = document.getElementById('pipe-conn-2');
+            const pStatusPompa = document.getElementById('pipe-status-pompa');
+            const pStatusPupuk = document.getElementById('pipe-status-pupuk');
 
             if (isSiram) {
                 if (badgeSiram) badgeSiram.className = 'badge rounded-pill bg-success text-white';
@@ -2221,6 +3443,48 @@
                     let pupukHtml = (sf.pupuk === 'ON') ? ' &bull; <span class="text-warning fw-bold"><i class="bi bi-droplet-half me-1"></i>Pupuk Aktif</span>' : '';
                     detailSiram.innerHTML = `Menyiram <strong>Blok ${sf.blok || 1}</strong> &bull; Sisa Waktu: <strong><span id="sf-sisa-waktu">${m}m ${s}s</span></strong>${pupukHtml}`;
                 }
+
+                if (btnStart) btnStart.style.display = 'none';
+                if (!btnStop && actionsContainer) {
+                    btnStop = document.createElement('button');
+                    btnStop.type = 'button';
+                    btnStop.id = 'sf-btn-stop';
+                    btnStop.className = 'btn btn-danger btn-sm d-inline-flex align-items-center gap-2 shadow-sm';
+                    btnStop.style.borderRadius = '50px';
+                    btnStop.style.padding = '0.65rem 1.4rem';
+                    btnStop.style.fontWeight = '700';
+                    btnStop.onclick = () => stopSiramQuick(true);
+                    btnStop.innerHTML = '<i class="bi bi-stop-circle-fill"></i> Stop Siram';
+                    actionsContainer.prepend(btnStop);
+                } else if (btnStop) {
+                    btnStop.style.display = 'inline-flex';
+                }
+
+                // Pipeline Nodes
+                if (pNodePompa) pNodePompa.classList.add('active');
+                if (pStatusPompa) pStatusPompa.innerText = 'MEMOMPA';
+                if (pConn1) pConn1.classList.add('active');
+                if (pConn2) pConn2.classList.add('active');
+
+                const isPupuk = (sf.pupuk === 'ON');
+                if (pNodePupuk) {
+                    if (isPupuk) pNodePupuk.classList.add('active');
+                    else pNodePupuk.classList.remove('active');
+                }
+                if (pStatusPupuk) pStatusPupuk.innerText = isPupuk ? 'INJEKSI' : 'STANDBY';
+
+                [1, 2, 3].forEach(b => {
+                    const node = document.getElementById(`pipe-node-blok${b}`);
+                    const status = document.getElementById(`pipe-status-blok${b}`);
+                    const flow = document.getElementById(`sf-flow-blok${b}`);
+                    const isTarget = (sf.blok == b);
+                    if (node) {
+                        if (isTarget) node.classList.add('active');
+                        else node.classList.remove('active');
+                    }
+                    if (status) status.innerText = isTarget ? 'MENGALIR' : 'TUTUP';
+                    if (flow) flow.style.display = isTarget ? 'inline-flex' : 'none';
+                });
             } else {
                 if (badgeSiram) badgeSiram.className = 'badge rounded-pill bg-secondary text-white';
                 if (textSiram) textSiram.innerText = 'SIAGA (STANDBY)';
@@ -2228,23 +3492,162 @@
                 if (iconWrapper) iconWrapper.style.background = 'linear-gradient(135deg, #0284c7, #38bdf8)';
                 if (iconMain) iconMain.className = 'bi bi-water';
                 if (detailSiram) {
-                    detailSiram.innerHTML = 'Sistem irigasi multi-zona siap. Pompa dan solenoid dalam kondisi standby.';
+                    detailSiram.innerHTML = 'Sistem irigasi multi-zona siap. Pompa dan katup solenoid dalam kondisi siaga.';
                 }
                 if (btnStop) {
                     btnStop.remove();
                 }
+                if (btnStart) {
+                    btnStart.style.display = 'inline-flex';
+                }
+
+                // If not in automated siram, sync with manual outputs
+                const pompaBtn = sfOutputMap.pompa ? document.getElementById(`btn-on-${sfOutputMap.pompa}`) : null;
+                const isPumpManualOn = pompaBtn && pompaBtn.classList.contains('active-on');
+                if (pNodePompa) {
+                    if (isPumpManualOn) pNodePompa.classList.add('active');
+                    else pNodePompa.classList.remove('active');
+                }
+                if (pStatusPompa) pStatusPompa.innerText = isPumpManualOn ? 'MEMOMPA' : 'OFF';
+                if (pConn1) {
+                    if (isPumpManualOn) pConn1.classList.add('active');
+                    else pConn1.classList.remove('active');
+                }
             }
 
-            if (sf.jam && badgeJam) {
+            if (sf.jam) {
                 const jamStr = String(sf.jam);
+                const textJam = document.getElementById('sf-text-jam');
                 if (jamStr.length === 4) {
-                    badgeJam.innerHTML = `<i class="bi bi-clock me-1"></i>RTC: ${jamStr.substring(0, 2)}:${jamStr.substring(2, 4)}`;
+                    const formatted = `${jamStr.substring(0, 2)}:${jamStr.substring(2, 4)}`;
+                    const tz = sf.timezone || '{{ $sfTimezone ?? "WIB" }}';
+                    if (textJam) textJam.innerText = `${formatted} ${tz}`;
                 }
+            }
+
+            let badgeError = document.getElementById('sf-badge-error');
+            const hasError = sf.error === 1 || sf.error === '1' || sf.error === true;
+            if (hasError) {
+                if (!badgeError) {
+                    const badgeContainer = document.querySelector('#sf-status-card .d-flex.align-items-center.gap-2.mb-1');
+                    if (badgeContainer) {
+                        badgeError = document.createElement('button');
+                        badgeError.type = 'button';
+                        badgeError.id = 'sf-badge-error';
+                        badgeError.className = 'badge rounded-pill bg-danger text-white small border-0 d-inline-flex align-items-center gap-1 shadow-sm';
+                        badgeError.title = 'Klik untuk Reset Error Relay pada alat';
+                        badgeError.onclick = resetRelayErrorQuick;
+                        badgeError.style.cursor = 'pointer';
+                        badgeError.innerHTML = '<i class="bi bi-exclamation-triangle-fill"></i> Error Relay (Klik Reset)';
+                        badgeContainer.appendChild(badgeError);
+                    }
+                }
+            } else {
+                if (badgeError) badgeError.remove();
             }
         }
 
-        async function stopSiramQuick() {
-            if (!confirm('Hentikan penyiraman irigasi sekarang?')) return;
+        let rtcClockTimer = null;
+
+        function updateRtcModalClocks() {
+            const now = new Date();
+            const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
+
+            const wib = new Date(utcTime + (3600000 * 7));
+            const wita = new Date(utcTime + (3600000 * 8));
+            const wit = new Date(utcTime + (3600000 * 9));
+
+            const pad = n => String(n).padStart(2, '0');
+            const formatTime = d => `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+
+            const elWib = document.getElementById('sf-tz-clock-wib');
+            const elWita = document.getElementById('sf-tz-clock-wita');
+            const elWit = document.getElementById('sf-tz-clock-wit');
+
+            if (elWib) elWib.innerText = formatTime(wib);
+            if (elWita) elWita.innerText = formatTime(wita);
+            if (elWit) elWit.innerText = formatTime(wit);
+        }
+
+        function openRtcSyncModal() {
+            updateRtcModalClocks();
+            if (rtcClockTimer) clearInterval(rtcClockTimer);
+            rtcClockTimer = setInterval(updateRtcModalClocks, 1000);
+
+            const modal = new bootstrap.Modal(document.getElementById('sfRtcSyncModal'));
+            modal.show();
+
+            const modalEl = document.getElementById('sfRtcSyncModal');
+            modalEl.addEventListener('hidden.bs.modal', function onHidden() {
+                if (rtcClockTimer) clearInterval(rtcClockTimer);
+                modalEl.removeEventListener('hidden.bs.modal', onHidden);
+            });
+        }
+
+        async function sendRtcSync() {
+            const selectedTz = document.querySelector('input[name="sf_target_tz"]:checked')?.value || 'WIB';
+            const btn = document.getElementById('btn-submit-rtc-sync');
+            const originalHtml = btn.innerHTML;
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Mengirim ke alat...';
+
+            try {
+                const targetId = '{{ ($isAdminView ?? false) ? $device->id : ($userDevice->id ?? $device->id) }}';
+                const res = await fetch(`/device/${targetId}/schedule/set-rtc`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ timezone: selectedTz })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    const textJam = document.getElementById('sf-text-jam');
+                    if (textJam && data.jam) textJam.innerText = `${data.jam} ${data.timezone || selectedTz}`;
+                    alert(data.message || 'Waktu RTC alat berhasil disinkronkan!');
+                    const modalEl = document.getElementById('sfRtcSyncModal');
+                    const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                    if (modalInstance) modalInstance.hide();
+                } else {
+                    alert('Gagal: ' + (data.message || 'Terjadi kesalahan'));
+                }
+            } catch (e) {
+                alert('Gagal mengirim perintah sinkronisasi waktu: ' + e.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+            }
+        }
+
+        async function resetRelayErrorQuick() {
+            if (!confirm('Reset error relay pada alat sekarang?')) return;
+            try {
+                const targetId = '{{ ($isAdminView ?? false) ? $device->id : ($userDevice->id ?? $device->id) }}';
+                const res = await fetch(`/device/${targetId}/schedule/reset-error`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert(data.message || 'Perintah reset error relay dikirim!');
+                    const badgeError = document.getElementById('sf-badge-error');
+                    if (badgeError) badgeError.remove();
+                } else {
+                    alert('Gagal: ' + (data.message || 'Terjadi kesalahan'));
+                }
+            } catch (e) {
+                alert('Gagal mengirim reset error: ' + e.message);
+            }
+        }
+
+        async function stopSiramQuick(askConfirm = true) {
+            if (askConfirm && !confirm('Hentikan penyiraman irigasi sekarang?')) return;
             try {
                 const targetId = '{{ ($isAdminView ?? false) ? $device->id : ($userDevice->id ?? $device->id) }}';
                 const res = await fetch(`/device/${targetId}/schedule/siram-stop`, {
@@ -2256,12 +3659,13 @@
                 });
                 const data = await res.json();
                 if (data.success) {
-                    alert(data.message || 'Perintah stop penyiraman dikirim!');
+                    if (askConfirm) alert(data.message || 'Perintah stop penyiraman dikirim!');
+                    updateSmartFarmLiveStatus({ siram: 0, blok: 0, pupuk: 'NONE', sisa: 0 });
                 } else {
-                    alert('Gagal: ' + (data.message || 'Terjadi kesalahan'));
+                    if (askConfirm) alert('Gagal: ' + (data.message || 'Terjadi kesalahan'));
                 }
             } catch (err) {
-                alert('Gagal mengirim perintah: ' + err.message);
+                if (askConfirm) alert('Gagal mengirim perintah: ' + err.message);
             }
         }
         function updateSensors(sensorData) {
@@ -2313,13 +3717,70 @@
                     if (isOn) {
                         btnOn.className = 'segmented-btn active-on';
                         btnOff.className = 'segmented-btn';
-                        statusEl.className = 'output-status on';
+                        statusEl.classList.remove('off');
+                        statusEl.classList.add('on');
                         statusEl.innerText = statusEl.getAttribute('data-on-text') || 'ON';
                     } else {
                         btnOn.className = 'segmented-btn';
                         btnOff.className = 'segmented-btn active-off';
-                        statusEl.className = 'output-status off';
+                        statusEl.classList.remove('on');
+                        statusEl.classList.add('off');
                         statusEl.innerText = statusEl.getAttribute('data-off-text') || 'OFF';
+                    }
+
+                    // Smart Farm specific visual sync
+                    if (typeof sfOutputMap !== 'undefined') {
+                        if (output.id === sfOutputMap.pompa) {
+                            const card = document.getElementById(`output-card-${output.id}`);
+                            const pNode = document.getElementById('pipe-node-pompa');
+                            const pStatus = document.getElementById('pipe-status-pompa');
+                            const pConn1 = document.getElementById('pipe-conn-1');
+                            if (card) {
+                                if (isOn) card.classList.add('active-pump');
+                                else card.classList.remove('active-pump');
+                            }
+                            if (pNode) {
+                                if (isOn) pNode.classList.add('active');
+                                else pNode.classList.remove('active');
+                            }
+                            if (pStatus) pStatus.innerText = isOn ? 'MEMOMPA' : 'OFF';
+                            if (pConn1) {
+                                if (isOn) pConn1.classList.add('active');
+                                else pConn1.classList.remove('active');
+                            }
+                        }
+                        if (output.id === sfOutputMap.pupuk) {
+                            const card = document.getElementById(`output-card-${output.id}`);
+                            const pNode = document.getElementById('pipe-node-pupuk');
+                            const pStatus = document.getElementById('pipe-status-pupuk');
+                            if (card) {
+                                if (isOn) card.classList.add('active-dosing');
+                                else card.classList.remove('active-dosing');
+                            }
+                            if (pNode) {
+                                if (isOn) pNode.classList.add('active');
+                                else pNode.classList.remove('active');
+                            }
+                            if (pStatus) pStatus.innerText = isOn ? 'INJEKSI' : 'STANDBY';
+                        }
+                        [1, 2, 3].forEach(b => {
+                            if (output.id === sfOutputMap[`blok${b}`]) {
+                                const node = document.getElementById(`pipe-node-blok${b}`);
+                                const status = document.getElementById(`pipe-status-blok${b}`);
+                                const flow = document.getElementById(`sf-flow-blok${b}`);
+                                const isPumpOn = document.querySelector('#btn-on-' + sfOutputMap.pompa)?.classList.contains('active-on');
+                                if (node) {
+                                    if (isOn && isPumpOn) node.classList.add('active');
+                                    else if (!isOn) node.classList.remove('active');
+                                }
+                                if (status) {
+                                    status.innerText = (isOn && isPumpOn) ? 'MENGALIR' : (isOn ? 'BUKA' : 'TUTUP');
+                                }
+                                if (flow) {
+                                    flow.style.display = (isOn && isPumpOn) ? 'inline-flex' : 'none';
+                                }
+                            }
+                        });
                     }
                 }
 

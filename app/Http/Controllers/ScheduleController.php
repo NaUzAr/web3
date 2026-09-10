@@ -374,18 +374,134 @@ class ScheduleController extends Controller
         }
 
         $topic = $device->mqtt_topic_schedule ?: $device->mqtt_topic;
-        $success = $this->smartFarmService->sendSiramStop($topic);
+        
+        // 1. Kirim CMD:SIRAM_STOP (menghentikan rutinitas siram terjadwal)
+        $this->smartFarmService->sendSiramStop($topic);
+
+        // 2. Kirim perintah matikan semua relay manual (Pompa, Pupuk, dan Blok)
+        $this->smartFarmService->sendRelay($topic, 0, 0); // Pompa Utama OFF
+        $this->smartFarmService->sendRelay($topic, 4, 0); // Pupuk OFF
+        $this->smartFarmService->sendRelay($topic, 1, 0); // Blok 1 OFF
+        $this->smartFarmService->sendRelay($topic, 2, 0); // Blok 2 OFF
+        $this->smartFarmService->sendRelay($topic, 3, 0); // Blok 3 OFF
+
+        // 3. Reset status di DB & cache
+        \App\Models\DeviceOutput::where('device_id', $device->id)
+            ->whereIn('output_name', ['sf_pompa', 'sf_blok1', 'sf_blok2', 'sf_blok3', 'sf_pupuk'])
+            ->update(['current_value' => 0]);
+
+        $cachedOutputs = \Cache::get("device_outputs_{$device->id}", []);
+        foreach (['sf_pompa', 'sf_blok1', 'sf_blok2', 'sf_blok3', 'sf_pupuk'] as $k) {
+            $cachedOutputs[$k] = 0;
+        }
+        \Cache::put("device_outputs_{$device->id}", $cachedOutputs, now()->addHours(24));
+
+        $sfStatus = \Cache::get("device_sf_status_{$device->id}", []);
+        $sfStatus['siram'] = 0;
+        $sfStatus['blok'] = 0;
+        $sfStatus['pupuk'] = 'NONE';
+        $sfStatus['sisa'] = 0;
+        \Cache::put("device_sf_status_{$device->id}", $sfStatus, now()->addHours(1));
+        \Cache::forget("device_was_siram_{$device->id}");
+
+        // 4. Broadcast realtime update ke UI
+        $deviceOutputs = \App\Models\DeviceOutput::where('device_id', $device->id)->get();
+        $formattedOutputs = $deviceOutputs->map(fn($o) => ['id' => $o->id, 'value' => 0])->toArray();
+        $lastSeen = \Cache::get("device_{$device->id}_last_seen", $device->last_seen_at);
+        $sensorBuffer = \Cache::get("sensor_buffer_{$device->id}", []);
+        event(new \App\Events\DeviceStatusUpdated($device->id, $sensorBuffer, $formattedOutputs, $lastSeen, $sfStatus));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Penyiraman dan semua relay berhasil dihentikan!',
+        ]);
+    }
+
+    /**
+     * Smart Farm: Reset Error Relay (CMD:RESET_ERROR)
+     */
+    public function resetError($userDeviceId)
+    {
+        $device = $this->getDevice($userDeviceId);
+
+        if ($device->type !== 'smart_farm') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Fitur ini hanya untuk device Smart Farm.',
+            ], 400);
+        }
+
+        $topic = $device->mqtt_topic_schedule ?: $device->mqtt_topic;
+        $success = $this->smartFarmService->sendResetError($topic);
 
         if ($success) {
+            $sfStatus = \Cache::get("device_sf_status_{$device->id}", []);
+            $sfStatus['error'] = 0;
+            \Cache::put("device_sf_status_{$device->id}", $sfStatus, now()->addHours(1));
+
             return response()->json([
                 'success' => true,
-                'message' => 'Perintah stop penyiraman dikirim!',
+                'message' => 'Perintah reset error relay berhasil dikirim!',
             ]);
         }
 
         return response()->json([
             'success' => false,
-            'message' => 'Gagal mengirim perintah stop.',
+            'message' => 'Gagal mengirim perintah reset error.',
+        ], 500);
+    }
+
+    /**
+     * Smart Farm: Sinkronkan Waktu RTC (CMD:SET_RTC)
+     */
+    public function setRtc(Request $request, $userDeviceId)
+    {
+        $device = $this->getDevice($userDeviceId);
+
+        if ($device->type !== 'smart_farm') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Fitur ini hanya untuk device Smart Farm.',
+            ], 400);
+        }
+
+        $tz = strtoupper($request->input('timezone', 'WIB'));
+        $tzMap = [
+            'WIB' => 'Asia/Jakarta',
+            'WITA' => 'Asia/Makassar',
+            'WIT' => 'Asia/Jayapura',
+        ];
+        $targetTz = $tzMap[$tz] ?? 'Asia/Jakarta';
+        $targetTime = now()->setTimezone($targetTz);
+
+        $tahun = (int) $request->input('tahun', $targetTime->year);
+        $bulan = (int) $request->input('bulan', $targetTime->month);
+        $tanggal = (int) $request->input('tanggal', $targetTime->day);
+        $jam = (int) $request->input('jam', $targetTime->hour);
+        $menit = (int) $request->input('menit', $targetTime->minute);
+
+        $topic = $device->mqtt_topic_schedule ?: $device->mqtt_topic;
+        $success = $this->smartFarmService->sendSetRtc($topic, $tahun, $bulan, $tanggal, $jam, $menit);
+
+        if ($success) {
+            $jamFormatted = sprintf('%02d:%02d', $jam, $menit);
+            $sfStatus = \Cache::get("device_sf_status_{$device->id}", []);
+            $sfStatus['jam'] = sprintf('%02d%02d', $jam, $menit);
+            $sfStatus['timezone'] = $tz;
+            \Cache::put("device_sf_status_{$device->id}", $sfStatus, now()->addHours(1));
+            \Cache::put("device_timezone_{$device->id}", $tz, now()->addYears(1));
+
+            return response()->json([
+                'success' => true,
+                'message' => "Waktu RTC alat berhasil disinkronkan ke {$jamFormatted} {$tz} ({$tanggal}/{$bulan}/{$tahun})!",
+                'jam' => $jamFormatted,
+                'timezone' => $tz,
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Gagal mengirim perintah sinkronisasi waktu RTC.',
         ], 500);
     }
 

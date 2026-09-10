@@ -654,8 +654,40 @@
                 $maxSectors = $isSmartFarm ? 3 : ($scheduleConfig->max_sectors ?? 1);
             @endphp
             
-            {{-- Remove Add Button, use Fixed Slots --}}
-            
+            {{-- Smart Farm Schedule Filter / Grouping Pills --}}
+            @if($isSmartFarm)
+                @php
+                    $totalActive = 0;
+                    for($si = 1; $si <= $maxSlots; $si++) {
+                        if(!empty($cachedSchedules["sch{$si}"]['is_active'])) $totalActive++;
+                    }
+                @endphp
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 p-2 px-3 rounded-pill" style="background: rgba(255,255,255,0.7); border: 1px solid var(--glass-border);">
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <span class="small text-muted fw-bold me-1" style="font-size: 0.76rem;"><i class="bi bi-funnel-fill text-primary"></i> Filter:</span>
+                        <button type="button" class="btn btn-sm btn-primary rounded-pill px-3 py-1 fw-bold sch-filter-btn active" style="font-size: 0.78rem;" onclick="filterSchedules('all', this)" id="btn-filter-all">
+                            Semua ({{ $maxSlots }})
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1 fw-bold sch-filter-btn" style="font-size: 0.78rem;" onclick="filterSchedules('active', this)">
+                            <i class="bi bi-check-circle-fill me-1"></i>Aktif Saja ({{ $totalActive }})
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 fw-bold sch-filter-btn" style="font-size: 0.78rem;" onclick="filterSchedules('blok1', this)">
+                            <i class="bi bi-geo-alt-fill me-1" style="color: #10b981;"></i>Blok 1
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 fw-bold sch-filter-btn" style="font-size: 0.78rem;" onclick="filterSchedules('blok2', this)">
+                            <i class="bi bi-geo-alt-fill me-1" style="color: #0ea5e9;"></i>Blok 2
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 fw-bold sch-filter-btn" style="font-size: 0.78rem;" onclick="filterSchedules('blok3', this)">
+                            <i class="bi bi-geo-alt-fill me-1" style="color: #8b5cf6;"></i>Blok 3
+                        </button>
+                    </div>
+                    <div class="small text-muted d-flex align-items-center gap-2">
+                        <span class="badge rounded-pill bg-success text-white px-2 py-1" style="font-size: 0.72rem;">{{ $totalActive }} Aktif</span>
+                        <span class="badge rounded-pill bg-secondary text-white px-2 py-1" style="font-size: 0.72rem;">{{ $maxSlots - $totalActive }} Kosong</span>
+                    </div>
+                </div>
+            @endif
+
             <div class="table-responsive">
                 <table class="table table-glass">
                     <thead>
@@ -688,7 +720,7 @@
                                     $days = is_array($sch['days']) ? implode(', ', $sch['days']) : $sch['days'];
                                 }
                             @endphp
-                            <tr id="row-slot-{{ $i }}" class="{{ $isActive ? 'slot-active' : 'slot-empty' }}">
+                            <tr id="row-slot-{{ $i }}" class="{{ $isActive ? 'slot-active' : 'slot-empty' }}" data-is-active="{{ $isActive ? '1' : '0' }}" data-blok="{{ $sch['blok'] ?? $sch['sector'] ?? '1' }}">
                                 <td data-label="Jadwal">
                                     <span class="badge rounded-pill" style="background: rgba(14, 95, 138, 0.1); color: var(--primary); border: 1px solid rgba(14, 95, 138, 0.2); padding: 6px 12px; font-weight: 700;">
                                         Jadwal {{ $i }}
@@ -1187,6 +1219,32 @@
                 alert(data.message || (data.success ? 'Penyiraman dihentikan' : 'Gagal'));
             } catch(e) {
                 alert('Error: ' + e.message);
+            }
+        }
+
+        // Smart Farm: Filter / Group Schedule Rows
+        function filterSchedules(filter, btn) {
+            document.querySelectorAll('.sch-filter-btn').forEach(b => {
+                b.classList.remove('btn-primary', 'active');
+                b.classList.add('btn-outline-secondary');
+            });
+            btn.classList.remove('btn-outline-secondary', 'btn-outline-success');
+            btn.classList.add('btn-primary', 'active');
+
+            const maxSlots = {{ $maxSlots }};
+            for (let i = 1; i <= maxSlots; i++) {
+                const row = document.getElementById(`row-slot-${i}`);
+                if (!row) continue;
+                const isActive = row.getAttribute('data-is-active') === '1';
+                const blok = row.getAttribute('data-blok');
+
+                let show = true;
+                if (filter === 'active') show = isActive;
+                else if (filter === 'blok1') show = isActive && (blok == '1');
+                else if (filter === 'blok2') show = isActive && (blok == '2');
+                else if (filter === 'blok3') show = isActive && (blok == '3');
+
+                row.style.display = show ? '' : 'none';
             }
         }
 
