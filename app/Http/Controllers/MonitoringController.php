@@ -369,16 +369,84 @@ class MonitoringController extends Controller
         try {
             $device = $userDevice->device;
 
-            // === SMART FARM: Gunakan protokol CMD:RELAY ===
+            // === SMART FARM: Gunakan protokol CMD:BLOK dan CMD:RELAY ===
             if ($device->type === 'smart_farm' && str_starts_with($output->output_name, 'sf_')) {
                 $smartFarmService = app(\App\Services\MqttSmartFarmService::class);
                 $topic = $device->mqtt_topic_output ?: $device->mqtt_topic;
-                $smartFarmService->sendRelayByName($topic, $output->output_name, (int) $newValue);
 
-                \Log::info("Smart Farm Relay Control sent", [
-                    'output' => $output->output_name,
-                    'value' => $newValue,
-                ]);
+                if (in_array($output->output_name, ['sf_blok1', 'sf_blok2', 'sf_blok3'])) {
+                    $blokNum = (int) str_replace('sf_blok', '', $output->output_name);
+                    $targetBlok = ($newValue == 1) ? $blokNum : 0;
+                    $smartFarmService->sendBlok($topic, $targetBlok);
+
+                    // Sinkronisasi DB & Cache optimis
+                    if ($targetBlok > 0) {
+                        \App\Models\DeviceOutput::where('device_id', $device->id)
+                            ->whereIn('output_name', ['sf_blok1', 'sf_blok2', 'sf_blok3'])
+                            ->where('output_name', '!=', $output->output_name)
+                            ->update(['current_value' => 0]);
+
+                        \App\Models\DeviceOutput::where('device_id', $device->id)
+                            ->where('output_name', 'sf_pompa')
+                            ->update(['current_value' => 1]);
+
+                        $cachedOutputs = \Cache::get("device_outputs_{$device->id}", []);
+                        $cachedOutputs['sf_blok1'] = ($targetBlok === 1) ? 1 : 0;
+                        $cachedOutputs['sf_blok2'] = ($targetBlok === 2) ? 1 : 0;
+                        $cachedOutputs['sf_blok3'] = ($targetBlok === 3) ? 1 : 0;
+                        $cachedOutputs['sf_pompa'] = 1;
+                        \Cache::put("device_outputs_{$device->id}", $cachedOutputs, now()->addHours(24));
+                    } else {
+                        \App\Models\DeviceOutput::where('device_id', $device->id)
+                            ->whereIn('output_name', ['sf_blok1', 'sf_blok2', 'sf_blok3', 'sf_pompa'])
+                            ->update(['current_value' => 0]);
+
+                        $cachedOutputs = \Cache::get("device_outputs_{$device->id}", []);
+                        $cachedOutputs['sf_blok1'] = 0;
+                        $cachedOutputs['sf_blok2'] = 0;
+                        $cachedOutputs['sf_blok3'] = 0;
+                        $cachedOutputs['sf_pompa'] = 0;
+                        \Cache::put("device_outputs_{$device->id}", $cachedOutputs, now()->addHours(24));
+                    }
+
+                    \Log::info("Smart Farm Blok Control sent", [
+                        'blok' => $targetBlok,
+                        'output' => $output->output_name,
+                        'value' => $newValue,
+                    ]);
+                } elseif ($output->output_name === 'sf_pupuk') {
+                    $smartFarmService->sendRelay($topic, 4, (int) $newValue);
+                    $cachedOutputs = \Cache::get("device_outputs_{$device->id}", []);
+                    $cachedOutputs['sf_pupuk'] = (int) $newValue;
+                    \Cache::put("device_outputs_{$device->id}", $cachedOutputs, now()->addHours(24));
+
+                    \Log::info("Smart Farm Pupuk Control sent", [
+                        'value' => $newValue,
+                    ]);
+                } elseif ($output->output_name === 'sf_pompa') {
+                    if ((int) $newValue === 0) {
+                        $smartFarmService->sendBlok($topic, 0);
+
+                        \App\Models\DeviceOutput::where('device_id', $device->id)
+                            ->whereIn('output_name', ['sf_blok1', 'sf_blok2', 'sf_blok3', 'sf_pompa'])
+                            ->update(['current_value' => 0]);
+
+                        $cachedOutputs = \Cache::get("device_outputs_{$device->id}", []);
+                        $cachedOutputs['sf_blok1'] = 0;
+                        $cachedOutputs['sf_blok2'] = 0;
+                        $cachedOutputs['sf_blok3'] = 0;
+                        $cachedOutputs['sf_pompa'] = 0;
+                        \Cache::put("device_outputs_{$device->id}", $cachedOutputs, now()->addHours(24));
+                    } else {
+                        $smartFarmService->sendRelay($topic, 0, 1);
+                    }
+
+                    \Log::info("Smart Farm Pompa Control sent", [
+                        'value' => $newValue,
+                    ]);
+                } else {
+                    $smartFarmService->sendRelayByName($topic, $output->output_name, (int) $newValue);
+                }
             }
             // === DEVICE LAIN: Format legacy <CMD#val#> ===
             else {

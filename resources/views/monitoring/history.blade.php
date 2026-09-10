@@ -296,6 +296,11 @@
                 </p>
             </div>
             <div class="d-flex gap-2">
+                @if($isAdminView ?? false)
+                    <button type="button" class="btn btn-action-custom text-white border-0" data-bs-toggle="modal" data-bs-target="#clearDataModalAdmin" style="background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%); box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);">
+                        <i class="bi bi-database-dash me-md-1"></i> <span class="d-none d-md-inline">Hapus Data</span>
+                    </button>
+                @endif
                 @if(!($isAdminView ?? false))
                     <button type="button" class="btn btn-action-custom btn-download" data-bs-toggle="modal" data-bs-target="#exportModal">
                         <i class="bi bi-download me-md-1"></i> <span class="d-none d-md-inline">Download CSV</span>
@@ -306,6 +311,19 @@
                 </a>
             </div>
         </div>
+
+        @if(session('success'))
+            <div class="alert alert-success d-flex align-items-center mb-4" style="border-radius: 14px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #059669;">
+                <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+                <div>{{ session('success') }}</div>
+            </div>
+        @endif
+        @if(session('error'))
+            <div class="alert alert-danger d-flex align-items-center mb-4" style="border-radius: 14px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #dc2626;">
+                <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+                <div>{{ session('error') }}</div>
+            </div>
+        @endif
 
         @if($logData->count() > 0 || request()->has('start_date'))
             
@@ -379,6 +397,9 @@
                                         {{ $sensor->sensor_label }} <br><small>({{ $sensor->unit }})</small>
                                     </th>
                                 @endforeach
+                                @if($isAdminView ?? false)
+                                    <th class="text-center" style="width: 70px;">Aksi</th>
+                                @endif
                             </tr>
                         </thead>
                         <tbody>
@@ -395,6 +416,13 @@
                                             @endif
                                         </td>
                                     @endforeach
+                                    @if($isAdminView ?? false)
+                                        <td class="text-center">
+                                            <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2" title="Hapus baris ini" style="border-radius: 8px; font-size: 0.75rem;" onclick="confirmDeleteRow({{ $row->id }}, '{{ \Carbon\Carbon::parse($row->recorded_at)->format('d/m/Y H:i:s') }}')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    @endif
                                 </tr>
                             @endforeach
                         </tbody>
@@ -498,6 +526,128 @@
                 </div>
             </div>
         </div>
+    @endif
+
+    @if($isAdminView ?? false)
+        <!-- Clear Data Modal Admin -->
+        <div class="modal fade" id="clearDataModalAdmin" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" style="max-width: 460px;">
+                <div class="modal-content" style="background: #ffffff; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 20px 40px rgba(0,0,0,0.15);">
+                    <form action="{{ route('admin.device.clear-data', $device->id) }}" method="POST">
+                        @csrf
+                        @method('DELETE')
+                        <div class="modal-header border-0 pb-0 pt-4 px-4">
+                            <div class="d-flex align-items-center gap-3">
+                                <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(234, 88, 12, 0.1); color: #ea580c; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                                    <i class="bi bi-database-dash"></i>
+                                </div>
+                                <div>
+                                    <h5 class="modal-title fw-bold text-dark mb-0">Hapus Data Sensor</h5>
+                                    <small class="text-muted">{{ $device->name }} ({{ $device->table_name }})</small>
+                                </div>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body py-4 px-4">
+                            <div class="alert alert-warning d-flex align-items-start gap-2 py-2 px-3 mb-3" style="border-radius: 12px; font-size: 0.85rem; background: #fffbeb; border: 1px solid #fef3c7; color: #b45309;">
+                                <i class="bi bi-info-circle-fill fs-6 mt-1 flex-shrink-0"></i>
+                                <div>
+                                    Device, token, sensor, output, dan setting <strong>TIDAK AKAN</strong> terhapus. Hanya riwayat log telemetry yang dibersihkan.
+                                </div>
+                            </div>
+
+                            <label class="form-label fw-semibold text-secondary mb-2" style="font-size: 0.85rem;">PILIH METODE PENGHAPUSAN:</label>
+                            
+                            <div class="p-3 mb-2 rounded border" style="cursor: pointer;" onclick="document.getElementById('historyModeAll').checked = true; toggleHistoryDateInputs();">
+                                <div class="form-check m-0">
+                                    <input class="form-check-input" type="radio" name="mode" id="historyModeAll" value="all" {{ request()->has('start_date') ? '' : 'checked' }} onchange="toggleHistoryDateInputs()">
+                                    <label class="form-check-label fw-bold text-dark ms-2" for="historyModeAll" style="cursor: pointer;">
+                                        Kosongkan Semua Data
+                                        <small class="d-block text-muted fw-normal">Menghapus seluruh rekaman log sensor di tabel ini.</small>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="p-3 rounded border" style="cursor: pointer;" onclick="document.getElementById('historyModeRange').checked = true; toggleHistoryDateInputs();">
+                                <div class="form-check m-0">
+                                    <input class="form-check-input" type="radio" name="mode" id="historyModeRange" value="range" {{ request()->has('start_date') ? 'checked' : '' }} onchange="toggleHistoryDateInputs()">
+                                    <label class="form-check-label fw-bold text-dark ms-2" for="historyModeRange" style="cursor: pointer;">
+                                        Hapus Berdasarkan Rentang Tanggal
+                                        <small class="d-block text-muted fw-normal">Hanya menghapus data pada periode tertentu.</small>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div id="historyDateRangeFields" class="mt-3 p-3 rounded" style="background: #f8fafc; border: 1px solid #e2e8f0; display: {{ request()->has('start_date') ? 'block' : 'none' }};">
+                                <div class="mb-3">
+                                    <label class="form-label text-secondary fw-semibold small mb-1">Dari Tanggal & Waktu</label>
+                                    <input type="text" class="form-control form-control-sm" name="start_date" id="historyClearStartDate" value="{{ request('start_date') }}" placeholder="YYYY-MM-DD HH:mm:ss">
+                                </div>
+                                <div>
+                                    <label class="form-label text-secondary fw-semibold small mb-1">Sampai Tanggal & Waktu</label>
+                                    <input type="text" class="form-control form-control-sm" name="end_date" id="historyClearEndDate" value="{{ request('end_date') }}" placeholder="YYYY-MM-DD HH:mm:ss">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-0 pt-0 pb-4 px-4">
+                            <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal" style="border-radius: 10px; font-weight: 500;">Batal</button>
+                            <button type="submit" class="btn btn-danger px-4" style="border-radius: 10px; font-weight: 600;">
+                                <i class="bi bi-trash3 me-1"></i> Hapus Sekarang
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Single Log Row Modal -->
+        <div class="modal fade" id="deleteSingleModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
+                <div class="modal-content" style="background: #ffffff; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 20px 40px rgba(0,0,0,0.15);">
+                    <form id="deleteSingleForm" method="POST" action="">
+                        @csrf
+                        @method('DELETE')
+                        <div class="modal-body text-center py-4 px-4">
+                            <div class="mx-auto mb-3" style="width: 50px; height: 50px; border-radius: 50%; background: rgba(239, 68, 68, 0.1); color: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                                <i class="bi bi-trash3"></i>
+                            </div>
+                            <h5 class="fw-bold text-dark mb-1">Hapus Baris Data Sensor?</h5>
+                            <p class="text-muted small mb-0">Waktu rekam: <strong id="deleteLogRowTime" class="text-dark">-</strong></p>
+                            <p class="text-muted small">Data sensor pada baris ini akan dihapus secara permanen.</p>
+                            <div class="d-flex gap-2 justify-content-center mt-4">
+                                <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal" style="border-radius: 10px; font-weight: 500;">Batal</button>
+                                <button type="submit" class="btn btn-danger px-4" style="border-radius: 10px; font-weight: 600;">Ya, Hapus</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function confirmDeleteRow(logId, recordedTime) {
+                document.getElementById('deleteLogRowTime').textContent = recordedTime;
+                document.getElementById('deleteSingleForm').action = '/admin/device/{{ $device->id }}/log/' + logId;
+                const modal = new bootstrap.Modal(document.getElementById('deleteSingleModal'));
+                modal.show();
+            }
+
+            function toggleHistoryDateInputs() {
+                const isRange = document.getElementById('historyModeRange').checked;
+                const container = document.getElementById('historyDateRangeFields');
+                const startInput = document.getElementById('historyClearStartDate');
+                const endInput = document.getElementById('historyClearEndDate');
+                if (isRange) {
+                    container.style.display = 'block';
+                    startInput.required = true;
+                    endInput.required = true;
+                } else {
+                    container.style.display = 'none';
+                    startInput.required = false;
+                    endInput.required = false;
+                }
+            }
+        </script>
     @endif
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>

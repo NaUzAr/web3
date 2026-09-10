@@ -473,6 +473,31 @@
                             </div>
                         </form>
 
+                        <!-- Danger Zone: Hapus Data / Hapus Device -->
+                        <div class="mt-5 pt-4 border-top" style="border-color: rgba(239, 68, 68, 0.2) !important;">
+                            <h6 class="text-danger fw-bold mb-1">
+                                <i class="bi bi-exclamation-triangle-fill me-1"></i> Zona Berbahaya
+                            </h6>
+                            <p class="small mb-3" style="color: var(--text-secondary);">
+                                Tindakan di bawah ini berdampak langsung pada data riwayat telemetry atau eksistensi device.
+                            </p>
+                            <div class="d-flex flex-wrap gap-2">
+                                @if($device->type === 'smart_gh' || $device->table_name)
+                                    <button type="button" class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#clearDataModal" style="border-radius: 10px; font-weight: 500;">
+                                        <i class="bi bi-database-dash me-1"></i> Hapus Data Sensor (Kosongkan Log)
+                                    </button>
+                                @endif
+                                <form action="{{ route('admin.device.destroy', $device->id) }}" method="POST" class="d-inline"
+                                    onsubmit="return confirm('⚠️ BAHAYA: Menghapus device akan MENGHAPUS TABEL {{ $device->table_name }} secara permanen!\n\nLanjutkan?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" style="border-radius: 10px; font-weight: 500;">
+                                        <i class="bi bi-trash3 me-1"></i> Hapus Device Ini
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -879,6 +904,96 @@
             setTimeout(function () { map.invalidateSize(); }, 100);
         });
     </script>
+
+    @if($device->type === 'smart_gh' || $device->table_name)
+        <!-- Clear Data Modal -->
+        <div class="modal fade" id="clearDataModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" style="max-width: 460px;">
+                <div class="modal-content" style="background: #ffffff; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 20px 40px rgba(0,0,0,0.15);">
+                    <form method="POST" action="{{ route('admin.device.clear-data', $device->id) }}">
+                        @csrf
+                        @method('DELETE')
+                        <div class="modal-header border-0 pb-0 pt-4 px-4">
+                            <div class="d-flex align-items-center gap-3">
+                                <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(234, 88, 12, 0.1); color: #ea580c; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                                    <i class="bi bi-database-dash"></i>
+                                </div>
+                                <div>
+                                    <h5 class="modal-title fw-bold text-dark mb-0">Hapus Data Sensor</h5>
+                                    <small class="text-muted">{{ $device->name }} ({{ $device->table_name }})</small>
+                                </div>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body py-4 px-4">
+                            <div class="alert alert-warning d-flex align-items-start gap-2 py-2 px-3 mb-3" style="border-radius: 12px; font-size: 0.85rem; background: #fffbeb; border: 1px solid #fef3c7; color: #b45309;">
+                                <i class="bi bi-info-circle-fill fs-6 mt-1 flex-shrink-0"></i>
+                                <div>
+                                    Device, token, sensor, output, dan setting <strong>TIDAK AKAN</strong> terhapus. Hanya riwayat log telemetry yang dibersihkan.
+                                </div>
+                            </div>
+
+                            <label class="form-label fw-semibold text-secondary mb-2" style="font-size: 0.85rem;">PILIH METODE PENGHAPUSAN:</label>
+                            
+                            <div class="p-3 mb-2 rounded border" style="cursor: pointer;" onclick="document.getElementById('editModeAll').checked = true; toggleEditDateInputs();">
+                                <div class="form-check m-0">
+                                    <input class="form-check-input" type="radio" name="mode" id="editModeAll" value="all" checked onchange="toggleEditDateInputs()">
+                                    <label class="form-check-label fw-bold text-dark ms-2" for="editModeAll" style="cursor: pointer;">
+                                        Kosongkan Semua Data
+                                        <small class="d-block text-muted fw-normal">Menghapus seluruh rekaman log sensor di tabel ini.</small>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="p-3 rounded border" style="cursor: pointer;" onclick="document.getElementById('editModeRange').checked = true; toggleEditDateInputs();">
+                                <div class="form-check m-0">
+                                    <input class="form-check-input" type="radio" name="mode" id="editModeRange" value="range" onchange="toggleEditDateInputs()">
+                                    <label class="form-check-label fw-bold text-dark ms-2" for="editModeRange" style="cursor: pointer;">
+                                        Hapus Berdasarkan Rentang Tanggal
+                                        <small class="d-block text-muted fw-normal">Hanya menghapus data pada periode tertentu.</small>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div id="editDateRangeFields" class="mt-3 p-3 rounded" style="background: #f8fafc; border: 1px solid #e2e8f0; display: none;">
+                                <div class="mb-3">
+                                    <label class="form-label text-secondary fw-semibold small mb-1">Dari Tanggal & Waktu</label>
+                                    <input type="datetime-local" class="form-control form-control-sm" name="start_date" id="editClearStartDate">
+                                </div>
+                                <div>
+                                    <label class="form-label text-secondary fw-semibold small mb-1">Sampai Tanggal & Waktu</label>
+                                    <input type="datetime-local" class="form-control form-control-sm" name="end_date" id="editClearEndDate">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-0 pt-0 pb-4 px-4">
+                            <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal" style="border-radius: 10px; font-weight: 500;">Batal</button>
+                            <button type="submit" class="btn btn-danger px-4" style="border-radius: 10px; font-weight: 600;">
+                                <i class="bi bi-trash3 me-1"></i> Hapus Sekarang
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <script>
+            function toggleEditDateInputs() {
+                const isRange = document.getElementById('editModeRange').checked;
+                const container = document.getElementById('editDateRangeFields');
+                const startInput = document.getElementById('editClearStartDate');
+                const endInput = document.getElementById('editClearEndDate');
+                if (isRange) {
+                    container.style.display = 'block';
+                    startInput.required = true;
+                    endInput.required = true;
+                } else {
+                    container.style.display = 'none';
+                    startInput.required = false;
+                    endInput.required = false;
+                }
+            }
+        </script>
+    @endif
 </body>
 
 </html>

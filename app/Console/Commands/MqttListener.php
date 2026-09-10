@@ -1028,6 +1028,15 @@ class MqttListener extends Command
                         $cachedOutputs[$outputName] = $state;
                         \Cache::put("device_outputs_{$device->id}", $cachedOutputs, now()->addHours(24));
 
+                        $sfStatusData = \Cache::get("device_sf_status_{$device->id}", []);
+                        if ($outputName === 'sf_pupuk') {
+                            $sfStatusData['pupuk'] = ($state == 1) ? 'ON' : 'NONE';
+                            \Cache::put("device_sf_status_{$device->id}", $sfStatusData, now()->addHours(1));
+                        } elseif ($outputName === 'sf_pompa') {
+                            $sfStatusData['siram'] = $state;
+                            \Cache::put("device_sf_status_{$device->id}", $sfStatusData, now()->addHours(1));
+                        }
+
                         $this->info("           ✅ Smart Farm OK RELAY: {$outputName} = {$state}");
 
                         event(new \App\Events\DeviceStatusUpdated(
@@ -1035,10 +1044,74 @@ class MqttListener extends Command
                             \Cache::get("sensor_buffer_{$device->id}", []),
                             [['id' => $output->id, 'value' => $state]],
                             \Cache::get("device_{$device->id}_last_seen"),
-                            \Cache::get("device_sf_status_{$device->id}")
+                            $sfStatusData
                         ));
                     }
                 }
+            }
+            // Parse konfirmasi pemilihan blok: OK:BLOK:blok1=0:blok2=1:blok3=0:pompa=1
+            elseif ($cmd === 'BLOK' && isset($parts[2])) {
+                $kvPairs = explode(':', $parts[2]);
+                $parsedBlok = [];
+                foreach ($kvPairs as $pair) {
+                    if (str_contains($pair, '=')) {
+                        [$k, $v] = explode('=', $pair, 2);
+                        $parsedBlok[trim($k)] = (int) trim($v);
+                    }
+                }
+
+                $keyMap = [
+                    'blok1' => 'sf_blok1',
+                    'blok2' => 'sf_blok2',
+                    'blok3' => 'sf_blok3',
+                    'pompa' => 'sf_pompa',
+                ];
+
+                $cachedOutputs = \Cache::get("device_outputs_{$device->id}", []);
+                $formattedOutputs = [];
+                $activeBlok = 0;
+
+                foreach ($keyMap as $k => $outputName) {
+                    if (array_key_exists($k, $parsedBlok)) {
+                        $val = $parsedBlok[$k];
+                        $cachedOutputs[$outputName] = $val;
+
+                        $output = \App\Models\DeviceOutput::where('device_id', $device->id)
+                            ->where('output_name', $outputName)
+                            ->first();
+
+                        if ($output) {
+                            $output->current_value = (float) $val;
+                            $output->save();
+                            $formattedOutputs[] = ['id' => $output->id, 'value' => $val];
+                        }
+
+                        if (str_starts_with($k, 'blok') && $val === 1) {
+                            $activeBlok = (int) str_replace('blok', '', $k);
+                        }
+                    }
+                }
+
+                \Cache::put("device_outputs_{$device->id}", $cachedOutputs, now()->addHours(24));
+
+                // Update status Smart Farm live di cache
+                $sfStatusData = \Cache::get("device_sf_status_{$device->id}", []);
+                $sfStatusData['blok'] = $activeBlok;
+                $sfStatusData['siram'] = ($parsedBlok['pompa'] ?? 0) === 1 ? 1 : 0;
+                if ($sfStatusData['siram'] === 0) {
+                    $sfStatusData['sisa'] = 0;
+                }
+                \Cache::put("device_sf_status_{$device->id}", $sfStatusData, now()->addHours(1));
+
+                $this->info("           ✅ Smart Farm OK BLOK: " . json_encode($parsedBlok) . " (active blok: {$activeBlok})");
+
+                event(new \App\Events\DeviceStatusUpdated(
+                    $device->id,
+                    \Cache::get("sensor_buffer_{$device->id}", []),
+                    $formattedOutputs,
+                    \Cache::get("device_{$device->id}_last_seen"),
+                    $sfStatusData
+                ));
             } elseif ($cmd === 'RESET_ERROR') {
                 $sfStatusData = \Cache::get("device_sf_status_{$device->id}", []);
                 $sfStatusData['error'] = 0;
@@ -1124,8 +1197,8 @@ class MqttListener extends Command
             Log::warning("Smart Farm ERR [{$device->name}] {$payload}");
         }
 
-        // Broadcast heartbeat update ke WebSocket jika bukan pesan STATUS (pesan STATUS sudah broadcast sendiri)
-        if (!($prefix === 'EVT' && $cmd === 'STATUS') && !($prefix === 'OK' && $cmd === 'STATUS')) {
+        // Broadcast heartbeat update ke WebSocket jika bukan pesan yang sudah broadcast sendiri
+        if (!($prefix === 'EVT' && in_array($cmd, ['STATUS', 'AUTO_OFF'])) && !($prefix === 'OK' && in_array($cmd, ['STATUS', 'BLOK', 'RELAY']))) {
             $lastSeen = \Cache::get("device_{$device->id}_last_seen");
             $sensorBuffer = \Cache::get("sensor_buffer_{$device->id}", []);
             $sfStatus = \Cache::get("device_sf_status_{$device->id}");

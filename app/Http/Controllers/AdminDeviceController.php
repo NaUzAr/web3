@@ -562,6 +562,71 @@ class AdminDeviceController extends Controller
             ->with('success', 'Device dan Tabel Log berhasil dihapus permanen.');
     }
 
+    // 6B. HAPUS DATA SENSOR / LOG (CLEAR DATA)
+    public function clearData(Request $request, $id)
+    {
+        $this->checkAdmin();
+        $device = Device::findOrFail($id);
+
+        if (!$device->table_name || !Schema::hasTable($device->table_name)) {
+            return back()->with('error', 'Tabel data sensor untuk device ini tidak ditemukan.');
+        }
+
+        $countDeleted = 0;
+        $mode = $request->input('mode', 'all');
+
+        if ($mode === 'range' && $request->filled('start_date') && $request->filled('end_date')) {
+            $startDate = \Carbon\Carbon::parse($request->start_date)->format('Y-m-d H:i:s');
+            $endDate = \Carbon\Carbon::parse($request->end_date);
+            if (strlen($request->end_date) <= 10) {
+                $endDate->endOfDay();
+            }
+            $endDateStr = $endDate->format('Y-m-d H:i:s');
+
+            $countDeleted = \DB::table($device->table_name)
+                ->whereBetween('recorded_at', [$startDate, $endDateStr])
+                ->delete();
+
+            $message = "Berhasil menghapus {$countDeleted} baris data sensor (periode {$startDate} s/d {$endDateStr}) pada device {$device->name}.";
+        } else {
+            $countDeleted = \DB::table($device->table_name)->count();
+            \DB::table($device->table_name)->truncate();
+
+            $message = "Berhasil mengosongkan seluruh data sensor ({$countDeleted} baris) pada device {$device->name}.";
+        }
+
+        if (class_exists(\App\Models\ActivityLog::class)) {
+            \App\Models\ActivityLog::log(
+                'clear_device_data',
+                "Admin menghapus data sensor device {$device->name} ({$countDeleted} baris, mode: {$mode})"
+            );
+        }
+
+        return back()->with('success', $message);
+    }
+
+    // 6C. HAPUS 1 BARIS LOG SENSOR
+    public function deleteLog(Request $request, $id, $logId)
+    {
+        $this->checkAdmin();
+        $device = Device::findOrFail($id);
+
+        if ($device->table_name && Schema::hasTable($device->table_name)) {
+            $deleted = \DB::table($device->table_name)->where('id', $logId)->delete();
+            if ($deleted) {
+                if (class_exists(\App\Models\ActivityLog::class)) {
+                    \App\Models\ActivityLog::log(
+                        'delete_single_log',
+                        "Admin menghapus 1 baris data sensor (ID: {$logId}) pada device {$device->name}"
+                    );
+                }
+                return back()->with('success', 'Baris data sensor berhasil dihapus.');
+            }
+        }
+
+        return back()->with('error', 'Gagal menghapus baris data sensor atau data tidak ditemukan.');
+    }
+
     // 7. HALAMAN MONITORING DEVICE (ADMIN VIEW)
     public function showMonitoring(Request $request, $id)
     {
@@ -706,16 +771,84 @@ class AdminDeviceController extends Controller
 
         // Publish ke MQTT untuk kirim perintah ke device
         try {
-            // === SMART FARM: Gunakan protokol CMD:RELAY ===
+            // === SMART FARM: Gunakan protokol CMD:BLOK dan CMD:RELAY ===
             if ($device->type === 'smart_farm' && str_starts_with($output->output_name, 'sf_')) {
                 $smartFarmService = app(\App\Services\MqttSmartFarmService::class);
                 $topic = $device->mqtt_topic_output ?: $device->mqtt_topic;
-                $smartFarmService->sendRelayByName($topic, $output->output_name, (int) $newValue);
 
-                \Log::info("Smart Farm Admin Relay Control sent", [
-                    'output' => $output->output_name,
-                    'value' => $newValue,
-                ]);
+                if (in_array($output->output_name, ['sf_blok1', 'sf_blok2', 'sf_blok3'])) {
+                    $blokNum = (int) str_replace('sf_blok', '', $output->output_name);
+                    $targetBlok = ($newValue == 1) ? $blokNum : 0;
+                    $smartFarmService->sendBlok($topic, $targetBlok);
+
+                    // Sinkronisasi DB & Cache optimis
+                    if ($targetBlok > 0) {
+                        \App\Models\DeviceOutput::where('device_id', $device->id)
+                            ->whereIn('output_name', ['sf_blok1', 'sf_blok2', 'sf_blok3'])
+                            ->where('output_name', '!=', $output->output_name)
+                            ->update(['current_value' => 0]);
+
+                        \App\Models\DeviceOutput::where('device_id', $device->id)
+                            ->where('output_name', 'sf_pompa')
+                            ->update(['current_value' => 1]);
+
+                        $cachedOutputs = \Cache::get("device_outputs_{$device->id}", []);
+                        $cachedOutputs['sf_blok1'] = ($targetBlok === 1) ? 1 : 0;
+                        $cachedOutputs['sf_blok2'] = ($targetBlok === 2) ? 1 : 0;
+                        $cachedOutputs['sf_blok3'] = ($targetBlok === 3) ? 1 : 0;
+                        $cachedOutputs['sf_pompa'] = 1;
+                        \Cache::put("device_outputs_{$device->id}", $cachedOutputs, now()->addHours(24));
+                    } else {
+                        \App\Models\DeviceOutput::where('device_id', $device->id)
+                            ->whereIn('output_name', ['sf_blok1', 'sf_blok2', 'sf_blok3', 'sf_pompa'])
+                            ->update(['current_value' => 0]);
+
+                        $cachedOutputs = \Cache::get("device_outputs_{$device->id}", []);
+                        $cachedOutputs['sf_blok1'] = 0;
+                        $cachedOutputs['sf_blok2'] = 0;
+                        $cachedOutputs['sf_blok3'] = 0;
+                        $cachedOutputs['sf_pompa'] = 0;
+                        \Cache::put("device_outputs_{$device->id}", $cachedOutputs, now()->addHours(24));
+                    }
+
+                    \Log::info("Smart Farm Admin Blok Control sent", [
+                        'blok' => $targetBlok,
+                        'output' => $output->output_name,
+                        'value' => $newValue,
+                    ]);
+                } elseif ($output->output_name === 'sf_pupuk') {
+                    $smartFarmService->sendRelay($topic, 4, (int) $newValue);
+                    $cachedOutputs = \Cache::get("device_outputs_{$device->id}", []);
+                    $cachedOutputs['sf_pupuk'] = (int) $newValue;
+                    \Cache::put("device_outputs_{$device->id}", $cachedOutputs, now()->addHours(24));
+
+                    \Log::info("Smart Farm Admin Pupuk Control sent", [
+                        'value' => $newValue,
+                    ]);
+                } elseif ($output->output_name === 'sf_pompa') {
+                    if ((int) $newValue === 0) {
+                        $smartFarmService->sendBlok($topic, 0);
+
+                        \App\Models\DeviceOutput::where('device_id', $device->id)
+                            ->whereIn('output_name', ['sf_blok1', 'sf_blok2', 'sf_blok3', 'sf_pompa'])
+                            ->update(['current_value' => 0]);
+
+                        $cachedOutputs = \Cache::get("device_outputs_{$device->id}", []);
+                        $cachedOutputs['sf_blok1'] = 0;
+                        $cachedOutputs['sf_blok2'] = 0;
+                        $cachedOutputs['sf_blok3'] = 0;
+                        $cachedOutputs['sf_pompa'] = 0;
+                        \Cache::put("device_outputs_{$device->id}", $cachedOutputs, now()->addHours(24));
+                    } else {
+                        $smartFarmService->sendRelay($topic, 0, 1);
+                    }
+
+                    \Log::info("Smart Farm Admin Pompa Control sent", [
+                        'value' => $newValue,
+                    ]);
+                } else {
+                    $smartFarmService->sendRelayByName($topic, $output->output_name, (int) $newValue);
+                }
             }
             // === DEVICE LAIN: Format legacy <CMD#val#> ===
             else {

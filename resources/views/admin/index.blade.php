@@ -139,6 +139,17 @@
             transform: translateY(-2px);
         }
 
+        .btn-action-clear {
+            background: rgba(249, 115, 22, 0.2);
+            color: #ea580c;
+        }
+
+        .btn-action-clear:hover {
+            background: rgba(249, 115, 22, 0.4);
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
         /* QR Modal & QRIS Card */
         .qr-modal .modal-content {
             background: var(--glass-bg, #fff);
@@ -160,9 +171,9 @@
         }
 
         .qris-header {
-            background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
+            background: var(--primary-gradient, linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%));
             padding: 1.5rem 1rem;
-            color: white;
+            color: #ffffff;
             text-align: center;
         }
 
@@ -191,13 +202,16 @@
             font-weight: 800;
             letter-spacing: 1px;
             line-height: 1.2;
+            color: #ffffff;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
         }
 
         .qris-sub {
             font-size: 0.75rem;
             font-weight: 500;
-            opacity: 0.9;
+            opacity: 0.95;
             letter-spacing: 0.5px;
+            color: rgba(255,255,255,0.9);
         }
 
         .qris-device-name {
@@ -218,7 +232,7 @@
             background: white;
             padding: 0.5rem;
             border-radius: 20px;
-            box-shadow: inset 0 0 0 2px rgba(14, 165, 233, 0.2);
+            box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.08);
             position: relative;
         }
 
@@ -227,7 +241,7 @@
             position: absolute;
             top: -2px; left: -2px; right: -2px; bottom: -2px;
             border-radius: 22px;
-            background: linear-gradient(135deg, #0ea5e9, #8b5cf6);
+            background: var(--primary-gradient, linear-gradient(135deg, #0ea5e9, #8b5cf6));
             z-index: -1;
         }
 
@@ -549,19 +563,37 @@
                                             </li>
                                         </ul>
                                     </div>
-                                    <a href="{{ route('admin.device.edit', $device->id) }}"
-                                        class="btn-action btn-action-edit" title="Edit">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    <form action="{{ route('admin.device.destroy', $device->id) }}" method="POST"
-                                        class="d-inline"
-                                        onsubmit="return confirm('⚠️ BAHAYA: Menghapus device akan MENGHAPUS TABEL {{ $device->table_name }} secara permanen!\n\nLanjutkan?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn-action btn-action-delete" title="Hapus">
-                                            <i class="bi bi-trash"></i>
+                                    <div class="dropdown d-inline">
+                                        <button class="btn-action btn-action-edit" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Edit & Kelola Device">
+                                            <i class="bi bi-pencil"></i>
                                         </button>
-                                    </form>
+                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="border-radius: 12px; font-size: 0.9rem; min-width: 200px;">
+                                            <li>
+                                                <a class="dropdown-item py-2 d-flex align-items-center" href="{{ route('admin.device.edit', $device->id) }}">
+                                                    <i class="bi bi-pencil me-2 text-secondary"></i> Edit Device
+                                                </a>
+                                            </li>
+                                            @if($device->type === 'smart_gh' || $device->table_name)
+                                                <li>
+                                                    <a class="dropdown-item py-2 d-flex align-items-center" href="#"
+                                                        onclick="openClearDataModal({{ $device->id }}, '{{ addslashes($device->name) }}', '{{ $device->table_name }}')">
+                                                        <i class="bi bi-database-dash me-2 text-warning"></i> Hapus Data Sensor
+                                                    </a>
+                                                </li>
+                                            @endif
+                                            <li><hr class="dropdown-divider my-1"></li>
+                                            <li>
+                                                <form action="{{ route('admin.device.destroy', $device->id) }}" method="POST"
+                                                    onsubmit="return confirm('⚠️ BAHAYA: Menghapus device akan MENGHAPUS TABEL {{ $device->table_name }} secara permanen!\n\nLanjutkan?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="dropdown-item py-2 d-flex align-items-center text-danger border-0 bg-transparent w-100 text-start">
+                                                        <i class="bi bi-trash me-2"></i> Hapus Device
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        </ul>
+                                    </div>
                                 </td>
                             </tr>
                         @empty
@@ -596,7 +628,7 @@
                             <div class="qris-logo-row">
                                 <img src="{{ asset(env('APP_LOGO', 'images/logo.png')) }}" alt="Logo" class="qris-header-logo">
                                 <div class="qris-header-text">
-                                    <div class="qris-brand">SWARATANI</div>
+                                    <div class="qris-brand">{{ strtoupper(env('APP_NAME', 'Swaratani')) }}</div>
                                     <div class="qris-sub">Smart Agriculture</div>
                                 </div>
                             </div>
@@ -633,6 +665,77 @@
         </div>
     </div>
 
+    <!-- Clear Data Modal -->
+    <div class="modal fade" id="clearDataModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 460px;">
+            <div class="modal-content" style="background: #ffffff; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 20px 40px rgba(0,0,0,0.15);">
+                <form id="clearDataForm" method="POST" action="">
+                    @csrf
+                    @method('DELETE')
+                    <div class="modal-header border-0 pb-0 pt-4 px-4">
+                        <div class="d-flex align-items-center gap-3">
+                            <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(234, 88, 12, 0.1); color: #ea580c; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                                <i class="bi bi-database-dash"></i>
+                            </div>
+                            <div>
+                                <h5 class="modal-title fw-bold text-dark mb-0">Hapus Data Sensor</h5>
+                                <small class="text-muted" id="clearDataDeviceName">Device</small>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body py-4 px-4">
+                        <div class="alert alert-warning d-flex align-items-start gap-2 py-2 px-3 mb-3" style="border-radius: 12px; font-size: 0.85rem; background: #fffbeb; border: 1px solid #fef3c7; color: #b45309;">
+                            <i class="bi bi-info-circle-fill fs-6 mt-1 flex-shrink-0"></i>
+                            <div>
+                                Device, token, sensor, dan setting <strong>TIDAK AKAN</strong> terhapus. Hanya riwayat log telemetry yang dibersihkan.
+                            </div>
+                        </div>
+
+                        <label class="form-label fw-semibold text-secondary mb-2" style="font-size: 0.85rem;">PILIH METODE PENGHAPUSAN:</label>
+                        
+                        <div class="p-3 mb-2 rounded border" style="cursor: pointer;" onclick="document.getElementById('modeAll').checked = true; toggleDateInputs();">
+                            <div class="form-check m-0">
+                                <input class="form-check-input" type="radio" name="mode" id="modeAll" value="all" checked onchange="toggleDateInputs()">
+                                <label class="form-check-label fw-bold text-dark ms-2" for="modeAll" style="cursor: pointer;">
+                                    Kosongkan Semua Data
+                                    <small class="d-block text-muted fw-normal">Menghapus seluruh rekaman log sensor di tabel.</small>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="p-3 rounded border" style="cursor: pointer;" onclick="document.getElementById('modeRange').checked = true; toggleDateInputs();">
+                            <div class="form-check m-0">
+                                <input class="form-check-input" type="radio" name="mode" id="modeRange" value="range" onchange="toggleDateInputs()">
+                                <label class="form-check-label fw-bold text-dark ms-2" for="modeRange" style="cursor: pointer;">
+                                    Hapus Berdasarkan Rentang Tanggal
+                                    <small class="d-block text-muted fw-normal">Hanya menghapus data pada periode tertentu.</small>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div id="dateRangeFields" class="mt-3 p-3 rounded" style="background: #f8fafc; border: 1px solid #e2e8f0; display: none;">
+                            <div class="mb-3">
+                                <label class="form-label text-secondary fw-semibold small mb-1">Dari Tanggal & Waktu</label>
+                                <input type="datetime-local" class="form-control form-control-sm" name="start_date" id="clearStartDate">
+                            </div>
+                            <div>
+                                <label class="form-label text-secondary fw-semibold small mb-1">Sampai Tanggal & Waktu</label>
+                                <input type="datetime-local" class="form-control form-control-sm" name="end_date" id="clearEndDate">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 pt-0 pb-4 px-4">
+                        <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal" style="border-radius: 10px; font-weight: 500;">Batal</button>
+                        <button type="submit" class="btn btn-danger px-4" style="border-radius: 10px; font-weight: 600;">
+                            <i class="bi bi-trash3 me-1"></i> Hapus Sekarang
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
     <!-- QRCode.js Local -->
@@ -644,7 +747,7 @@
         let currentDeviceName = '';
         const logoImg = new Image();
         logoImg.crossOrigin = 'anonymous';
-        logoImg.src = '{{ asset("images/logo.png") }}';
+        logoImg.src = '{{ asset(env('APP_LOGO', 'images/logo.png')) }}';
 
         function showQrModal(token, deviceName) {
             currentDeviceName = deviceName;
@@ -679,7 +782,7 @@
                     text: text,
                     width: 260,
                     height: 260,
-                    colorDark: '#0c4a6e',
+                    colorDark: '#111827',
                     colorLight: '#ffffff',
                     correctLevel: QRCode.CorrectLevel.H,
                 });
@@ -727,7 +830,7 @@
         }
 
         function drawLogoOnCanvas(ctx, size) {
-            const logoSize = size * 0.2;
+            const logoSize = size * 0.22;
             const cx = size / 2;
             const cy = size / 2;
             const padding = 8;
@@ -739,15 +842,30 @@
             ctx.arc(cx, cy, totalSize / 2 + 4, 0, Math.PI * 2);
             ctx.fill();
 
-            // Blue border ring
-            ctx.strokeStyle = '#0ea5e9';
+            // Border ring using theme primary color
+            const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#eab308';
+            ctx.strokeStyle = primaryColor;
             ctx.lineWidth = 3;
             ctx.beginPath();
             ctx.arc(cx, cy, totalSize / 2 + 4, 0, Math.PI * 2);
             ctx.stroke();
 
-            // Draw the logo image
-            ctx.drawImage(logoImg, cx - logoSize / 2, cy - logoSize / 2, logoSize, logoSize);
+            // Calculate aspect ratio so image doesn't stretch or distort
+            let w = logoSize;
+            let h = logoSize;
+            if (logoImg.naturalWidth && logoImg.naturalHeight) {
+                const aspect = logoImg.naturalWidth / logoImg.naturalHeight;
+                if (aspect > 1) {
+                    w = logoSize;
+                    h = logoSize / aspect;
+                } else {
+                    h = logoSize;
+                    w = logoSize * aspect;
+                }
+            }
+
+            // Draw the logo image centered
+            ctx.drawImage(logoImg, cx - w / 2, cy - h / 2, w, h);
         }
 
         function downloadQr() {
@@ -759,7 +877,7 @@
             }).then(function(canvas) {
                 const link = document.createElement('a');
                 const safeName = currentDeviceName.replace(/[^a-zA-Z0-9]/g, '_');
-                link.download = 'QR_Swaratani_' + safeName + '.png';
+                link.download = 'QR_{{ preg_replace('/[^a-zA-Z0-9]/', '_', env('APP_NAME', 'Swaratani')) }}_' + safeName + '.png';
                 link.href = canvas.toDataURL('image/png');
                 link.click();
             });
@@ -785,6 +903,31 @@
                 console.error('Failed to copy data: ', err);
                 alert('Gagal menyalin data.');
             });
+        }
+
+        function openClearDataModal(deviceId, deviceName, tableName) {
+            document.getElementById('clearDataDeviceName').textContent = deviceName + ' (' + tableName + ')';
+            document.getElementById('clearDataForm').action = '/admin/device/' + deviceId + '/clear-data';
+            document.getElementById('modeAll').checked = true;
+            toggleDateInputs();
+            const modal = new bootstrap.Modal(document.getElementById('clearDataModal'));
+            modal.show();
+        }
+
+        function toggleDateInputs() {
+            const isRange = document.getElementById('modeRange').checked;
+            const container = document.getElementById('dateRangeFields');
+            const startInput = document.getElementById('clearStartDate');
+            const endInput = document.getElementById('clearEndDate');
+            if (isRange) {
+                container.style.display = 'block';
+                startInput.required = true;
+                endInput.required = true;
+            } else {
+                container.style.display = 'none';
+                startInput.required = false;
+                endInput.required = false;
+            }
         }
     </script>
 

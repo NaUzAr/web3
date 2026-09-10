@@ -150,6 +150,8 @@ def handle_ok_response(payload, parts, topic, timestamp):
         name = coil_names.get(int(coil), f"Coil {coil}")
         state_text = "🟢 ON" if state == "1" else "🔴 OFF"
         print(f"    ✅ Relay: {name} → {state_text}")
+    elif cmd == "BLOK":
+        print(f"    ✅ Blok & Pompa Status: {detail}")
     elif cmd == "JADWAL_SET":
         print(f"    ✅ Jadwal #{detail} berhasil disimpan")
     elif cmd == "JADWAL_DEL":

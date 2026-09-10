@@ -38,6 +38,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Delete Device
         Route::delete('/device/{id}', [AdminDeviceController::class, 'destroy'])->name('device.destroy');
 
+        // Clear/Delete Device Sensor Data (Smart GH / All Devices)
+        Route::delete('/device/{id}/clear-data', [AdminDeviceController::class, 'clearData'])->name('device.clear-data');
+        Route::delete('/device/{id}/log/{logId}', [AdminDeviceController::class, 'deleteLog'])->name('device.delete-log');
+
         // Monitoring Device (Admin View)
         Route::get('/device/{id}/monitoring', [AdminDeviceController::class, 'showMonitoring'])->name('device.monitoring');
         Route::get('/device/{id}/history', [AdminDeviceController::class, 'history'])->name('device.history');

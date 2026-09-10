@@ -49,6 +49,22 @@ class MqttSmartFarmService
     }
 
     /**
+     * Kontrol pemilihan blok irigasi
+     * 
+     * @param string $mqttTopic MQTT topic device (e.g. /irigasi1)
+     * @param int $blok Nomor blok (1-3) atau 0 untuk mematikan semua blok & pompa
+     * @return bool
+     * 
+     * Format: CMD:BLOK:<blok>
+     * Response: OK:BLOK:blok1=0:blok2=1:blok3=0:pompa=1
+     */
+    public function sendBlok(string $mqttTopic, int $blok): bool
+    {
+        $message = "CMD:BLOK:{$blok}";
+        return $this->publish($mqttTopic, $message, 'Blok control');
+    }
+
+    /**
      * Kontrol relay ON/OFF
      * 
      * @param string $mqttTopic MQTT topic device (e.g. /irigasi1)
@@ -75,6 +91,25 @@ class MqttSmartFarmService
      */
     public function sendRelayByName(string $mqttTopic, string $outputName, int $state): bool
     {
+        // Blok 1, 2, 3 dikontrol via CMD:BLOK:<1|2|3|0>
+        if (in_array($outputName, ['sf_blok1', 'sf_blok2', 'sf_blok3'])) {
+            if ($state == 1) {
+                $blokNum = (int) str_replace('sf_blok', '', $outputName);
+                return $this->sendBlok($mqttTopic, $blokNum);
+            } else {
+                return $this->sendBlok($mqttTopic, 0);
+            }
+        }
+
+        // Mematikan sf_pompa juga mematikan semua blok via CMD:BLOK:0
+        if ($outputName === 'sf_pompa') {
+            if ($state == 0) {
+                return $this->sendBlok($mqttTopic, 0);
+            } else {
+                return $this->sendRelay($mqttTopic, 0, $state);
+            }
+        }
+
         $coil = self::COIL_MAP[$outputName] ?? null;
         if ($coil === null) {
             Log::warning("Smart Farm: Unknown output name '{$outputName}', cannot map to coil");

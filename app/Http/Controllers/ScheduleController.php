@@ -378,12 +378,9 @@ class ScheduleController extends Controller
         // 1. Kirim CMD:SIRAM_STOP (menghentikan rutinitas siram terjadwal)
         $this->smartFarmService->sendSiramStop($topic);
 
-        // 2. Kirim perintah matikan semua relay manual (Pompa, Pupuk, dan Blok)
-        $this->smartFarmService->sendRelay($topic, 0, 0); // Pompa Utama OFF
+        // 2. Kirim perintah matikan semua blok & pompa via CMD:BLOK:0 dan pupuk OFF via CMD:RELAY:4:0
+        $this->smartFarmService->sendBlok($topic, 0);   // Blok & Pompa OFF
         $this->smartFarmService->sendRelay($topic, 4, 0); // Pupuk OFF
-        $this->smartFarmService->sendRelay($topic, 1, 0); // Blok 1 OFF
-        $this->smartFarmService->sendRelay($topic, 2, 0); // Blok 2 OFF
-        $this->smartFarmService->sendRelay($topic, 3, 0); // Blok 3 OFF
 
         // 3. Reset status di DB & cache
         \App\Models\DeviceOutput::where('device_id', $device->id)
