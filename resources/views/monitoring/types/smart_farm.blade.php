@@ -114,9 +114,6 @@
                     <span class="small fw-bold text-muted d-flex align-items-center gap-1" style="font-size: 0.76rem; letter-spacing: 0.5px; text-transform: uppercase;">
                         <i class="bi bi-diagram-3-fill text-primary"></i> Alur Distribusi Irigasi & Fertigasi
                     </span>
-                    <span class="small text-muted" style="font-size: 0.72rem;">
-                        <i class="bi bi-shield-check text-success"></i> Auto-Interlock RS485
-                    </span>
                 </div>
                 <div class="pipeline-scroll-wrapper">
                     <div class="pipeline-track">
