@@ -15,10 +15,8 @@
 
     <style>
         body {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
+            min-height: 100vh;
+            background: var(--nature-gradient, #f8fafc);
         }
 
         .add-card {
@@ -226,7 +224,10 @@
 <body>
     <div class="bg-animation"></div>
 
-    <div class="add-card">
+    @include('partials.navbar')
+
+    <div class="container py-4 my-2 d-flex justify-content-center">
+        <div class="add-card">
         <div class="card-icon">
             <i class="bi bi-key-fill text-white"></i>
         </div>
@@ -301,6 +302,7 @@
                 </a>
             </div>
         </form>
+        </div>
     </div>
 
     <!-- html5-qrcode CDN -->

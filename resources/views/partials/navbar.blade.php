@@ -309,8 +309,11 @@
                         <i class="bi bi-house"></i> <span class="nav-text">Beranda</span>
                     </a>
                 @endif
-                <a href="{{ route('monitoring.index') }}" class="{{ str_starts_with($currentRoute, 'monitoring.') ? 'active' : '' }}" title="Monitoring">
+                <a href="{{ route('monitoring.index') }}" class="{{ ($currentRoute === 'monitoring.index' || str_starts_with($currentRoute, 'monitoring.show') || str_starts_with($currentRoute, 'monitoring.history')) ? 'active' : '' }}" title="Monitoring">
                     <i class="bi bi-graph-up-arrow"></i> <span class="nav-text">Monitoring</span>
+                </a>
+                <a href="{{ route('monitoring.create') }}" class="{{ $currentRoute === 'monitoring.create' ? 'active' : '' }}" title="Perangkat Baru">
+                    <i class="bi bi-plus-circle"></i> <span class="nav-text">Perangkat Baru</span>
                 </a>
                 <a href="{{ route('riwayat.index') }}" class="{{ $currentRoute === 'riwayat.index' ? 'active' : '' }}" title="Riwayat">
                     <i class="bi bi-clock-history"></i> <span class="nav-text">Riwayat</span>
@@ -357,6 +360,17 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Menu Item: Tambah Perangkat Baru -->
+                        <a class="dropdown-item user-menu-item" href="{{ route('monitoring.create') }}">
+                            <div class="menu-icon-box text-info bg-info-light">
+                                <i class="bi bi-plus-circle-dotted"></i>
+                            </div>
+                            <div>
+                                <div class="menu-item-title">Perangkat Baru</div>
+                                <div class="menu-item-desc">Scan QR / masukkan token baru</div>
+                            </div>
+                        </a>
 
                         <!-- Menu Item: Profil Saya -->
                         <a class="dropdown-item user-menu-item" href="{{ route('profile.index') }}">
