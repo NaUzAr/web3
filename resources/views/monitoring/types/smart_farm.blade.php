@@ -121,9 +121,6 @@
                         <a href="{{ ($isAdminView ?? false) ? route('schedule.index', $device->id) : route('schedule.index', $userDevice->id) }}" class="btn btn-glass btn-sm d-inline-flex align-items-center gap-2 shadow-sm" style="border-radius: 50px; padding: 0.65rem 1.3rem; font-weight: 600;">
                             <i class="bi bi-calendar-check text-primary"></i> Kelola Jadwal
                         </a>
-                        <button type="button" class="btn btn-light btn-sm d-inline-flex align-items-center gap-1 border shadow-sm" style="border-radius: 50px; padding: 0.65rem 1.1rem; font-weight: 600; color: #4b5563;" onclick="checkRelayStatusQuick()" title="Cek Status Aktual Relay STM32 (CMD:RELAY_STATUS)">
-                            <i class="bi bi-lightning-charge text-warning"></i> Status Relay
-                        </button>
                         <button type="button" class="btn btn-light btn-sm d-inline-flex align-items-center gap-1 border shadow-sm" style="border-radius: 50px; padding: 0.65rem 1.1rem; font-weight: 600; color: #4b5563;" onclick="openRtcSyncModal()" title="Sinkronkan Waktu RTC Device">
                             <i class="bi bi-clock-history text-primary"></i> Jam RTC
                         </button>
