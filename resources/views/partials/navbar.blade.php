@@ -267,26 +267,51 @@
     }
 
     @media (max-width: 576px) {
+        .navbar-main {
+            padding: 0.45rem 0;
+        }
+        .navbar-main .navbar-brand {
+            gap: 0;
+            flex-shrink: 0;
+        }
+        .navbar-main .navbar-brand span {
+            display: none;
+        }
+        .navbar-main .navbar-brand img {
+            height: 32px;
+        }
         .nav-links-wrap a span.nav-text {
             display: none;
         }
+        .nav-links-wrap {
+            gap: 0.1rem;
+            flex-shrink: 1;
+        }
         .nav-links-wrap a {
-            padding: 0.4rem 0.5rem;
-            font-size: 1rem;
+            padding: 0.32rem 0.42rem;
+            font-size: 1.05rem;
+        }
+        .nav-user-dropdown {
+            margin-left: 0.2rem;
         }
         .nav-user-name {
             display: none;
         }
         .nav-user-btn {
-            padding: 0.25rem;
+            padding: 0.2rem;
             border-radius: 50%;
+        }
+        .nav-user-avatar, .nav-user-avatar-wrap {
+            width: 28px;
+            height: 28px;
+            font-size: 0.75rem;
         }
         .nav-user-chevron {
             display: none;
         }
         .nav-user-menu {
             position: fixed !important;
-            top: 60px !important;
+            top: 52px !important;
             right: 12px !important;
             left: 12px !important;
             max-width: none !important;
@@ -296,7 +321,7 @@
 </style>
 
 <nav class="navbar-main">
-    <div class="container d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div class="container d-flex align-items-center justify-content-between flex-nowrap">
         <a class="navbar-brand" href="{{ $isPwa ? route('monitoring.index') : route('home') }}">
             <img src="{{ asset(env('APP_LOGO', 'images/logo.png')) }}" alt="{{ env('APP_NAME', 'Swaratani') }}">
             <span>{{ env('APP_NAME', 'Swaratani') }}</span>

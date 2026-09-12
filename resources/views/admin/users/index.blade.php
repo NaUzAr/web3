@@ -199,6 +199,7 @@
             .container {
                 padding-left: 0.75rem !important;
                 padding-right: 0.75rem !important;
+                padding-bottom: 3.5rem !important;
             }
 
             .page-title {
