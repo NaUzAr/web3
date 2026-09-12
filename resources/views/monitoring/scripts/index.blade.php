@@ -921,6 +921,23 @@
             const card = document.getElementById('sf-status-card');
             if (!card) return;
 
+            const badgeSiram = document.getElementById('sf-badge-siram');
+            const textSiram = document.getElementById('sf-text-siram');
+            const iconBadge = document.getElementById('sf-icon-badge');
+            const iconWrapper = document.getElementById('sf-icon-wrapper');
+            const iconMain = document.getElementById('sf-icon-main');
+            const detailSiram = document.getElementById('sf-detail-siram');
+            const btnStart = document.getElementById('sf-btn-start');
+            let btnStop = document.getElementById('sf-btn-stop');
+            const actionsContainer = document.getElementById('sf-actions-container');
+
+            const pNodePompa = document.getElementById('pipe-node-pompa');
+            const pStatusPompa = document.getElementById('pipe-status-pompa');
+            const pConn1 = document.getElementById('pipe-conn-1');
+            const pConn2 = document.getElementById('pipe-conn-2');
+            const pNodePupuk = document.getElementById('pipe-node-pupuk');
+            const pStatusPupuk = document.getElementById('pipe-status-pupuk');
+
             const isSiram = sf.siram === 1 || sf.siram === '1' || sf.siram === true;
             const sisa = parseInt(sf.sisa) || 0;
             
@@ -1080,7 +1097,19 @@
                 if (btnStop) {
                     btnStop.remove();
                 }
-                if (btnStart) {
+                if (!btnStart && actionsContainer && !document.getElementById('sf-btn-start')) {
+                    const newBtnStart = document.createElement('button');
+                    newBtnStart.type = 'button';
+                    newBtnStart.id = 'sf-btn-start';
+                    newBtnStart.className = 'btn btn-success btn-sm d-inline-flex align-items-center gap-2 shadow-sm';
+                    newBtnStart.style.borderRadius = '50px';
+                    newBtnStart.style.padding = '0.65rem 1.4rem';
+                    newBtnStart.style.fontWeight = '700';
+                    newBtnStart.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                    newBtnStart.onclick = () => openSmartFarmSiramModal();
+                    newBtnStart.innerHTML = '<i class="bi bi-play-circle-fill"></i> Siram Manual';
+                    actionsContainer.prepend(newBtnStart);
+                } else if (btnStart) {
                     btnStart.style.display = 'inline-flex';
                 }
 
