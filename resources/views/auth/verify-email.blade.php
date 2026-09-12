@@ -8,155 +8,235 @@
     @include('partials.pwa-head')
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
     @include('partials.theme')
 
     <style>
         body {
+            font-family: 'Inter', sans-serif;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 2rem;
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            position: relative;
+            overflow-x: hidden;
         }
 
-        .verify-card {
+        /* ===== AMBIENT GLOW BLOBS ===== */
+        .glow-blob {
+            position: fixed;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .glow-blob-1 {
+            width: 260px;
+            height: 260px;
+            top: -60px;
+            right: -40px;
+            background: radial-gradient(circle, rgba(14, 165, 233, 0.12) 0%, rgba(14, 165, 233, 0) 70%);
+        }
+
+        .glow-blob-2 {
+            width: 200px;
+            height: 200px;
+            bottom: 60px;
+            left: -50px;
+            background: radial-gradient(circle, rgba(14, 95, 138, 0.10) 0%, rgba(14, 95, 138, 0) 70%);
+        }
+
+        .glow-blob-3 {
+            width: 160px;
+            height: 160px;
+            top: 40%;
+            right: -30px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, rgba(139, 92, 246, 0) 70%);
+        }
+
+        /* ===== AUTH CARD ===== */
+        .auth-card {
             width: 100%;
-            max-width: 480px;
+            max-width: 460px;
             padding: 2.5rem;
-            border-radius: 24px;
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            border-radius: 28px;
+            background: rgba(255, 255, 255, 0.82);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(226, 232, 240, 0.6);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+            position: relative;
+            z-index: 1;
             text-align: center;
         }
 
-        .verify-icon {
-            width: 100px;
-            height: 100px;
-            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-            border-radius: 50%;
+        /* ===== BRAND HEADER ===== */
+        .brand-logo-box {
+            width: 80px;
+            height: 80px;
+            padding: 14px;
+            background: #E0F2FE;
+            border-radius: 22px;
+            border: 1px solid rgba(186, 230, 253, 0.5);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 1.5rem;
-            font-size: 3rem;
-            animation: pulse 2s ease-in-out infinite;
+            margin: 0 auto 14px;
+            box-shadow: 0 6px 20px rgba(14, 165, 233, 0.12);
         }
 
-        @keyframes pulse {
-
-            0%,
-            100% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.05);
-            }
+        .brand-logo-box img {
+            height: 100%;
+            width: auto;
         }
 
-        .verify-title {
-            color: var(--text-main);
-            font-weight: 700;
-            font-size: 1.5rem;
-            margin-bottom: 0.75rem;
+        .brand-name {
+            font-size: 28px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #0E5F8A, #0EA5E9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
         }
 
-        .verify-subtitle {
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-            line-height: 1.6;
-            margin-bottom: 1.5rem;
+        .brand-subtitle {
+            font-size: 12px;
+            font-weight: 600;
+            color: #94A3B8;
+            letter-spacing: 0.5px;
+        }
+
+        /* ===== WELCOME / VERIFY TEXT ===== */
+        .welcome-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: #0F172A;
+            letter-spacing: -0.3px;
+        }
+
+        .welcome-subtitle {
+            color: #64748B;
+            font-size: 14px;
+            line-height: 1.5;
         }
 
         .email-highlight {
-            color: var(--primary);
-            font-weight: 600;
+            color: #0EA5E9;
+            font-weight: 700;
+            word-break: break-all;
         }
 
-        .alert-success-custom {
-            background: rgba(16, 185, 129, 0.15);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            color: #10b981;
-            border-radius: 12px;
-            padding: 0.75rem 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .alert-danger-custom {
-            background: rgba(239, 68, 68, 0.15);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            color: #ef4444;
-            border-radius: 12px;
-            padding: 0.75rem 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .btn-resend {
-            background: var(--primary-gradient);
+        /* ===== PRIMARY BUTTON ===== */
+        .btn-signin {
+            width: 100%;
+            min-height: 52px;
+            font-size: 16px;
+            font-weight: 700;
+            color: #fff;
+            background: linear-gradient(135deg, #0EA5E9, #0284C7);
             border: none;
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 12px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            display: inline-flex;
+            border-radius: 16px;
+            box-shadow: 0 5px 14px rgba(14, 165, 233, 0.35);
+            display: flex;
             align-items: center;
-            gap: 0.5rem;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            letter-spacing: 0.3px;
         }
 
-        .btn-resend:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(var(--primary-rgb), 0.3);
-            color: white;
+        .btn-signin:hover {
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(14, 165, 233, 0.4);
         }
 
-        .divider {
-            border-top: 1px solid var(--glass-border);
-            margin: 1.5rem 0;
+        .btn-signin:active {
+            transform: translateY(0);
         }
 
-        .back-link {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 0.9rem;
-            transition: color 0.2s ease;
+        /* ===== ALERTS ===== */
+        .alert-login-error {
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #DC2626;
+            border-radius: 14px;
+            padding: 12px 16px;
+            font-size: 14px;
+            text-align: left;
         }
 
-        .back-link:hover {
-            color: var(--primary);
+        .alert-custom-success {
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            color: #059669;
+            border-radius: 14px;
+            padding: 12px 16px;
+            font-size: 14px;
+            text-align: left;
+        }
+
+        .alert-custom-warning {
+            background: rgba(245, 158, 11, 0.08);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            color: #D97706;
+            border-radius: 14px;
+            padding: 12px 16px;
+            font-size: 14px;
+            text-align: left;
         }
 
         .tips-box {
-            background: rgba(245, 158, 11, 0.1);
-            border: 1px solid rgba(245, 158, 11, 0.2);
-            border-radius: 12px;
-            padding: 1rem;
+            background: rgba(248, 250, 252, 0.8);
+            border: 1px solid #E2E8F0;
+            border-radius: 16px;
+            padding: 14px 16px;
             margin-top: 1.5rem;
             text-align: left;
         }
 
         .tips-box h6 {
-            color: #f59e0b;
-            font-weight: 600;
-            font-size: 0.85rem;
-            margin-bottom: 0.5rem;
+            color: #0F172A;
+            font-weight: 700;
+            font-size: 13px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .tips-box ul {
             margin: 0;
             padding-left: 1.25rem;
-            color: var(--text-secondary);
-            font-size: 0.85rem;
+            color: #64748B;
+            font-size: 12.5px;
+            line-height: 1.5;
         }
 
         .tips-box li {
-            margin-bottom: 0.25rem;
+            margin-bottom: 2px;
         }
 
-        /* ========= Mobile Responsive ========= */
+        /* ===== BACK LINK ===== */
+        .auth-back-link {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #64748B;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: color 0.2s;
+        }
+
+        .auth-back-link:hover {
+            color: #0EA5E9;
+        }
+
+        /* ===== RESPONSIVE ===== */
         @media (max-width: 576px) {
             body {
                 padding: 1rem;
@@ -164,29 +244,24 @@
                 padding-top: 2rem;
             }
 
-            .verify-card {
-                padding: 1.75rem 1.5rem;
-                border-radius: 20px;
+            .auth-card {
+                padding: 1.75rem 1.25rem;
+                border-radius: 24px;
             }
 
-            .verify-icon {
-                width: 70px;
-                height: 70px;
-                font-size: 2.25rem;
-                margin-bottom: 1rem;
+            .brand-logo-box {
+                width: 64px;
+                height: 64px;
+                padding: 12px;
+                border-radius: 18px;
             }
 
-            .verify-title {
-                font-size: 1.25rem;
+            .brand-name {
+                font-size: 24px;
             }
 
-            .verify-subtitle {
-                font-size: 0.85rem;
-            }
-
-            .btn-resend {
-                width: 100%;
-                justify-content: center;
+            .welcome-title {
+                font-size: 20px;
             }
         }
 
@@ -196,8 +271,14 @@
                 padding-top: 1.5rem;
             }
 
-            .verify-card {
-                padding: 1.5rem 1.25rem;
+            .auth-card {
+                padding: 1.5rem 1rem;
+            }
+
+            .brand-logo-box {
+                width: 56px;
+                height: 56px;
+                padding: 10px;
             }
         }
     </style>
@@ -206,111 +287,123 @@
 <body>
     <div class="bg-animation"></div>
 
-    <div class="verify-card">
-        <div class="verify-icon">
-            <i class="bi bi-envelope-check text-white"></i>
+    <!-- Ambient Glow Blobs -->
+    <div class="glow-blob glow-blob-1"></div>
+    <div class="glow-blob glow-blob-2"></div>
+    <div class="glow-blob glow-blob-3"></div>
+
+    <div class="auth-card">
+        <!-- Brand Header -->
+        <div class="text-center mb-3">
+            <div class="brand-logo-box">
+                <img src="{{ asset(env('APP_LOGO', 'images/logo.png')) }}" alt="{{ env('APP_NAME', 'Swaratani') }}">
+            </div>
+            <div class="brand-name">Swaratani</div>
+            <div class="brand-subtitle">Smart IoT Farming Platform</div>
         </div>
 
-        <h4 class="verify-title">Cek Email Kamu!</h4>
-
-        @php
-            $email = session('pending_verification_email') ?? (Auth::check() ? Auth::user()->email : 'email kamu');
-        @endphp
-
-        <p class="verify-subtitle">
-            Silakan verifikasi email kamu untuk mengaktifkan akun.
-            <br>Klik tombol di bawah untuk mengirim link verifikasi ke <span
-                class="email-highlight">{{ $email }}</span>.
-        </p>
+        <!-- Welcome Text -->
+        <div class="text-center mb-4">
+            <div class="welcome-title">Cek Email Kamu! &#x2709;&#xFE0F;</div>
+            @php
+                $email = session('pending_verification_email') ?? (Auth::check() ? Auth::user()->email : 'email Anda');
+            @endphp
+            <div class="welcome-subtitle mt-2">
+                Silakan verifikasi email Anda untuk mengaktifkan akun.<br>
+                Kirim link verifikasi ke <span class="email-highlight">{{ $email }}</span>
+            </div>
+        </div>
 
         @if (session('status'))
-            <div class="alert-success-custom">
-                <i class="bi bi-check-circle me-2"></i>{{ session('status') }}
+            <div class="alert-custom-success mb-3 d-flex align-items-center">
+                <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+                <div>{{ session('status') }}</div>
             </div>
         @endif
 
         @if (session('warning'))
-            <div class="alert-warning-custom"
-                style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); color: #f59e0b; border-radius: 12px; padding: 0.75rem 1rem; margin-bottom: 1rem;">
-                <i class="bi bi-exclamation-triangle me-2"></i>{{ session('warning') }}
+            <div class="alert-custom-warning mb-3 d-flex align-items-center">
+                <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+                <div>{{ session('warning') }}</div>
             </div>
         @endif
 
         @if ($errors->any())
-            <div class="alert-danger-custom">
-                <i class="bi bi-exclamation-circle me-2"></i>{{ $errors->first() }}
+            <div class="alert-login-error mb-3 d-flex align-items-center">
+                <i class="bi bi-exclamation-circle-fill me-2 fs-5"></i>
+                <div>{{ $errors->first() }}</div>
             </div>
         @endif
 
         <form action="{{ route('verification.resend') }}" method="POST" id="resendForm">
             @csrf
-            <button type="submit" class="btn btn-resend" id="resendBtn">
-                <i class="bi bi-envelope-paper me-2" id="resendIcon"></i>
+            <button type="submit" class="btn btn-signin mb-3" id="resendBtn">
+                <i class="bi bi-envelope-paper" id="resendIcon"></i>
                 <span id="btnText">Kirim Email Verifikasi</span>
             </button>
         </form>
 
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                const btn = document.getElementById('resendBtn');
-                const btnText = document.getElementById('btnText');
-                const icon = document.getElementById('resendIcon');
-                const form = document.getElementById('resendForm');
-                const COOLDOWN_KEY = 'emailResendCooldown';
-                const COOLDOWN_SECONDS = 60;
-
-                function startCooldown() {
-                    const endTime = Date.now() + (COOLDOWN_SECONDS * 1000);
-                    localStorage.setItem(COOLDOWN_KEY, endTime);
-                    updateButton();
-                }
-
-                function updateButton() {
-                    const endTime = localStorage.getItem(COOLDOWN_KEY);
-                    if (endTime && Date.now() < parseInt(endTime)) {
-                        const remaining = Math.ceil((parseInt(endTime) - Date.now()) / 1000);
-                        btn.disabled = true;
-                        btn.style.opacity = '0.6';
-                        btn.style.cursor = 'not-allowed';
-                        btnText.textContent = `Tunggu ${remaining} detik`;
-                        icon.className = 'bi bi-hourglass-split';
-                        setTimeout(updateButton, 1000);
-                    } else {
-                        localStorage.removeItem(COOLDOWN_KEY);
-                        btn.disabled = false;
-                        btn.style.opacity = '1';
-                        btn.style.cursor = 'pointer';
-                        btnText.textContent = 'Kirim Email Verifikasi';
-                        icon.className = 'bi bi-envelope-paper me-2';
-                    }
-                }
-
-                form.addEventListener('submit', function () {
-                    startCooldown();
-                });
-
-                // Check on page load
-                updateButton();
-            });
-        </script>
-
         <div class="tips-box">
-            <h6><i class="bi bi-lightbulb me-1"></i>Tips:</h6>
+            <h6><i class="bi bi-lightbulb text-warning"></i>Tips Verifikasi:</h6>
             <ul>
-                <li>Cek folder <strong>Spam/Junk</strong> jika tidak ada di inbox</li>
-                <li>Pastikan email <strong>{{ $email }}</strong> sudah benar</li>
-                <li>Link verifikasi berlaku selama 60 menit</li>
+                <li>Cek folder <strong>Spam/Junk</strong> jika email tidak ada di inbox utama.</li>
+                <li>Pastikan alamat email <strong>{{ $email }}</strong> sudah benar.</li>
+                <li>Tautan verifikasi berlaku selama 60 menit.</li>
             </ul>
         </div>
 
-        <div class="divider"></div>
-
-        <a href="{{ route('login') }}" class="back-link">
-            <i class="bi bi-arrow-left me-1"></i>Kembali ke Login
-        </a>
+        <div class="text-center mt-4">
+            <a href="{{ route('login') }}" class="auth-back-link">
+                <i class="bi bi-arrow-left"></i>
+                Kembali ke Login
+            </a>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const btn = document.getElementById('resendBtn');
+            const btnText = document.getElementById('btnText');
+            const icon = document.getElementById('resendIcon');
+            const form = document.getElementById('resendForm');
+            const COOLDOWN_KEY = 'emailResendCooldown';
+            const COOLDOWN_SECONDS = 60;
+
+            function startCooldown() {
+                const endTime = Date.now() + (COOLDOWN_SECONDS * 1000);
+                localStorage.setItem(COOLDOWN_KEY, endTime);
+                updateButton();
+            }
+
+            function updateButton() {
+                const endTime = localStorage.getItem(COOLDOWN_KEY);
+                if (endTime && Date.now() < parseInt(endTime)) {
+                    const remaining = Math.ceil((parseInt(endTime) - Date.now()) / 1000);
+                    btn.disabled = true;
+                    btn.style.opacity = '0.7';
+                    btn.style.cursor = 'not-allowed';
+                    btnText.textContent = `Tunggu ${remaining} detik`;
+                    icon.className = 'bi bi-hourglass-split';
+                    setTimeout(updateButton, 1000);
+                } else {
+                    localStorage.removeItem(COOLDOWN_KEY);
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    btn.style.cursor = 'pointer';
+                    btnText.textContent = 'Kirim Email Verifikasi';
+                    icon.className = 'bi bi-envelope-paper';
+                }
+            }
+
+            form.addEventListener('submit', function () {
+                startCooldown();
+            });
+
+            updateButton();
+        });
+    </script>
+    @include('partials.pwa-scripts')
 </body>
 
 </html>
