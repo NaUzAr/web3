@@ -688,7 +688,7 @@
                                             <form action="{{ route('monitoring.destroy', $userDevice->id) }}" method="POST" class="m-0 p-0">
                                                 @csrf
                                                 @method('DELETE')
-                                                <a class="dropdown-item py-1 d-flex align-items-center text-danger" href="#" onclick="event.preventDefault(); if(confirm('Hapus device ini dari monitoring?')) { this.closest('form').submit(); }">
+                                                <a class="dropdown-item py-1 d-flex align-items-center text-danger" href="#" onclick="event.preventDefault(); showConfirmDialog({ title: 'Hapus Device?', text: 'Hapus device ini dari monitoring?', confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal', icon: 'warning', isDanger: true }).then(ok => { if(ok) this.closest('form').submit(); });">
                                                     <i class="bi bi-trash me-2"></i> Hapus Device
                                                 </a>
                                             </form>
@@ -806,7 +806,7 @@
                                                 <form action="{{ route('monitoring.destroy', $userDevice->id) }}" method="POST" class="m-0 p-0">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <a class="dropdown-item py-1 d-flex align-items-center text-danger" href="#" onclick="event.preventDefault(); if(confirm('Hapus device ini dari monitoring?')) { this.closest('form').submit(); }">
+                                                    <a class="dropdown-item py-1 d-flex align-items-center text-danger" href="#" onclick="event.preventDefault(); showConfirmDialog({ title: 'Hapus Device?', text: 'Hapus device ini dari monitoring?', confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal', icon: 'warning', isDanger: true }).then(ok => { if(ok) this.closest('form').submit(); });">
                                                         <i class="bi bi-trash me-2"></i> Hapus Device
                                                     </a>
                                                 </form>

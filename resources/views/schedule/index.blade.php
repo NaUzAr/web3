@@ -10,6 +10,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         * {
             font-family: 'Inter', sans-serif;
@@ -1212,7 +1213,14 @@
 
         // Smart Farm: Manual Siram
         async function siramManual(idx) {
-            if(!confirm(`Mulai penyiraman sekarang menggunakan pengaturan Jadwal #${idx + 1}?`)) return;
+            const ok = await showConfirmDialog({
+                title: 'Mulai Penyiraman?',
+                text: `Mulai penyiraman sekarang menggunakan pengaturan Jadwal #${idx + 1}?`,
+                confirmButtonText: 'Ya, Mulai',
+                cancelButtonText: 'Batal',
+                icon: 'question'
+            });
+            if (!ok) return;
             try {
                 const res = await fetch('{{ route("schedule.siram.start", [$userDevice->id], false) }}', {
                     method: 'POST',
@@ -1220,15 +1228,27 @@
                     body: JSON.stringify({ jadwal_index: idx })
                 });
                 const data = await res.json();
-                alert(data.message || (data.success ? 'Perintah berhasil dikirim' : 'Gagal'));
+                if (data.success) {
+                    showToast(data.message || 'Perintah berhasil dikirim', 'success');
+                } else {
+                    showAlertDialog('Gagal', data.message || 'Gagal mengirim perintah', 'error');
+                }
             } catch(e) {
-                alert('Error: ' + e.message);
+                showAlertDialog('Error', e.message, 'error');
             }
         }
 
         // Smart Farm: Stop Siram
         async function stopSiram() {
-            if(!confirm('Hentikan semua proses penyiraman yang sedang berjalan?')) return;
+            const ok = await showConfirmDialog({
+                title: 'Hentikan Penyiraman?',
+                text: 'Hentikan semua proses penyiraman yang sedang berjalan?',
+                confirmButtonText: 'Ya, Hentikan',
+                cancelButtonText: 'Batal',
+                icon: 'warning',
+                isDanger: true
+            });
+            if (!ok) return;
             try {
                 const targetId = '{{ ($isAdminView ?? false) ? $device->id : ($userDevice->id ?? $device->id) }}';
                 const res = await fetch(`/device/${targetId}/schedule/siram-stop`, {
@@ -1236,9 +1256,13 @@
                     headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken }
                 });
                 const data = await res.json();
-                alert(data.message || (data.success ? 'Penyiraman dihentikan' : 'Gagal'));
+                if (data.success) {
+                    showToast(data.message || 'Penyiraman dihentikan', 'success');
+                } else {
+                    showAlertDialog('Gagal', data.message || 'Gagal menghentikan penyiraman', 'error');
+                }
             } catch(e) {
-                alert('Error: ' + e.message);
+                showAlertDialog('Error', e.message, 'error');
             }
         }
 

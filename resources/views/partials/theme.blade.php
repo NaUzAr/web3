@@ -556,4 +556,193 @@
     .link-primary:hover {
         color: var(--primary-dark);
     }
+
+    /* ==================================================== */
+    /* 🌿 SWEETALERT2 POPUP MODERN MOBILE-FRIENDLY THEME     */
+    /* ==================================================== */
+    div:where(.swal2-container) {
+        z-index: 10000 !important;
+    }
+
+    div:where(.swal2-container).swal2-backdrop-show, 
+    div:where(.swal2-container).swal2-noanimation {
+        background: rgba(15, 23, 42, 0.6) !important;
+        backdrop-filter: blur(6px) !important;
+        -webkit-backdrop-filter: blur(6px) !important;
+    }
+
+    .sf-swal-popup {
+        border-radius: 24px !important;
+        padding: 1.75rem 1.4rem 1.5rem !important;
+        background: #ffffff !important;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+        width: 90% !important;
+        max-width: 420px !important;
+        border: 1px solid rgba(226, 232, 240, 0.9) !important;
+    }
+
+    .sf-swal-title {
+        font-size: 1.2rem !important;
+        font-weight: 800 !important;
+        color: #0f172a !important;
+        margin-bottom: 0.35rem !important;
+        letter-spacing: -0.2px;
+    }
+
+    .sf-swal-html {
+        font-size: 0.9rem !important;
+        color: #475569 !important;
+        line-height: 1.5 !important;
+        margin: 0.5rem 0 1.25rem !important;
+    }
+
+    .sf-swal-actions {
+        gap: 0.6rem !important;
+        width: 100% !important;
+        margin-top: 1rem !important;
+        display: flex !important;
+        justify-content: center !important;
+        flex-wrap: wrap !important;
+    }
+
+    .sf-swal-btn {
+        border-radius: 50px !important;
+        padding: 0.65rem 1.4rem !important;
+        font-size: 0.88rem !important;
+        font-weight: 700 !important;
+        cursor: pointer !important;
+        border: none !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 0.4rem !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        min-width: 110px !important;
+    }
+
+    .sf-swal-primary {
+        background: linear-gradient(135deg, #10b981, #059669) !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35) !important;
+    }
+
+    .sf-swal-primary:hover, .sf-swal-primary:active {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(16, 185, 129, 0.45) !important;
+    }
+
+    .sf-swal-danger {
+        background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35) !important;
+    }
+
+    .sf-swal-danger:hover, .sf-swal-danger:active {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(239, 68, 68, 0.45) !important;
+    }
+
+    .sf-swal-cancel {
+        background: #f1f5f9 !important;
+        color: #475569 !important;
+        border: 1px solid #cbd5e1 !important;
+    }
+
+    .sf-swal-cancel:hover, .sf-swal-cancel:active {
+        background: #e2e8f0 !important;
+        color: #1e293b !important;
+    }
+
+    .sf-swal-toast {
+        border-radius: 16px !important;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15) !important;
+        font-family: 'Inter', sans-serif !important;
+        font-weight: 600 !important;
+        padding: 0.75rem 1rem !important;
+    }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    // Global SweetAlert2 Modern Mobile-Friendly Dialogs
+    window.showConfirmDialog = function(options = {}) {
+        const {
+            title = 'Konfirmasi',
+            text = '',
+            confirmButtonText = 'Ya, Lanjutkan',
+            cancelButtonText = 'Batal',
+            icon = 'question',
+            isDanger = false
+        } = options;
+
+        if (typeof Swal === 'undefined') {
+            return Promise.resolve(window.confirm(text || title));
+        }
+
+        return Swal.fire({
+            title: title,
+            text: text,
+            icon: icon,
+            showCancelButton: true,
+            confirmButtonText: confirmButtonText,
+            cancelButtonText: cancelButtonText,
+            reverseButtons: true,
+            focusCancel: isDanger,
+            customClass: {
+                popup: 'sf-swal-popup',
+                title: 'sf-swal-title',
+                htmlContainer: 'sf-swal-html',
+                actions: 'sf-swal-actions',
+                confirmButton: `sf-swal-btn ${isDanger ? 'sf-swal-danger' : 'sf-swal-primary'}`,
+                cancelButton: 'sf-swal-btn sf-swal-cancel'
+            },
+            buttonsStyling: false
+        }).then(result => result.isConfirmed);
+    };
+
+    window.showAlertDialog = function(title = 'Informasi', text = '', icon = 'info') {
+        if (typeof Swal === 'undefined') {
+            window.alert(text || title);
+            return Promise.resolve();
+        }
+
+        return Swal.fire({
+            title: title,
+            text: text,
+            icon: icon,
+            confirmButtonText: 'Tutup',
+            customClass: {
+                popup: 'sf-swal-popup',
+                title: 'sf-swal-title',
+                htmlContainer: 'sf-swal-html',
+                actions: 'sf-swal-actions',
+                confirmButton: 'sf-swal-btn sf-swal-primary'
+            },
+            buttonsStyling: false
+        });
+    };
+
+    window.showToast = function(message, type = 'info') {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                icon: type === 'error' ? 'error' : (type === 'success' ? 'success' : 'info'),
+                title: message,
+                customClass: {
+                    popup: 'sf-swal-toast'
+                }
+            });
+            return;
+        }
+        window.alert(message);
+    };
+
+    // Monkey-patch window.alert so native "swaratani.id says" never pops up
+    window.alert = function(message) {
+        window.showAlertDialog('Informasi', message, 'info');
+    };
+</script>

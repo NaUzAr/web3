@@ -68,7 +68,7 @@
                 const pupukOutputId = sfOutputMap['pupuk'];
 
                 if (!pompaOutputId || !blokOutputId) {
-                    alert('Data output Smart Farm belum lengkap di sistem.');
+                    showAlertDialog('Peringatan', 'Data output Smart Farm belum lengkap di sistem.', 'warning');
                     return;
                 }
 
@@ -213,7 +213,7 @@
 
                 } catch (err) {
                     console.error('Siram manual error:', err);
-                    alert('Gagal memulai penyiraman: ' + err.message);
+                    showAlertDialog('Gagal', 'Gagal memulai penyiraman: ' + err.message, 'error');
                     document.getElementById('sf-form-view').style.display = 'block';
                     document.getElementById('sf-loading-view').style.display = 'none';
                 }
@@ -221,7 +221,17 @@
 
             // Stop Smart Farm Siram (Matikan Pompa & Blok)
             async function stopSmartFarmSiram(askConfirm = true) {
-                if (askConfirm && !confirm('Hentikan penyiraman dan matikan Pompa Utama?')) return;
+                if (askConfirm) {
+                    const ok = await showConfirmDialog({
+                        title: 'Hentikan Penyiraman?',
+                        text: 'Hentikan penyiraman dan matikan Pompa Utama?',
+                        confirmButtonText: 'Ya, Hentikan',
+                        cancelButtonText: 'Batal',
+                        icon: 'warning',
+                        isDanger: true
+                    });
+                    if (!ok) return;
+                }
                 if (manualSiramTimer) clearTimeout(manualSiramTimer);
                 if (manualSiramInterval) clearInterval(manualSiramInterval);
 
@@ -1325,15 +1335,15 @@
                 if (data.success) {
                     const textJam = document.getElementById('sf-text-jam');
                     if (textJam && data.jam) textJam.innerText = `${data.jam} ${data.timezone || selectedTz}`;
-                    alert(data.message || 'Waktu RTC alat berhasil disinkronkan!');
+                    showToast(data.message || 'Waktu RTC alat berhasil disinkronkan!', 'success');
                     const modalEl = document.getElementById('sfRtcSyncModal');
                     const modalInstance = bootstrap.Modal.getInstance(modalEl);
                     if (modalInstance) modalInstance.hide();
                 } else {
-                    alert('Gagal: ' + (data.message || 'Terjadi kesalahan'));
+                    showAlertDialog('Gagal', data.message || 'Terjadi kesalahan', 'error');
                 }
             } catch (e) {
-                alert('Gagal mengirim perintah sinkronisasi waktu: ' + e.message);
+                showAlertDialog('Error', 'Gagal mengirim perintah sinkronisasi waktu: ' + e.message, 'error');
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = originalHtml;
@@ -1341,7 +1351,15 @@
         }
 
         async function resetRelayErrorQuick() {
-            if (!confirm('Reset error relay pada alat sekarang?')) return;
+            const ok = await showConfirmDialog({
+                title: 'Reset Error Relay?',
+                text: 'Kirim perintah reset error relay ke controller alat sekarang?',
+                confirmButtonText: 'Ya, Reset',
+                cancelButtonText: 'Batal',
+                icon: 'warning',
+                isDanger: false
+            });
+            if (!ok) return;
             try {
                 const targetId = '{{ ($isAdminView ?? false) ? $device->id : ($userDevice->id ?? $device->id) }}';
                 const res = await fetch(`/device/${targetId}/schedule/reset-error`, {
@@ -1353,14 +1371,14 @@
                 });
                 const data = await res.json();
                 if (data.success) {
-                    alert(data.message || 'Perintah reset error relay dikirim!');
+                    showToast(data.message || 'Perintah reset error relay dikirim!', 'success');
                     const badgeError = document.getElementById('sf-badge-error');
                     if (badgeError) badgeError.remove();
                 } else {
-                    alert('Gagal: ' + (data.message || 'Terjadi kesalahan'));
+                    showAlertDialog('Gagal', data.message || 'Terjadi kesalahan', 'error');
                 }
             } catch (e) {
-                alert('Gagal mengirim reset error: ' + e.message);
+                showAlertDialog('Error', 'Gagal mengirim reset error: ' + e.message, 'error');
             }
         }
 
@@ -1377,22 +1395,18 @@
                 const data = await res.json();
                 if (data.success) {
                     if (!silent) {
-                        if (typeof showToast === 'function') {
-                            showToast(data.message || 'Permintaan status relay dikirim!', 'info');
-                        } else {
-                            alert(data.message || 'Permintaan status relay dikirim ke device!');
-                        }
+                        showToast(data.message || 'Permintaan status relay dikirim!', 'info');
                     }
                     console.log('CMD:RELAY_STATUS sent to device (silent:', silent, ')');
                 } else {
                     if (!silent) {
-                        alert('Gagal: ' + (data.message || 'Terjadi kesalahan'));
+                        showAlertDialog('Gagal', data.message || 'Terjadi kesalahan', 'error');
                     }
                     console.warn('Failed CMD:RELAY_STATUS:', data.message);
                 }
             } catch (e) {
                 if (!silent) {
-                    alert('Gagal mengirim permintaan status relay: ' + e.message);
+                    showAlertDialog('Error', 'Gagal mengirim permintaan status relay: ' + e.message, 'error');
                 }
                 console.error('Error CMD:RELAY_STATUS:', e);
             }
@@ -1403,7 +1417,17 @@
         }
 
         async function stopSiramQuick(askConfirm = true) {
-            if (askConfirm && !confirm('Hentikan penyiraman irigasi sekarang?')) return;
+            if (askConfirm) {
+                const ok = await showConfirmDialog({
+                    title: 'Hentikan Penyiraman?',
+                    text: 'Hentikan seluruh proses penyiraman irigasi sekarang?',
+                    confirmButtonText: 'Ya, Stop',
+                    cancelButtonText: 'Batal',
+                    icon: 'warning',
+                    isDanger: true
+                });
+                if (!ok) return;
+            }
             try {
                 const targetId = '{{ ($isAdminView ?? false) ? $device->id : ($userDevice->id ?? $device->id) }}';
                 const res = await fetch(`/device/${targetId}/schedule/siram-stop`, {
@@ -1415,17 +1439,17 @@
                 });
                 const data = await res.json();
                 if (data.success) {
-                    if (askConfirm) alert(data.message || 'Perintah stop penyiraman dikirim!');
+                    if (askConfirm) showToast(data.message || 'Perintah stop penyiraman dikirim!', 'success');
                     updateSmartFarmLiveStatus({ siram: 0, blok: 0, pupuk: 'NONE', sisa: 0, mode: 'STANDBY' });
                     // Tunggu 1 detik lalu tanyakan status aktual ke STM32 untuk sinkronisasi fisik
                     setTimeout(() => {
                         requestRelayStatus(true);
                     }, 1000);
                 } else {
-                    if (askConfirm) alert('Gagal: ' + (data.message || 'Terjadi kesalahan'));
+                    if (askConfirm) showAlertDialog('Gagal', data.message || 'Terjadi kesalahan', 'error');
                 }
             } catch (err) {
-                if (askConfirm) alert('Gagal mengirim perintah: ' + err.message);
+                if (askConfirm) showAlertDialog('Error', 'Gagal mengirim perintah: ' + err.message, 'error');
             }
         }
         function updateSensors(sensorData) {
