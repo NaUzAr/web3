@@ -101,36 +101,6 @@
             color: #fff;
         }
 
-        .nav-user-pill {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.3rem 0.75rem 0.3rem 0.35rem;
-            border-radius: 50px;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            margin-left: 0.5rem;
-        }
-
-        .nav-user-avatar {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background: var(--primary-gradient);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 0.75rem;
-            font-weight: 700;
-        }
-
-        .nav-user-name {
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--text-main);
-        }
-
         /* ===== HERO SECTION ===== */
         .hero-section {
             position: relative;
@@ -632,12 +602,6 @@
             .nav-links button {
                 justify-content: flex-start;
                 padding: 0.6rem 0.85rem;
-            }
-
-            .nav-user-pill {
-                margin-left: 0;
-                margin-top: 0.5rem;
-                justify-content: flex-start;
             }
         }
     </style>

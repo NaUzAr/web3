@@ -13,16 +13,16 @@ use App\Http\Controllers\WebViewAuthController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 
-// Chatbot
-Route::post('/chatbot', [ChatbotController::class, 'respond'])->name('chatbot.respond');
+// Chatbot (Throttle 30 requests per minute)
+Route::post('/chatbot', [ChatbotController::class, 'respond'])->middleware('throttle:30,1')->name('chatbot.respond');
 
 // === WEBVIEW AUTO-LOGIN (From Flutter) ===
 Route::get('/webview/auto-login', [WebViewAuthController::class, 'autoLogin'])->name('webview.auto-login');
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
-    // Grouping khusus URL awalan /admin
-    Route::prefix('admin')->name('admin.')->group(function () {
+    // Grouping khusus URL awalan /admin (Hanya Administrator)
+    Route::prefix('admin')->middleware('admin')->name('admin.')->group(function () {
 
         // List Semua Device
         Route::get('/devices', [AdminDeviceController::class, 'index'])->name('devices.index');
@@ -78,6 +78,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Broadcast Announcements
         Route::get('/announcements', [\App\Http\Controllers\AdminAnnouncementController::class, 'index'])->name('announcements.index');
         Route::post('/announcements/send', [\App\Http\Controllers\AdminAnnouncementController::class, 'send'])->name('announcements.send');
+
+        // Admin Users Management
+        Route::get('/users', [\App\Http\Controllers\AdminUserController::class, 'index'])->name('users.index');
+        Route::put('/users/{id}/role', [\App\Http\Controllers\AdminUserController::class, 'updateRole'])->name('users.update-role');
+        Route::delete('/users/{id}', [\App\Http\Controllers\AdminUserController::class, 'destroy'])->name('users.destroy');
     });
 
     // === MONITORING ROUTES (untuk semua user yang login) ===
@@ -143,6 +148,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/tickets/{ticket}', [\App\Http\Controllers\TicketController::class, 'show'])->name('tickets.show');
     Route::post('/tickets/{ticket}/reply', [\App\Http\Controllers\TicketController::class, 'reply'])->name('tickets.reply');
 
+    // === PROFILE MANAGEMENT ===
+    Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'index'])->name('profile.index');
+    Route::put('/profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('profile.password.update');
+
 });
 
 // === EMAIL VERIFICATION ROUTES ===
@@ -197,16 +207,16 @@ Route::get('/privacy-policy', function () {
 
 // --- LOGIN ---
 route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [AuthController::class, 'login'])->name('login.perform');
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:6,1')->name('login.perform');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // --- REGISTER ---
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
-Route::post('/register', [AuthController::class, 'register'])->name('register.perform');
+Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:6,1')->name('register.perform');
 
 // --- FORGOT PASSWORD ---
 Route::get('/password/forgot', [ForgotPasswordController::class, 'showForm'])->name('password.request');
-Route::post('/password/forgot', [ForgotPasswordController::class, 'sendResetLink'])->name('password.email');
+Route::post('/password/forgot', [ForgotPasswordController::class, 'sendResetLink'])->middleware('throttle:6,1')->name('password.email');
 Route::get('/password/reset/{token}', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset');
-Route::post('/password/reset', [ForgotPasswordController::class, 'resetPassword'])->name('password.update');
+Route::post('/password/reset', [ForgotPasswordController::class, 'resetPassword'])->middleware('throttle:6,1')->name('password.update');
 

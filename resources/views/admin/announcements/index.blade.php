@@ -12,63 +12,30 @@
         rel="stylesheet">
     @include('partials.theme')
     <style>
-        .page-title {
-            color: #fff;
-            font-weight: 700;
-        }
-
-        .page-title i {
-            background: var(--primary-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .table-dark-custom {
-            background: var(--navbar-bg) !important;
-        }
-
-        .table-dark-custom th {
-            color: var(--primary-light);
-            font-weight: 600;
-            border-bottom: 1px solid var(--glass-border) !important;
-            padding: 1rem;
-        }
-
-        .table tbody tr {
-            background: transparent;
-            transition: all 0.2s ease;
-        }
-
-        .table tbody tr:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .table tbody td {
-            color: #1f2937;
-            border-bottom: 1px solid var(--glass-border);
-            padding: 1rem;
-            vertical-align: middle;
-        }
+        .page-title { color: #0f172a; font-weight: 800; }
+        .page-title i { color: #0e5f8a; }
+        .table-dark-custom { background: #f1f5f9 !important; }
+        .table-dark-custom th { color: #334155 !important; font-weight: 700; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 2px solid #e2e8f0 !important; padding: 0.85rem 1rem; }
+        .table tbody td { color: #1e293b; border-bottom: 1px solid #f1f5f9; padding: 0.85rem 1rem; vertical-align: middle; background: #ffffff; }
+        .table tbody tr:hover td { background: #f8fafc; }
+        .glass-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
     </style>
 </head>
 
 <body>
     <div class="bg-animation"></div>
 
-    <!-- Navbar -->
-    <!-- Navbar -->
     @include('partials.navbar')
 
-    <div class="container py-5">
+    <div class="container py-4">
+        @include('admin.partials.nav')
+
         <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-            <h2 class="page-title mb-0">
-                <i class="bi bi-megaphone-fill me-2"></i>Kirim Pengumuman
-            </h2>
-            <div class="d-flex gap-2">
-                <a href="{{ route('admin.devices.index') }}" class="btn btn-outline-light">
-                    <i class="bi bi-arrow-left me-1"></i> Kembali
-                </a>
+            <div>
+                <h2 class="page-title mb-1">
+                    <i class="bi bi-megaphone-fill me-2 text-danger"></i>Kirim Pengumuman Broadcast
+                </h2>
+                <p class="text-muted mb-0 small">Kirim pengumuman massal atau notifikasi peringatan ke semua pengguna sistem.</p>
             </div>
         </div>
 

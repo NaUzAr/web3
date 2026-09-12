@@ -10,10 +10,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     @include('partials.theme')
     <style>
-        .page-title { color: #fff; font-weight: 700; }
-        .table-dark-custom { background: var(--navbar-bg) !important; }
-        .table-dark-custom th { color: var(--primary-light); font-weight: 600; border-bottom: 1px solid var(--glass-border) !important; }
-        .table tbody td { color: #1f2937; border-bottom: 1px solid var(--glass-border); vertical-align: middle; }
+        .page-title { color: #0f172a; font-weight: 800; }
+        .page-title i { color: #0e5f8a; }
+        .table-dark-custom { background: #f1f5f9 !important; }
+        .table-dark-custom th { color: #334155 !important; font-weight: 700; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 2px solid #e2e8f0 !important; padding: 0.85rem 1rem; }
+        .table tbody td { color: #1e293b; border-bottom: 1px solid #f1f5f9; padding: 0.85rem 1rem; vertical-align: middle; background: #ffffff; }
+        .table tbody tr:hover td { background: #f8fafc; }
+        .glass-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); overflow: hidden; }
     </style>
 </head>
 <body>
@@ -21,19 +24,24 @@
 
     @include('partials.navbar')
 
-    <div class="container py-5">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="page-title mb-0">
-                <i class="bi bi-bell-fill me-2"></i>Global Sensor Alerts
-            </h2>
+    <div class="container py-4">
+        @include('admin.partials.nav')
+
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <div>
+                <h2 class="page-title mb-1">
+                    <i class="bi bi-bell-fill me-2 text-warning"></i>Aturan Peringatan Dini Sensor (FCM)
+                </h2>
+                <p class="text-muted mb-0 small">Konfigurasi ambang batas sensor untuk otomatis mengirim notifikasi ke HP pengguna.</p>
+            </div>
             <div class="d-flex gap-2">
                 <form action="{{ route('admin.sensor-rules.test') }}" method="POST">
                     @csrf
-                    <button type="submit" class="btn btn-warning shadow-sm">
+                    <button type="submit" class="btn btn-warning shadow-sm" style="border-radius: 10px; font-weight: 600;">
                         <i class="bi bi-phone-vibrate me-1"></i> Uji Coba Ping ke HP Saya
                     </button>
                 </form>
-                <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#addModal">
+                <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#addModal" style="border-radius: 10px; font-weight: 600;">
                     <i class="bi bi-plus-lg me-1"></i> Tambah Aturan
                 </button>
             </div>
@@ -42,7 +50,7 @@
         @if(session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
-        @if($errors->any())
+        @if(isset($errors) && $errors->any())
             <div class="alert alert-danger">
                 <ul class="mb-0">
                     @foreach($errors->all() as $err) <li>{{ $err }}</li> @endforeach

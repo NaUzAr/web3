@@ -50,7 +50,7 @@
         }
 
         .link-green {
-            color: var(--primary-light);
+            color: var(--primary);
             text-decoration: none;
             font-weight: 600;
             transition: all 0.2s ease;

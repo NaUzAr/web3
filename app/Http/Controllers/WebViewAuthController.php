@@ -35,6 +35,19 @@ class WebViewAuthController extends Controller
         // Regenerate session untuk keamanan (mencegah session fixation)
         $request->session()->regenerate();
 
+        // Prevent open redirect: validasi agar hanya redirect ke path lokal internal
+        if (str_starts_with($redirectUrl, 'http://') || str_starts_with($redirectUrl, 'https://')) {
+            $parsed = parse_url($redirectUrl);
+            $appHost = parse_url(config('app.url'), PHP_URL_HOST);
+            if (!isset($parsed['host']) || ($appHost && $parsed['host'] !== $appHost)) {
+                $redirectUrl = route('monitoring.index');
+            }
+        } elseif (str_starts_with($redirectUrl, '//')) {
+            $redirectUrl = route('monitoring.index');
+        } elseif (!str_starts_with($redirectUrl, '/')) {
+            $redirectUrl = route('monitoring.index');
+        }
+
         // Redirect ke halaman yang diminta di WebView
         return redirect($redirectUrl);
     }

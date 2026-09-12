@@ -16,42 +16,42 @@
     <style>
         /* Page Title */
         .page-title {
-            color: #fff;
-            font-weight: 700;
+            color: #0f172a;
+            font-weight: 800;
         }
 
         .page-title i {
-            background: var(--primary-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: #0e5f8a;
         }
 
         /* Table Styles */
         .table-dark-custom {
-            background: var(--navbar-bg) !important;
+            background: #f1f5f9 !important;
         }
 
         .table-dark-custom th {
-            color: var(--primary-light);
-            font-weight: 600;
-            border-bottom: 1px solid var(--glass-border) !important;
-            padding: 1rem;
+            color: #334155 !important;
+            font-weight: 700;
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            border-bottom: 2px solid #e2e8f0 !important;
+            padding: 0.9rem 1rem;
         }
 
         .table tbody tr {
-            background: transparent;
+            background: #ffffff;
             transition: all 0.2s ease;
         }
 
         .table tbody tr:hover {
-            background: rgba(255, 255, 255, 0.05);
+            background: #f8fafc;
         }
 
         .table tbody td {
-            color: #1f2937;
-            border-bottom: 1px solid var(--glass-border);
-            padding: 1rem;
+            color: #1e293b;
+            border-bottom: 1px solid #f1f5f9;
+            padding: 0.9rem 1rem;
             vertical-align: middle;
         }
 
@@ -411,30 +411,29 @@
     <!-- Navbar -->
     @include('partials.navbar')
 
-    <div class="container py-5">
-        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-            <h2 class="page-title mb-0">
-                <i class="bi bi-cpu-fill me-2"></i>Device Management
-            </h2>
-            <div class="d-flex flex-wrap gap-2 align-items-center">
-                <a href="{{ route('admin.tickets.index') }}" class="btn btn-outline-light">
-                    <i class="bi bi-inboxes me-1"></i> Tiket
-                </a>
-                <a href="{{ route('admin.activity-logs') }}" class="btn btn-outline-light">
-                    <i class="bi bi-journal-text me-1"></i> Logs
-                </a>
+    <div class="container py-4">
+        {{-- Admin Navigation Tabs (6 Fitur Lengkap) --}}
+        @include('admin.partials.nav')
 
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <div>
+                <h2 class="page-title mb-1">
+                    <i class="bi bi-cpu-fill me-2 text-primary"></i>Manajemen Perangkat IoT
+                </h2>
+                <p class="text-muted mb-0 small">Kelola seluruh perangkat IoT, tipe mesin, sensor, dan kredensial MQTT.</p>
+            </div>
+            <div class="d-flex flex-wrap gap-2 align-items-center">
                 <!-- Search Form -->
                 <form action="{{ route('admin.devices.index') }}" method="GET" class="d-flex mb-0">
-                    <div class="input-group shadow-sm" style="max-width: 250px; background: #ffffff; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0;">
-                        <input type="text" name="search" class="form-control border-0 shadow-none text-dark" placeholder="Cari device..." value="{{ request('search') }}" style="background: transparent;">
+                    <div class="input-group shadow-sm" style="max-width: 260px; background: #ffffff; border-radius: 10px; overflow: hidden; border: 1px solid #cbd5e1;">
+                        <input type="text" name="search" class="form-control border-0 shadow-none text-dark" placeholder="Cari nama device..." value="{{ request('search') }}" style="background: transparent; font-size: 0.88rem;">
                         <button type="submit" class="btn btn-light border-0 shadow-none" style="color: #0ea5e9;">
                             <i class="bi bi-search"></i>
                         </button>
                     </div>
                 </form>
 
-                <a href="{{ route('admin.device.create') }}" class="btn btn-gradient">
+                <a href="{{ route('admin.device.create') }}" class="btn btn-gradient d-inline-flex align-items-center" style="border-radius: 10px; padding: 0.55rem 1.1rem; font-weight: 600;">
                     <i class="bi bi-plus-lg me-1"></i> Tambah Device
                 </a>
             </div>

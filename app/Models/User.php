@@ -22,7 +22,19 @@ class User extends Authenticatable implements MustVerifyEmail
         'name',
         'username',
         'email',
+        'phone',
         'password',
+        'role',
+        'fcm_token',
+    ];
+
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var list<string>
+     */
+    protected $appends = [
+        'is_admin',
     ];
 
     /**
@@ -54,5 +66,21 @@ class User extends Authenticatable implements MustVerifyEmail
     public function userDevices()
     {
         return $this->hasMany(\App\Models\UserDevice::class);
+    }
+
+    /**
+     * Accessor: is_admin
+     */
+    public function getIsAdminAttribute(): bool
+    {
+        return ($this->role ?? 'user') === 'admin';
+    }
+
+    /**
+     * Helper: isAdmin
+     */
+    public function isAdmin(): bool
+    {
+        return $this->is_admin;
     }
 }

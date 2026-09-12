@@ -183,4 +183,58 @@ class AuthController extends Controller
 
         return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
     }
+
+    public function updateProfile(Request $request)
+    {
+        $user = $request->user();
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:20',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+        ], [
+            'name.required' => 'Nama lengkap wajib diisi.',
+            'email.required' => 'Email wajib diisi.',
+            'email.unique' => 'Email sudah digunakan oleh akun lain.',
+        ]);
+
+        $user->name = $request->name;
+        $user->email = $request->email;
+
+        if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'phone')) {
+            $user->phone = $request->phone;
+        }
+
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Profil berhasil diperbarui.',
+            'user' => $user,
+        ]);
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => ['required', 'current_password'],
+            'password' => ['required', 'string', 'min:6', 'confirmed'],
+        ], [
+            'current_password.required' => 'Password saat ini wajib diisi.',
+            'current_password.current_password' => 'Password saat ini tidak sesuai.',
+            'password.required' => 'Password baru wajib diisi.',
+            'password.min' => 'Password minimal 6 karakter.',
+            'password.confirmed' => 'Konfirmasi password tidak cocok.',
+        ]);
+
+        $user = $request->user();
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Password berhasil diperbarui.',
+        ]);
+    }
+
 }

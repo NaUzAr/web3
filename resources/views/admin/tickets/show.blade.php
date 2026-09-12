@@ -11,13 +11,14 @@
     @include('partials.theme')
 
     <style>
-        .page-title { color: #fff; font-weight: 700; }
+        .page-title { color: #0f172a; font-weight: 800; }
         .ticket-detail-box {
-            background: rgba(255,255,255,0.8);
-            border-radius: 12px;
+            background: #ffffff;
+            border-radius: 16px;
             padding: 1.5rem;
             margin-bottom: 1.5rem;
-            border: 1px solid var(--glass-border);
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
         }
         .form-control, .form-select {
             border-radius: 10px;
@@ -29,12 +30,14 @@
 
     @include('partials.navbar')
 
-    <div class="container py-5">
+    <div class="container py-4">
+        @include('admin.partials.nav')
+
         <div class="row">
-                <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
                     <h2 class="page-title mb-0">#TKT-{{ str_pad($ticket->id, 4, '0', STR_PAD_LEFT) }}: {{ $ticket->subject }}</h2>
-                    <a href="{{ route('admin.tickets.index') }}" class="btn btn-glass btn-sm d-inline-flex align-items-center gap-2">
-                        <i class="bi bi-arrow-left"></i> Kembali
+                    <a href="{{ route('admin.tickets.index') }}" class="btn btn-outline-secondary rounded-pill px-3 d-inline-flex align-items-center gap-2">
+                        <i class="bi bi-arrow-left"></i> Kembali ke Daftar Tiket
                     </a>
                 </div>
 
@@ -50,7 +53,7 @@
                         </div>
                         <div class="col-6 text-end">
                             <span class="text-secondary small">Tanggal:</span><br>
-                            <strong>{{ $ticket->created_at->format('d M Y, H:i') }}</strong>
+                            <strong>{{ $ticket->created_at ? $ticket->created_at->format('d M Y, H:i') : '-' }}</strong>
                         </div>
                     </div>
                     
