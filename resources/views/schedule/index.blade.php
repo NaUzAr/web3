@@ -669,7 +669,7 @@
                             Semua ({{ $maxSlots }})
                         </button>
                         <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1 fw-bold sch-filter-btn" style="font-size: 0.78rem;" onclick="filterSchedules('active', this)">
-                            <i class="bi bi-check-circle-fill me-1"></i>Aktif Saja ({{ $totalActive }})
+                            <i class="bi bi-check-circle-fill me-1"></i>Aktif Saja (<span id="filter-count-active">{{ $totalActive }}</span>)
                         </button>
                         <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 fw-bold sch-filter-btn" style="font-size: 0.78rem;" onclick="filterSchedules('blok1', this)">
                             <i class="bi bi-geo-alt-fill me-1" style="color: #10b981;"></i>Blok 1
@@ -682,8 +682,8 @@
                         </button>
                     </div>
                     <div class="small text-muted d-flex align-items-center gap-2">
-                        <span class="badge rounded-pill bg-success text-white px-2 py-1" style="font-size: 0.72rem;">{{ $totalActive }} Aktif</span>
-                        <span class="badge rounded-pill bg-secondary text-white px-2 py-1" style="font-size: 0.72rem;">{{ $maxSlots - $totalActive }} Kosong</span>
+                        <span id="badge-count-active" class="badge rounded-pill bg-success text-white px-2 py-1" style="font-size: 0.72rem;">{{ $totalActive }} Aktif</span>
+                        <span id="badge-count-empty" class="badge rounded-pill bg-secondary text-white px-2 py-1" style="font-size: 0.72rem;">{{ $maxSlots - $totalActive }} Kosong</span>
                     </div>
                 </div>
             @endif
@@ -1313,6 +1313,7 @@
 
             const isActive = sch && (sch.is_active == 1 || sch.is_active === true);
             row.className = isActive ? 'slot-active' : 'slot-empty';
+            row.setAttribute('data-is-active', isActive ? '1' : '0');
 
             const mobileStatusBadge = row.querySelector('.mobile-status-badge');
             if (mobileStatusBadge) {
@@ -1331,6 +1332,7 @@
             const duration = (isActive && sch.duration) ? `${sch.duration} Menit` : '-';
             const offTime = (isActive && sch.off_time) ? sch.off_time : '-';
             const blok = (isActive && (sch.blok !== undefined ? sch.blok : sch.sector)) ? (sch.blok !== undefined ? sch.blok : sch.sector) : 1;
+            row.setAttribute('data-blok', blok);
             const literPupuk = (isActive && (sch.liter_pupuk !== undefined ? sch.liter_pupuk : (sch.liter_pupuk_10 ? sch.liter_pupuk_10 / 10 : 0))) || 0;
 
             let daysStr = '-';
@@ -1454,11 +1456,23 @@
                 if (iconSync) iconSync.classList.remove('spin-icon');
 
                 if (data.success && data.schedules) {
+                    let totalActive = 0;
                     // Update seluruh baris secara langsung di DOM (tanpa reload layar)
                     for (let i = 1; i <= maxSlots; i++) {
                         const sch = data.schedules[`sch${i}`] || null;
+                        if (sch && (sch.is_active == 1 || sch.is_active === true)) {
+                            totalActive++;
+                        }
                         renderScheduleRow(i, sch);
                     }
+
+                    // Perbarui counter & badge filter secara dinamis
+                    const badgeActive = document.getElementById('badge-count-active');
+                    const badgeEmpty = document.getElementById('badge-count-empty');
+                    const filterActive = document.getElementById('filter-count-active');
+                    if (badgeActive) badgeActive.innerText = `${totalActive} Aktif`;
+                    if (badgeEmpty) badgeEmpty.innerText = `${maxSlots - totalActive} Kosong`;
+                    if (filterActive) filterActive.innerText = totalActive;
 
                     if (indicator) {
                         indicator.style.background = 'rgba(16, 185, 129, 0.15)';

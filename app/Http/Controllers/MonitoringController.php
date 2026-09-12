@@ -893,6 +893,19 @@ class MonitoringController extends Controller
 
         // Get Device Schedules from Cache (all schedules, not just active)
         $cachedSchedules = \Cache::get("device_schedules_{$device->id}", []);
+        if (empty($cachedSchedules)) {
+            $legacy = \DB::table('cache')
+                ->where('key', 'like', "%device_schedules_{$device->id}")
+                ->orderByDesc('expiration')
+                ->first();
+            if ($legacy && !empty($legacy->value)) {
+                $unserialized = @unserialize($legacy->value);
+                if (is_array($unserialized)) {
+                    $cachedSchedules = $unserialized;
+                    \Cache::put("device_schedules_{$device->id}", $cachedSchedules, now()->addDays(30));
+                }
+            }
+        }
 
         // Format schedules for frontend
         $schedules = collect($cachedSchedules)->map(function ($schedule) {

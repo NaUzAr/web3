@@ -59,16 +59,8 @@ class ScheduleController extends Controller
                 ->with('error', 'Device ini tidak memiliki konfigurasi penjadwalan.');
         }
 
-        // Get cached schedules
-        $cacheKey = "device_schedules_{$device->id}";
-        $cachedSchedules = \Cache::get($cacheKey, []);
-
-        // Sort by slot key numerical value (sch1, sch2...)
-        uksort($cachedSchedules, function ($a, $b) {
-            $numA = (int) filter_var($a, FILTER_SANITIZE_NUMBER_INT);
-            $numB = (int) filter_var($b, FILTER_SANITIZE_NUMBER_INT);
-            return $numA - $numB;
-        });
+        // Get cached schedules (with fallback to legacy cache prefixes if any)
+        $cachedSchedules = $this->getCachedSchedulesForDevice($device->id);
 
         // Smart Farm: Auto-request jadwal dari device setiap kali halaman dibuka / di-load
         if ($device->type === 'smart_farm') {
@@ -539,22 +531,62 @@ class ScheduleController extends Controller
     public function getSchedulesData($userDeviceId)
     {
         $device = $this->getDevice($userDeviceId);
-        $cacheKey = "device_schedules_{$device->id}";
-        $cachedSchedules = \Cache::get($cacheKey, []);
+        $cachedSchedules = $this->getCachedSchedulesForDevice($device->id);
 
-        uksort($cachedSchedules, function ($a, $b) {
-            $numA = (int) filter_var($a, FILTER_SANITIZE_NUMBER_INT);
-            $numB = (int) filter_var($b, FILTER_SANITIZE_NUMBER_INT);
-            return $numA - $numB;
-        });
+        $syncedAt = \Cache::get("device_schedules_synced_at_{$device->id}");
+        if (!$syncedAt) {
+            $legacySync = \DB::table('cache')
+                ->where('key', 'like', "%device_schedules_synced_at_{$device->id}")
+                ->orderByDesc('expiration')
+                ->first();
+            if ($legacySync && !empty($legacySync->value)) {
+                $syncedAt = @unserialize($legacySync->value);
+            }
+        }
 
         return response()->json([
             'success' => true,
             'device_id' => $device->id,
             'schedules' => $cachedSchedules,
             'count' => count($cachedSchedules),
-            'synced_at' => \Cache::get("device_schedules_synced_at_{$device->id}"),
+            'synced_at' => $syncedAt,
             'timestamp' => now()->toIso8601String(),
         ]);
+    }
+
+    /**
+     * Helper to get cached schedules with fallback across cache key prefix mismatches
+     */
+    private function getCachedSchedulesForDevice($deviceId): array
+    {
+        $cacheKey = "device_schedules_{$deviceId}";
+        $cached = \Cache::get($cacheKey, []);
+
+        if (empty($cached)) {
+            $prefix = config('cache.prefix', '');
+            $legacy = \DB::table('cache')
+                ->where('key', 'like', "%device_schedules_{$deviceId}")
+                ->where('key', '!=', $prefix . $cacheKey)
+                ->orderByDesc('expiration')
+                ->first();
+
+            if ($legacy && !empty($legacy->value)) {
+                try {
+                    $unserialized = @unserialize($legacy->value);
+                    if (is_array($unserialized)) {
+                        $cached = $unserialized;
+                        \Cache::put($cacheKey, $cached, now()->addDays(30));
+                    }
+                } catch (\Throwable $e) {}
+            }
+        }
+
+        uksort($cached, function ($a, $b) {
+            $numA = (int) filter_var($a, FILTER_SANITIZE_NUMBER_INT);
+            $numB = (int) filter_var($b, FILTER_SANITIZE_NUMBER_INT);
+            return $numA - $numB;
+        });
+
+        return $cached;
     }
 }
