@@ -187,4 +187,50 @@ class DeviceController extends Controller
             'message' => $userDevice->is_favorite ? 'Ditambahkan ke favorit.' : 'Dihapus dari favorit.',
         ]);
     }
+
+    /**
+     * POST /api/devices/{id}/relay-status
+     * Minta status aktual relay dari device Smart Farm (CMD:RELAY_STATUS)
+     */
+    public function checkRelayStatus(Request $request, $id)
+    {
+        $userDevice = UserDevice::with('device')
+            ->where('user_id', $request->user()->id)
+            ->where(function ($query) use ($id) {
+                $query->where('id', $id)
+                      ->orWhere('device_id', $id);
+            })
+            ->first();
+
+        if (!$userDevice || !$userDevice->device) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Device tidak ditemukan.',
+            ], 404);
+        }
+
+        $device = $userDevice->device;
+        if ($device->type !== 'smart_farm') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Fitur ini hanya untuk device Smart Farm.',
+            ], 400);
+        }
+
+        $topic = $device->mqtt_topic_output ?: $device->mqtt_topic;
+        $smartFarmService = app(\App\Services\MqttSmartFarmService::class);
+        $success = $smartFarmService->sendRelayStatus($topic);
+
+        if ($success) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Permintaan status relay dikirim ke device!',
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Gagal mengirim permintaan status relay.',
+        ], 500);
+    }
 }

@@ -150,3 +150,10 @@ Contoh: `<pump#1>` atau `<fan#0>`
 | **TOTAL ESP32 Keys** | **42 keys** |
 | Available Sensor Types | 16 types |
 | Available Output Types | 10 types |
+
+---
+
+## 🌾 SMART FARM PROTOCOL (STM32 Multi-Zona)
+Untuk dokumentasi lengkap protokol Smart Farm (CMD:BLOK, CMD:RELAY, CMD:RELAY_STATUS, EVT:AUTO_OFF, dan logika penentuan mode Otomatis vs Manual), lihat:
+👉 [SMART_FARM_RELAY_STATUS_SPEC.md](file:///d:/Dev/SWATANI/web2/docs/SMART_FARM_RELAY_STATUS_SPEC.md)
+

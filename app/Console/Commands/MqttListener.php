@@ -854,7 +854,7 @@ class MqttListener extends Command
             $siram = (int) ($status['siram'] ?? 0);
             $blok  = (int) ($status['blok']  ?? 0);
             $pupuk = (string) ($status['pupuk'] ?? 'NONE');
-            $sisa  = $status['sisa']  ?? 0;
+            $sisa  = (int) ($status['sisa']  ?? 0);
             $error = (int) ($status['error'] ?? 0);
 
             // Update cache outputs
@@ -864,7 +864,8 @@ class MqttListener extends Command
 
             $wasSiram = \Cache::get("device_was_siram_{$device->id}", false);
 
-            if ($siram == 1) {
+            if ($sisa > 0) {
+                // Sisa countdown ada (> 0) -> Sesi otomatis berjalan aktif
                 \Cache::put("device_was_siram_{$device->id}", true, now()->addHours(1));
 
                 $outputStates = [
@@ -917,7 +918,7 @@ class MqttListener extends Command
                 }
             }
 
-            // Simpan cache (24 jam)
+            // Simpan cache outputs (24 jam)
             \Cache::put("device_outputs_{$device->id}", $cachedOutputs, now()->addHours(24));
 
             // Simpan status Smart Farm tambahan di cache
@@ -933,9 +934,12 @@ class MqttListener extends Command
                 'timezone'   => $deviceTz,
                 'updated_at' => now()->toIso8601String(),
             ];
+
+            // Evaluasi mode operasional (OTOMATIS vs MANUAL vs STANDBY)
+            $this->evaluateSmartFarmMode($sfStatusData, $cachedOutputs);
             \Cache::put("device_sf_status_{$device->id}", $sfStatusData, now()->addHours(1));
 
-            $this->info("           ✅ Smart Farm: updated {$updatesCount} outputs in DB & cache");
+            $this->info("           ✅ Smart Farm Status: Mode {$sfStatusData['mode']} | Pompa: {$sfStatusData['pompa']} | Blok: {$sfStatusData['blok']} | Sisa: {$sfStatusData['sisa_formatted']}");
 
             // Broadcast ke WebSocket (termasuk status detail smart farm)
             $lastSeen = \Cache::get("device_{$device->id}_last_seen");
@@ -974,9 +978,10 @@ class MqttListener extends Command
                     } elseif ($targetOutput === 'sf_pupuk') {
                         $sfStatusData['pupuk'] = 'NONE';
                     }
+                    $this->evaluateSmartFarmMode($sfStatusData, $cachedOutputs);
                     \Cache::put("device_sf_status_{$device->id}", $sfStatusData, now()->addHours(1));
 
-                    $this->info("           🔴 Smart Farm AUTO_OFF applied: {$targetOutput} = 0 ({$reason})");
+                    $this->info("           🔴 Smart Farm AUTO_OFF applied: {$targetOutput} = 0 ({$reason}) | Mode: {$sfStatusData['mode']}");
 
                     event(new \App\Events\DeviceStatusUpdated(
                         $device->id,
@@ -1031,13 +1036,11 @@ class MqttListener extends Command
                         $sfStatusData = \Cache::get("device_sf_status_{$device->id}", []);
                         if ($outputName === 'sf_pupuk') {
                             $sfStatusData['pupuk'] = ($state == 1) ? 'ON' : 'NONE';
-                            \Cache::put("device_sf_status_{$device->id}", $sfStatusData, now()->addHours(1));
-                        } elseif ($outputName === 'sf_pompa') {
-                            $sfStatusData['siram'] = $state;
-                            \Cache::put("device_sf_status_{$device->id}", $sfStatusData, now()->addHours(1));
                         }
+                        $this->evaluateSmartFarmMode($sfStatusData, $cachedOutputs);
+                        \Cache::put("device_sf_status_{$device->id}", $sfStatusData, now()->addHours(1));
 
-                        $this->info("           ✅ Smart Farm OK RELAY: {$outputName} = {$state}");
+                        $this->info("           ✅ Smart Farm OK RELAY: {$outputName} = {$state} (Mode: {$sfStatusData['mode']})");
 
                         event(new \App\Events\DeviceStatusUpdated(
                             $device->id,
@@ -1049,8 +1052,10 @@ class MqttListener extends Command
                     }
                 }
             }
-            // Parse konfirmasi pemilihan blok: OK:BLOK:blok1=0:blok2=1:blok3=0:pompa=1
-            elseif ($cmd === 'BLOK' && isset($parts[2])) {
+            // Parse konfirmasi pemilihan blok / status relay:
+            // OK:BLOK:blok1=0:blok2=1:blok3=0:pompa=1
+            // OK:RELAY_STATUS:blok1=0:blok2=0:blok3=0:pompa=0:pupuk=0
+            elseif (($cmd === 'BLOK' || $cmd === 'RELAY_STATUS') && isset($parts[2])) {
                 $kvPairs = explode(':', $parts[2]);
                 $parsedBlok = [];
                 foreach ($kvPairs as $pair) {
@@ -1065,6 +1070,7 @@ class MqttListener extends Command
                     'blok2' => 'sf_blok2',
                     'blok3' => 'sf_blok3',
                     'pompa' => 'sf_pompa',
+                    'pupuk' => 'sf_pupuk',
                 ];
 
                 $cachedOutputs = \Cache::get("device_outputs_{$device->id}", []);
@@ -1094,16 +1100,19 @@ class MqttListener extends Command
 
                 \Cache::put("device_outputs_{$device->id}", $cachedOutputs, now()->addHours(24));
 
-                // Update status Smart Farm live di cache
+                // Update status Smart Farm live di cache dengan evaluasi mode
                 $sfStatusData = \Cache::get("device_sf_status_{$device->id}", []);
-                $sfStatusData['blok'] = $activeBlok;
-                $sfStatusData['siram'] = ($parsedBlok['pompa'] ?? 0) === 1 ? 1 : 0;
-                if ($sfStatusData['siram'] === 0) {
-                    $sfStatusData['sisa'] = 0;
+                if ($activeBlok > 0) {
+                    $sfStatusData['blok'] = $activeBlok;
                 }
+                if (isset($parsedBlok['pupuk'])) {
+                    $sfStatusData['pupuk'] = ($parsedBlok['pupuk'] === 1) ? 'ON' : 'NONE';
+                }
+
+                $this->evaluateSmartFarmMode($sfStatusData, $cachedOutputs);
                 \Cache::put("device_sf_status_{$device->id}", $sfStatusData, now()->addHours(1));
 
-                $this->info("           ✅ Smart Farm OK BLOK: " . json_encode($parsedBlok) . " (active blok: {$activeBlok})");
+                $this->info("           ✅ Smart Farm OK {$cmd}: " . json_encode($parsedBlok) . " (Mode: {$sfStatusData['mode']}, Active Blok: {$sfStatusData['blok']}, Pompa: {$sfStatusData['pompa']})");
 
                 event(new \App\Events\DeviceStatusUpdated(
                     $device->id,
@@ -1239,6 +1248,72 @@ class MqttListener extends Command
             }
         } catch (\Throwable $e) {
             // Non-critical, abaikan error agar loop listener tidak terputus
+        }
+    }
+
+    /**
+     * Evaluasi dan sinkronkan mode operasional Smart Farm (OTOMATIS vs MANUAL vs STANDBY)
+     * 
+     * Aturan:
+     * - Kondisi fisik pompa & blok diambil dari relay status ($cachedOutputs)
+     * - Jika fisik pompa dan semua blok mati (OFF) -> mode = STANDBY
+     * - Jika fisik pompa atau blok hidup (ON):
+     *     * Jika ada countdown ($sisa > 0) di status -> mode = OTOMATIS (Jadwal aktif)
+     *     * Jika TIDAK ada countdown ($sisa == 0) -> mode = MANUAL (Kontrol Pengguna)
+     */
+    private function evaluateSmartFarmMode(array &$sfStatusData, array $cachedOutputs): void
+    {
+        $pompaVal = (int) ($cachedOutputs['sf_pompa'] ?? 0);
+        $blok1Val = (int) ($cachedOutputs['sf_blok1'] ?? 0);
+        $blok2Val = (int) ($cachedOutputs['sf_blok2'] ?? 0);
+        $blok3Val = (int) ($cachedOutputs['sf_blok3'] ?? 0);
+        $pupukVal = (int) ($cachedOutputs['sf_pupuk'] ?? 0);
+
+        // Cari active blok dari relay fisik
+        $activeBlok = 0;
+        if ($blok1Val === 1) $activeBlok = 1;
+        elseif ($blok2Val === 1) $activeBlok = 2;
+        elseif ($blok3Val === 1) $activeBlok = 3;
+
+        $physicalOn = ($pompaVal === 1) || ($activeBlok > 0);
+        $sisa = (int) ($sfStatusData['sisa'] ?? 0);
+
+        // Jika secara fisik semua mati (pompa=0 dan blok=0)
+        if (!$physicalOn) {
+            $sfStatusData['pompa'] = 0;
+            $sfStatusData['blok'] = 0;
+            $sfStatusData['siram'] = 0;
+            $sfStatusData['sisa'] = 0;
+            $sfStatusData['sisa_formatted'] = '00:00';
+            $sfStatusData['mode'] = 'STANDBY';
+            $sfStatusData['mode_label'] = 'Standby (Siaga)';
+            if (isset($cachedOutputs['sf_pupuk'])) {
+                $sfStatusData['pupuk'] = ($pupukVal === 1) ? 'ON' : 'NONE';
+            }
+            return;
+        }
+
+        // Secara fisik ada yang menyala ($physicalOn == true):
+        // Sinkronkan kondisi fisik relay ke status
+        $sfStatusData['pompa'] = $pompaVal;
+        $sfStatusData['blok'] = $activeBlok ?: (isset($sfStatusData['blok']) && (int)$sfStatusData['blok'] > 0 ? (int)$sfStatusData['blok'] : 1);
+        $sfStatusData['siram'] = 1;
+        if (isset($cachedOutputs['sf_pupuk'])) {
+            $sfStatusData['pupuk'] = ($pupukVal === 1) ? 'ON' : 'NONE';
+        }
+
+        // Cek apakah mode OTOMATIS (ada countdown) atau MANUAL (tanpa countdown)
+        if ($sisa > 0) {
+            $sfStatusData['mode'] = 'OTOMATIS';
+            $sfStatusData['mode_label'] = 'Otomatis (Jadwal)';
+            $m = floor($sisa / 60);
+            $s = $sisa % 60;
+            $sfStatusData['sisa_formatted'] = sprintf('%02d:%02d', $m, $s);
+        } else {
+            $sfStatusData['mode'] = 'MANUAL';
+            $sfStatusData['mode_label'] = 'Manual (Aktif)';
+            $sfStatusData['sisa'] = 0;
+            $sfStatusData['sisa_formatted'] = '00:00';
         }
     }
 }

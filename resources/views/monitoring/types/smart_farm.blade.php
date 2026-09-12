@@ -18,6 +18,17 @@
 
                 $isPompaActive = (bool) (($sfPompa && $sfPompa->current_value) || $isSiram);
                 $otherOutputs = $outputs->whereNotIn('output_name', ['sf_pompa', 'sf_blok1', 'sf_blok2', 'sf_blok3', 'sf_pupuk']);
+
+                $sfMode = $sfStatus['mode'] ?? null;
+                if (!$sfMode) {
+                    if ($isSiram && $sisaDetik > 0) {
+                        $sfMode = 'OTOMATIS';
+                    } elseif ($isSiram || $isPompaActive) {
+                        $sfMode = 'MANUAL';
+                    } else {
+                        $sfMode = 'STANDBY';
+                    }
+                }
             @endphp
 
             <!-- ==================================================== -->
@@ -32,18 +43,18 @@
             <div class="sf-hero-card mb-4" id="sf-status-card">
                 <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
                     <div class="d-flex align-items-center gap-3">
-                        <div class="d-flex align-items-center justify-content-center" id="sf-icon-wrapper" style="width: 58px; height: 58px; border-radius: 18px; background: {{ ($isSiram || $isPompaActive) ? 'linear-gradient(135deg, #059669, #10b981)' : 'linear-gradient(135deg, #0284c7, #38bdf8)' }}; color: white; font-size: 1.75rem; box-shadow: 0 8px 22px -4px rgba(0,0,0,0.18);">
-                            <i class="bi {{ ($isSiram || $isPompaActive) ? 'bi-droplet-fill' : 'bi-water' }}" id="sf-icon-main"></i>
+                        <div class="d-flex align-items-center justify-content-center" id="sf-icon-wrapper" style="width: 58px; height: 58px; border-radius: 18px; background: {{ $sfMode === 'OTOMATIS' ? 'linear-gradient(135deg, #059669, #10b981)' : ($sfMode === 'MANUAL' ? 'linear-gradient(135deg, #0284c7, #38bdf8)' : 'linear-gradient(135deg, #64748b, #94a3b8)') }}; color: white; font-size: 1.75rem; box-shadow: 0 8px 22px -4px rgba(0,0,0,0.18);">
+                            <i class="bi {{ ($sfMode === 'OTOMATIS' || $sfMode === 'MANUAL') ? 'bi-droplet-fill' : 'bi-water' }}" id="sf-icon-main"></i>
                         </div>
                         <div>
                             <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
-                                <span class="badge rounded-pill {{ ($isSiram || $isPompaActive) ? 'bg-success text-white' : 'bg-secondary text-white' }}" id="sf-badge-siram" style="padding: 6px 14px; font-weight: 700; letter-spacing: 0.5px;">
-                                    <i class="bi {{ ($isSiram || $isPompaActive) ? 'bi-play-circle-fill' : 'bi-pause-circle' }} me-1" id="sf-icon-badge"></i>
+                                <span class="badge rounded-pill {{ $sfMode === 'OTOMATIS' ? 'bg-success text-white' : ($sfMode === 'MANUAL' ? 'bg-primary text-white' : 'bg-secondary text-white') }}" id="sf-badge-siram" style="padding: 6px 14px; font-weight: 700; letter-spacing: 0.5px;">
+                                    <i class="bi {{ $sfMode === 'OTOMATIS' ? 'bi-clock-history me-1' : ($sfMode === 'MANUAL' ? 'bi-play-circle-fill me-1' : 'bi-pause-circle me-1') }}" id="sf-icon-badge"></i>
                                     <span id="sf-text-siram">
-                                        @if($isSiram)
-                                            SEDANG MENYIRAM (BLOK {{ $siramBlok }})
-                                        @elseif($isPompaActive)
-                                            SEDANG MENYIRAM (MANUAL)
+                                        @if($sfMode === 'OTOMATIS')
+                                            OTOMATIS (BLOK {{ $siramBlok }})
+                                        @elseif($sfMode === 'MANUAL')
+                                            MANUAL (BLOK {{ $siramBlok }})
                                         @else
                                             SIAGA (STANDBY)
                                         @endif
@@ -60,12 +71,10 @@
                                 @endif
                             </div>
                             <div class="small text-muted" id="sf-detail-siram">
-                                @if($isSiram)
-                                    Menyiram <strong>Blok {{ $siramBlok }}</strong>
+                                @if($sfMode === 'OTOMATIS')
+                                    Penyiraman Otomatis <strong>Blok {{ $siramBlok }}</strong>
                                     @if(($sisaMenit ?? 0) > 0 || ($sisaDetikMod ?? 0) > 0)
                                         &bull; Sisa Waktu: <strong><span id="sf-sisa-waktu">{{ $sisaMenit }}m {{ $sisaDetikMod }}s</span></strong>
-                                    @else
-                                        &bull; <span class="text-success fw-bold"><i class="bi bi-play-circle-fill me-1"></i>Manual Aktif</span>
                                     @endif
                                     @if($siramPupuk)
                                         &bull; <span class="text-warning fw-bold d-inline-flex align-items-center gap-1">
@@ -78,8 +87,19 @@
                                             Pupuk Aktif
                                         </span>
                                     @endif
-                                @elseif($isPompaActive)
-                                    Penyiraman manual sedang berjalan aktif.
+                                @elseif($sfMode === 'MANUAL')
+                                    Penyiraman Manual <strong>Blok {{ $siramBlok }}</strong> &bull; <span class="text-primary fw-bold"><i class="bi bi-play-circle-fill me-1"></i>Manual Aktif</span>
+                                    @if($siramPupuk)
+                                        &bull; <span class="text-warning fw-bold d-inline-flex align-items-center gap-1">
+                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M10 2v5L4.5 17.5A2.5 2.5 0 0 0 6.6 21h10.8a2.5 2.5 0 0 0 2.1-3.5L14 7V2"></path>
+                                                <line x1="8.5" y1="2" x2="15.5" y2="2"></line>
+                                                <path d="M7.5 15h9"></path>
+                                                <circle cx="12" cy="11.5" r="1" fill="currentColor"></circle>
+                                            </svg>
+                                            Pupuk Aktif
+                                        </span>
+                                    @endif
                                 @else
                                     Sistem irigasi multi-zona siap. Pompa dan katup solenoid dalam kondisi siaga.
                                 @endif
@@ -101,6 +121,9 @@
                         <a href="{{ ($isAdminView ?? false) ? route('schedule.index', $device->id) : route('schedule.index', $userDevice->id) }}" class="btn btn-glass btn-sm d-inline-flex align-items-center gap-2 shadow-sm" style="border-radius: 50px; padding: 0.65rem 1.3rem; font-weight: 600;">
                             <i class="bi bi-calendar-check text-primary"></i> Kelola Jadwal
                         </a>
+                        <button type="button" class="btn btn-light btn-sm d-inline-flex align-items-center gap-1 border shadow-sm" style="border-radius: 50px; padding: 0.65rem 1.1rem; font-weight: 600; color: #4b5563;" onclick="checkRelayStatusQuick()" title="Cek Status Aktual Relay STM32 (CMD:RELAY_STATUS)">
+                            <i class="bi bi-lightning-charge text-warning"></i> Status Relay
+                        </button>
                         <button type="button" class="btn btn-light btn-sm d-inline-flex align-items-center gap-1 border shadow-sm" style="border-radius: 50px; padding: 0.65rem 1.1rem; font-weight: 600; color: #4b5563;" onclick="openRtcSyncModal()" title="Sinkronkan Waktu RTC Device">
                             <i class="bi bi-clock-history text-primary"></i> Jam RTC
                         </button>

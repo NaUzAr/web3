@@ -134,6 +134,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/siram-stop', [ScheduleController::class, 'siramStop'])->name('siram.stop');
         Route::post('/reset-error', [ScheduleController::class, 'resetError'])->name('reset.error');
         Route::post('/set-rtc', [ScheduleController::class, 'setRtc'])->name('set.rtc');
+        Route::post('/relay-status', [ScheduleController::class, 'checkRelayStatus'])->name('relay.status');
         Route::post('/sync', [ScheduleController::class, 'syncFromDevice'])->name('sync');
         Route::get('/data', [ScheduleController::class, 'getSchedulesData'])->name('data');
     });

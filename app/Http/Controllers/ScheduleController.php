@@ -465,6 +465,36 @@ class ScheduleController extends Controller
     }
 
     /**
+     * Smart Farm: Cek Status Relay (CMD:RELAY_STATUS)
+     */
+    public function checkRelayStatus($userDeviceId)
+    {
+        $device = $this->getDevice($userDeviceId);
+
+        if ($device->type !== 'smart_farm') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Fitur ini hanya untuk device Smart Farm.',
+            ], 400);
+        }
+
+        $topic = $device->mqtt_topic_output ?: $device->mqtt_topic;
+        $success = $this->smartFarmService->sendRelayStatus($topic);
+
+        if ($success) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Permintaan status relay dikirim ke device!',
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Gagal mengirim permintaan status relay.',
+        ], 500);
+    }
+
+    /**
      * Smart Farm: Sinkronkan Waktu RTC (CMD:SET_RTC)
      */
     public function setRtc(Request $request, $userDeviceId)

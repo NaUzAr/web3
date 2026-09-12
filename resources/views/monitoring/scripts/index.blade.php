@@ -824,6 +824,16 @@
             if (!card) return;
 
             const isSiram = sf.siram === 1 || sf.siram === '1' || sf.siram === true;
+            const sisa = parseInt(sf.sisa) || 0;
+            
+            // Evaluasi mode: gunakan sf.mode dari backend atau fallback
+            let mode = sf.mode;
+            if (!mode) {
+                if (isSiram && sisa > 0) mode = 'OTOMATIS';
+                else if (isSiram) mode = 'MANUAL';
+                else mode = 'STANDBY';
+            }
+
             const badgeSiram = document.getElementById('sf-badge-siram');
             const textSiram = document.getElementById('sf-text-siram');
             const iconBadge = document.getElementById('sf-icon-badge');
@@ -843,23 +853,21 @@
             const pStatusPompa = document.getElementById('pipe-status-pompa');
             const pStatusPupuk = document.getElementById('pipe-status-pupuk');
 
-            if (isSiram) {
+            const isPupuk = (sf.pupuk === 'ON' || sf.pupuk === 1 || sf.pupuk === '1');
+            const activeBlok = sf.blok || 1;
+
+            if (mode === 'OTOMATIS') {
                 if (badgeSiram) badgeSiram.className = 'badge rounded-pill bg-success text-white';
-                if (textSiram) textSiram.innerText = `SEDANG MENYIRAM (BLOK ${sf.blok || 1})`;
-                if (iconBadge) iconBadge.className = 'bi bi-play-circle-fill me-1';
+                if (textSiram) textSiram.innerText = `OTOMATIS (BLOK ${activeBlok})`;
+                if (iconBadge) iconBadge.className = 'bi bi-clock-history me-1';
                 if (iconWrapper) iconWrapper.style.background = 'linear-gradient(135deg, #059669, #10b981)';
                 if (iconMain) iconMain.className = 'bi bi-droplet-fill';
 
                 if (detailSiram) {
-                    const sisa = parseInt(sf.sisa) || 0;
-                    let pupukHtml = (sf.pupuk === 'ON') ? ' &bull; <span class="text-warning fw-bold"><i class="bi bi-droplet-half me-1"></i>Pupuk Aktif</span>' : '';
-                    if (sisa > 0) {
-                        const m = Math.floor(sisa / 60);
-                        const s = sisa % 60;
-                        detailSiram.innerHTML = `Menyiram <strong>Blok ${sf.blok || 1}</strong> &bull; Sisa Waktu: <strong><span id="sf-sisa-waktu">${m}m ${s}s</span></strong>${pupukHtml}`;
-                    } else {
-                        detailSiram.innerHTML = `Menyiram <strong>Blok ${sf.blok || 1}</strong> &bull; <span class="text-success fw-bold"><i class="bi bi-play-circle-fill me-1"></i>Manual Aktif</span>${pupukHtml}`;
-                    }
+                    const m = Math.floor(sisa / 60);
+                    const s = sisa % 60;
+                    let pupukHtml = isPupuk ? ' &bull; <span class="text-warning fw-bold"><i class="bi bi-droplet-half me-1"></i>Pupuk Aktif</span>' : '';
+                    detailSiram.innerHTML = `Penyiraman Otomatis <strong>Blok ${activeBlok}</strong> &bull; Sisa Waktu: <strong><span id="sf-sisa-waktu">${m}m ${s}s</span></strong>${pupukHtml}`;
                 }
 
                 if (btnStart) btnStart.style.display = 'none';
@@ -884,7 +892,6 @@
                 if (pConn1) pConn1.classList.add('active');
                 if (pConn2) pConn2.classList.add('active');
 
-                const isPupuk = (sf.pupuk === 'ON');
                 if (pNodePupuk) {
                     if (isPupuk) pNodePupuk.classList.add('active');
                     else pNodePupuk.classList.remove('active');
@@ -895,7 +902,59 @@
                     const node = document.getElementById(`pipe-node-blok${b}`);
                     const status = document.getElementById(`pipe-status-blok${b}`);
                     const flow = document.getElementById(`sf-flow-blok${b}`);
-                    const isTarget = (sf.blok == b);
+                    const isTarget = (activeBlok == b);
+                    if (node) {
+                        if (isTarget) node.classList.add('active');
+                        else node.classList.remove('active');
+                    }
+                    if (status) status.innerText = isTarget ? 'MENGALIR' : 'TUTUP';
+                    if (flow) flow.style.display = isTarget ? 'inline-flex' : 'none';
+                });
+            } else if (mode === 'MANUAL') {
+                if (badgeSiram) badgeSiram.className = 'badge rounded-pill bg-primary text-white';
+                if (textSiram) textSiram.innerText = `MANUAL (BLOK ${activeBlok})`;
+                if (iconBadge) iconBadge.className = 'bi bi-play-circle-fill me-1';
+                if (iconWrapper) iconWrapper.style.background = 'linear-gradient(135deg, #0284c7, #38bdf8)';
+                if (iconMain) iconMain.className = 'bi bi-droplet-fill';
+
+                if (detailSiram) {
+                    let pupukHtml = isPupuk ? ' &bull; <span class="text-warning fw-bold"><i class="bi bi-droplet-half me-1"></i>Pupuk Aktif</span>' : '';
+                    detailSiram.innerHTML = `Penyiraman Manual <strong>Blok ${activeBlok}</strong> &bull; <span class="text-primary fw-bold"><i class="bi bi-play-circle-fill me-1"></i>Manual Aktif</span>${pupukHtml}`;
+                }
+
+                if (btnStart) btnStart.style.display = 'none';
+                if (!btnStop && actionsContainer) {
+                    btnStop = document.createElement('button');
+                    btnStop.type = 'button';
+                    btnStop.id = 'sf-btn-stop';
+                    btnStop.className = 'btn btn-danger btn-sm d-inline-flex align-items-center gap-2 shadow-sm';
+                    btnStop.style.borderRadius = '50px';
+                    btnStop.style.padding = '0.65rem 1.4rem';
+                    btnStop.style.fontWeight = '700';
+                    btnStop.onclick = () => stopSiramQuick(true);
+                    btnStop.innerHTML = '<i class="bi bi-stop-circle-fill"></i> Stop Siram';
+                    actionsContainer.prepend(btnStop);
+                } else if (btnStop) {
+                    btnStop.style.display = 'inline-flex';
+                }
+
+                // Pipeline Nodes
+                if (pNodePompa) pNodePompa.classList.add('active');
+                if (pStatusPompa) pStatusPompa.innerText = 'MEMOMPA';
+                if (pConn1) pConn1.classList.add('active');
+                if (pConn2) pConn2.classList.add('active');
+
+                if (pNodePupuk) {
+                    if (isPupuk) pNodePupuk.classList.add('active');
+                    else pNodePupuk.classList.remove('active');
+                }
+                if (pStatusPupuk) pStatusPupuk.innerText = isPupuk ? 'INJEKSI' : 'STANDBY';
+
+                [1, 2, 3].forEach(b => {
+                    const node = document.getElementById(`pipe-node-blok${b}`);
+                    const status = document.getElementById(`pipe-status-blok${b}`);
+                    const flow = document.getElementById(`sf-flow-blok${b}`);
+                    const isTarget = (activeBlok == b);
                     if (node) {
                         if (isTarget) node.classList.add('active');
                         else node.classList.remove('active');
@@ -904,10 +963,11 @@
                     if (flow) flow.style.display = isTarget ? 'inline-flex' : 'none';
                 });
             } else {
+                // STANDBY
                 if (badgeSiram) badgeSiram.className = 'badge rounded-pill bg-secondary text-white';
                 if (textSiram) textSiram.innerText = 'SIAGA (STANDBY)';
                 if (iconBadge) iconBadge.className = 'bi bi-pause-circle me-1';
-                if (iconWrapper) iconWrapper.style.background = 'linear-gradient(135deg, #0284c7, #38bdf8)';
+                if (iconWrapper) iconWrapper.style.background = 'linear-gradient(135deg, #64748b, #94a3b8)';
                 if (iconMain) iconMain.className = 'bi bi-water';
                 if (detailSiram) {
                     detailSiram.innerHTML = 'Sistem irigasi multi-zona siap. Pompa dan katup solenoid dalam kondisi siaga.';
@@ -919,18 +979,21 @@
                     btnStart.style.display = 'inline-flex';
                 }
 
-                // If not in automated siram, sync with manual outputs
-                const pompaBtn = sfOutputMap.pompa ? document.getElementById(`btn-on-${sfOutputMap.pompa}`) : null;
-                const isPumpManualOn = pompaBtn && pompaBtn.classList.contains('active-on');
-                if (pNodePompa) {
-                    if (isPumpManualOn) pNodePompa.classList.add('active');
-                    else pNodePompa.classList.remove('active');
-                }
-                if (pStatusPompa) pStatusPompa.innerText = isPumpManualOn ? 'MEMOMPA' : 'OFF';
-                if (pConn1) {
-                    if (isPumpManualOn) pConn1.classList.add('active');
-                    else pConn1.classList.remove('active');
-                }
+                if (pNodePompa) pNodePompa.classList.remove('active');
+                if (pStatusPompa) pStatusPompa.innerText = 'OFF';
+                if (pConn1) pConn1.classList.remove('active');
+                if (pConn2) pConn2.classList.remove('active');
+                if (pNodePupuk) pNodePupuk.classList.remove('active');
+                if (pStatusPupuk) pStatusPupuk.innerText = 'STANDBY';
+
+                [1, 2, 3].forEach(b => {
+                    const node = document.getElementById(`pipe-node-blok${b}`);
+                    const status = document.getElementById(`pipe-status-blok${b}`);
+                    const flow = document.getElementById(`sf-flow-blok${b}`);
+                    if (node) node.classList.remove('active');
+                    if (status) status.innerText = 'TUTUP';
+                    if (flow) flow.style.display = 'none';
+                });
             }
 
             if (sf.jam) {
@@ -1061,6 +1124,31 @@
                 }
             } catch (e) {
                 alert('Gagal mengirim reset error: ' + e.message);
+            }
+        }
+
+        async function checkRelayStatusQuick() {
+            try {
+                const targetId = '{{ ($isAdminView ?? false) ? $device->id : ($userDevice->id ?? $device->id) }}';
+                const res = await fetch(`/device/${targetId}/schedule/relay-status`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    if (typeof showToast === 'function') {
+                        showToast(data.message || 'Permintaan status relay dikirim!', 'info');
+                    } else {
+                        alert(data.message || 'Permintaan status relay dikirim ke device!');
+                    }
+                } else {
+                    alert('Gagal: ' + (data.message || 'Terjadi kesalahan'));
+                }
+            } catch (e) {
+                alert('Gagal mengirim permintaan status relay: ' + e.message);
             }
         }
 

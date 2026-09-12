@@ -38,6 +38,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/devices/{id}', [DeviceController::class, 'show']);
     Route::put('/devices/{id}', [DeviceController::class, 'update']);
     Route::post('/devices/{id}/favorite', [DeviceController::class, 'toggleFavorite']);
+    Route::post('/devices/{id}/relay-status', [DeviceController::class, 'checkRelayStatus']);
     Route::delete('/devices/{id}', [DeviceController::class, 'destroy']);
 });
 

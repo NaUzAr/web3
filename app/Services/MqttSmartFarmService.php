@@ -216,6 +216,18 @@ class MqttSmartFarmService
     }
 
     /**
+     * Request status relay lengkap dari device (Ground Truth)
+     * 
+     * Format: CMD:RELAY_STATUS
+     * Response: OK:RELAY_STATUS:blok1=%d:blok2=%d:blok3=%d:pompa=%d:pupuk=%d
+     */
+    public function sendRelayStatus(string $mqttTopic): bool
+    {
+        $message = "CMD:RELAY_STATUS";
+        return $this->publish($mqttTopic, $message, 'Relay status request');
+    }
+
+    /**
      * Ping koneksi
      * 
      * Format: CMD:PING
