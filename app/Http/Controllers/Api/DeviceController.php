@@ -219,12 +219,13 @@ class DeviceController extends Controller
 
         $topic = $device->mqtt_topic_output ?: $device->mqtt_topic;
         $smartFarmService = app(\App\Services\MqttSmartFarmService::class);
+        $smartFarmService->sendStatus($topic);
         $success = $smartFarmService->sendRelayStatus($topic);
 
         if ($success) {
             return response()->json([
                 'success' => true,
-                'message' => 'Permintaan status relay dikirim ke device!',
+                'message' => 'Permintaan status relay dan sistem dikirim ke device!',
             ]);
         }
 

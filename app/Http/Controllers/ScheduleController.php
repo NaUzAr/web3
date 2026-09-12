@@ -483,12 +483,13 @@ class ScheduleController extends Controller
         }
 
         $topic = $device->mqtt_topic_output ?: $device->mqtt_topic;
+        $this->smartFarmService->sendStatus($topic);
         $success = $this->smartFarmService->sendRelayStatus($topic);
 
         if ($success) {
             return response()->json([
                 'success' => true,
-                'message' => 'Permintaan status relay dikirim ke device!',
+                'message' => 'Permintaan status relay dan sistem dikirim ke device!',
             ]);
         }
 

@@ -939,7 +939,34 @@
             const pStatusPupuk = document.getElementById('pipe-status-pupuk');
 
             const isSiram = sf.siram === 1 || sf.siram === '1' || sf.siram === true;
-            const sisa = parseInt(sf.sisa) || 0;
+            
+            // Format countdown sisa (MMDD: 2 digit menit, 2 digit detik, misal 0120 = 1 menit 20 detik)
+            let sisaMenit = 0;
+            let sisaDetik = 0;
+            let totalSisaSeconds = 0;
+
+            if (sf.sisa_raw) {
+                const raw = String(sf.sisa_raw).padStart(4, '0');
+                sisaMenit = parseInt(raw.substring(0, 2), 10) || 0;
+                sisaDetik = parseInt(raw.substring(2, 4), 10) || 0;
+                totalSisaSeconds = (sisaMenit * 60) + sisaDetik;
+            } else if (sf.sisa_menit !== undefined && sf.sisa_detik !== undefined) {
+                sisaMenit = parseInt(sf.sisa_menit, 10) || 0;
+                sisaDetik = parseInt(sf.sisa_detik, 10) || 0;
+                totalSisaSeconds = (sisaMenit * 60) + sisaDetik;
+            } else if (sf.sisa !== undefined && sf.sisa !== null) {
+                const sStr = String(sf.sisa);
+                if (sStr.length === 4 || (parseInt(sStr, 10) > 60 && sStr.length <= 4)) {
+                    const padded = sStr.padStart(4, '0');
+                    sisaMenit = parseInt(padded.substring(0, 2), 10) || 0;
+                    sisaDetik = parseInt(padded.substring(2, 4), 10) || 0;
+                    totalSisaSeconds = (sisaMenit * 60) + sisaDetik;
+                } else {
+                    totalSisaSeconds = parseInt(sf.sisa, 10) || 0;
+                    sisaMenit = Math.floor(totalSisaSeconds / 60);
+                    sisaDetik = totalSisaSeconds % 60;
+                }
+            }
             
             const isPupuk = (sf.pupuk === 'ON' || sf.pupuk === 1 || sf.pupuk === '1');
             const isPompa = (sf.pompa === 1 || sf.pompa === '1' || sf.pompa === true);
@@ -948,7 +975,7 @@
             // Evaluasi mode: gunakan sf.mode dari backend atau fallback
             let mode = sf.mode;
             if (!mode) {
-                if (isSiram && sisa > 0) mode = 'OTOMATIS';
+                if (isSiram && totalSisaSeconds > 0) mode = 'OTOMATIS';
                 else if (isSiram || isPompa || isPupuk || activeBlok > 0) mode = 'MANUAL';
                 else mode = 'STANDBY';
             }
@@ -962,10 +989,8 @@
                 if (iconMain) iconMain.className = 'bi bi-droplet-fill';
 
                 if (detailSiram) {
-                    const m = Math.floor(sisa / 60);
-                    const s = sisa % 60;
                     let pupukHtml = isPupuk ? ' &bull; <span class="text-warning fw-bold"><i class="bi bi-droplet-half me-1"></i>Pupuk Aktif</span>' : '';
-                    detailSiram.innerHTML = `Penyiraman Otomatis <strong>Blok ${displayBlok}</strong> &bull; Sisa Waktu: <strong><span id="sf-sisa-waktu">${m}m ${s}s</span></strong>${pupukHtml}`;
+                    detailSiram.innerHTML = `Penyiraman Otomatis <strong>Blok ${displayBlok}</strong> &bull; Sisa Waktu: <strong><span id="sf-sisa-waktu">${sisaMenit}m ${String(sisaDetik).padStart(2, '0')}s</span></strong>${pupukHtml}`;
                 }
 
                 if (btnStart) btnStart.style.display = 'none';
@@ -1000,6 +1025,8 @@
                     const node = document.getElementById(`pipe-node-blok${b}`);
                     const status = document.getElementById(`pipe-status-blok${b}`);
                     const flow = document.getElementById(`sf-flow-blok${b}`);
+                    const flowBadge = document.getElementById(`sf-flow-badge-blok${b}`);
+                    const valveIcon = document.getElementById(`sf-valve-icon-blok${b}`);
                     const isTarget = (displayBlok == b);
                     if (node) {
                         if (isTarget) node.classList.add('active');
@@ -1007,6 +1034,32 @@
                     }
                     if (status) status.innerText = isTarget ? 'MENGALIR' : 'TUTUP';
                     if (flow) flow.style.display = isTarget ? 'inline-flex' : 'none';
+                    if (flowBadge) {
+                        if (isTarget) {
+                            flowBadge.className = 'badge rounded-pill bg-success text-white';
+                            flowBadge.innerText = 'MENGALIR';
+                        } else {
+                            flowBadge.className = 'badge rounded-pill bg-light text-muted border';
+                            flowBadge.innerText = 'STANDBY';
+                        }
+                    }
+                    if (valveIcon) {
+                        valveIcon.className = isTarget ? 'bi bi-unlock-fill text-success' : 'bi bi-lock-fill text-muted';
+                    }
+                    if (typeof sfOutputMap !== 'undefined' && sfOutputMap[`blok${b}`]) {
+                        const outId = sfOutputMap[`blok${b}`];
+                        const cardEl = document.getElementById(`output-card-${outId}`);
+                        const statusVal = document.getElementById(`output-status-${outId}`);
+                        if (cardEl) {
+                            if (isTarget) cardEl.classList.add('active-flow');
+                            else cardEl.classList.remove('active-flow');
+                        }
+                        if (statusVal) {
+                            statusVal.innerText = isTarget ? 'TERBUKA' : 'TERTUTUP';
+                            if (isTarget) { statusVal.classList.remove('off'); statusVal.classList.add('on'); }
+                            else { statusVal.classList.remove('on'); statusVal.classList.add('off'); }
+                        }
+                    }
                 });
             } else if (mode === 'MANUAL') {
                 if (badgeSiram) badgeSiram.className = 'badge rounded-pill bg-primary text-white';
@@ -1076,13 +1129,43 @@
                     const node = document.getElementById(`pipe-node-blok${b}`);
                     const status = document.getElementById(`pipe-status-blok${b}`);
                     const flow = document.getElementById(`sf-flow-blok${b}`);
+                    const flowBadge = document.getElementById(`sf-flow-badge-blok${b}`);
+                    const valveIcon = document.getElementById(`sf-valve-icon-blok${b}`);
                     const isTarget = (activeBlok == b);
+                    const isFlowActive = isTarget && pumpActive;
+
                     if (node) {
-                        if (isTarget) node.classList.add('active');
+                        if (isFlowActive) node.classList.add('active');
                         else node.classList.remove('active');
                     }
-                    if (status) status.innerText = isTarget ? 'MENGALIR' : 'TUTUP';
-                    if (flow) flow.style.display = isTarget ? 'inline-flex' : 'none';
+                    if (status) status.innerText = isFlowActive ? 'MENGALIR' : (isTarget ? 'BUKA' : 'TUTUP');
+                    if (flow) flow.style.display = isFlowActive ? 'inline-flex' : 'none';
+                    if (flowBadge) {
+                        if (isFlowActive) {
+                            flowBadge.className = 'badge rounded-pill bg-success text-white';
+                            flowBadge.innerText = 'MENGALIR';
+                        } else {
+                            flowBadge.className = 'badge rounded-pill bg-light text-muted border';
+                            flowBadge.innerText = 'STANDBY';
+                        }
+                    }
+                    if (valveIcon) {
+                        valveIcon.className = isTarget ? 'bi bi-unlock-fill text-success' : 'bi bi-lock-fill text-muted';
+                    }
+                    if (typeof sfOutputMap !== 'undefined' && sfOutputMap[`blok${b}`]) {
+                        const outId = sfOutputMap[`blok${b}`];
+                        const cardEl = document.getElementById(`output-card-${outId}`);
+                        const statusVal = document.getElementById(`output-status-${outId}`);
+                        if (cardEl) {
+                            if (isFlowActive) cardEl.classList.add('active-flow');
+                            else cardEl.classList.remove('active-flow');
+                        }
+                        if (statusVal) {
+                            statusVal.innerText = isTarget ? 'TERBUKA' : 'TERTUTUP';
+                            if (isTarget) { statusVal.classList.remove('off'); statusVal.classList.add('on'); }
+                            else { statusVal.classList.remove('on'); statusVal.classList.add('off'); }
+                        }
+                    }
                 });
             } else {
                 // STANDBY
@@ -1124,14 +1207,34 @@
                     const node = document.getElementById(`pipe-node-blok${b}`);
                     const status = document.getElementById(`pipe-status-blok${b}`);
                     const flow = document.getElementById(`sf-flow-blok${b}`);
+                    const flowBadge = document.getElementById(`sf-flow-badge-blok${b}`);
+                    const valveIcon = document.getElementById(`sf-valve-icon-blok${b}`);
                     if (node) node.classList.remove('active');
                     if (status) status.innerText = 'TUTUP';
                     if (flow) flow.style.display = 'none';
+                    if (flowBadge) {
+                        flowBadge.className = 'badge rounded-pill bg-light text-muted border';
+                        flowBadge.innerText = 'STANDBY';
+                    }
+                    if (valveIcon) {
+                        valveIcon.className = 'bi bi-lock-fill text-muted';
+                    }
+                    if (typeof sfOutputMap !== 'undefined' && sfOutputMap[`blok${b}`]) {
+                        const outId = sfOutputMap[`blok${b}`];
+                        const cardEl = document.getElementById(`output-card-${outId}`);
+                        const statusVal = document.getElementById(`output-status-${outId}`);
+                        if (cardEl) cardEl.classList.remove('active-flow');
+                        if (statusVal) {
+                            statusVal.innerText = 'TERTUTUP';
+                            statusVal.classList.remove('on');
+                            statusVal.classList.add('off');
+                        }
+                    }
                 });
             }
 
-            if (sf.jam) {
-                const jamStr = String(sf.jam);
+            if (sf.jam !== undefined && sf.jam !== null && sf.jam !== '') {
+                const jamStr = String(sf.jam).padStart(4, '0');
                 const textJam = document.getElementById('sf-text-jam');
                 if (jamStr.length === 4) {
                     const formatted = `${jamStr.substring(0, 2)}:${jamStr.substring(2, 4)}`;
@@ -1368,77 +1471,104 @@
                     statusEl = document.getElementById(`pump-status-${output.id}`);
                 }
 
-                if (btnOn && btnOff && statusEl) {
-                    const isOn = parseFloat(output.value) > 0;
+                const isOn = parseFloat(output.value) > 0;
 
+                if (statusEl) {
                     if (isOn) {
-                        btnOn.className = 'segmented-btn active-on';
-                        btnOff.className = 'segmented-btn';
                         statusEl.classList.remove('off');
                         statusEl.classList.add('on');
                         statusEl.innerText = statusEl.getAttribute('data-on-text') || 'ON';
                     } else {
-                        btnOn.className = 'segmented-btn';
-                        btnOff.className = 'segmented-btn active-off';
                         statusEl.classList.remove('on');
                         statusEl.classList.add('off');
                         statusEl.innerText = statusEl.getAttribute('data-off-text') || 'OFF';
                     }
+                }
 
-                    // Smart Farm specific visual sync
-                    if (typeof sfOutputMap !== 'undefined') {
-                        if (output.id === sfOutputMap.pompa) {
-                            const card = document.getElementById(`output-card-${output.id}`);
-                            const pNode = document.getElementById('pipe-node-pompa');
-                            const pStatus = document.getElementById('pipe-status-pompa');
-                            const pConn1 = document.getElementById('pipe-conn-1');
-                            if (card) {
-                                if (isOn) card.classList.add('active-pump');
-                                else card.classList.remove('active-pump');
-                            }
-                            if (pNode) {
-                                if (isOn) pNode.classList.add('active');
-                                else pNode.classList.remove('active');
-                            }
-                            if (pStatus) pStatus.innerText = isOn ? 'MEMOMPA' : 'OFF';
-                            if (pConn1) {
-                                if (isOn) pConn1.classList.add('active');
-                                else pConn1.classList.remove('active');
-                            }
-                        }
-                        if (output.id === sfOutputMap.pupuk) {
-                            const card = document.getElementById(`output-card-${output.id}`);
-                            const pNode = document.getElementById('pipe-node-pupuk');
-                            const pStatus = document.getElementById('pipe-status-pupuk');
-                            if (card) {
-                                if (isOn) card.classList.add('active-dosing');
-                                else card.classList.remove('active-dosing');
-                            }
-                            if (pNode) {
-                                if (isOn) pNode.classList.add('active');
-                                else pNode.classList.remove('active');
-                            }
-                            if (pStatus) pStatus.innerText = isOn ? 'INJEKSI' : 'STANDBY';
-                        }
-                        [1, 2, 3].forEach(b => {
-                            if (output.id === sfOutputMap[`blok${b}`]) {
-                                const node = document.getElementById(`pipe-node-blok${b}`);
-                                const status = document.getElementById(`pipe-status-blok${b}`);
-                                const flow = document.getElementById(`sf-flow-blok${b}`);
-                                const isPumpOn = document.querySelector('#btn-on-' + sfOutputMap.pompa)?.classList.contains('active-on');
-                                if (node) {
-                                    if (isOn && isPumpOn) node.classList.add('active');
-                                    else if (!isOn) node.classList.remove('active');
-                                }
-                                if (status) {
-                                    status.innerText = (isOn && isPumpOn) ? 'MENGALIR' : (isOn ? 'BUKA' : 'TUTUP');
-                                }
-                                if (flow) {
-                                    flow.style.display = (isOn && isPumpOn) ? 'inline-flex' : 'none';
-                                }
-                            }
-                        });
+                if (btnOn && btnOff) {
+                    if (isOn) {
+                        btnOn.className = 'segmented-btn active-on';
+                        btnOff.className = 'segmented-btn';
+                    } else {
+                        btnOn.className = 'segmented-btn';
+                        btnOff.className = 'segmented-btn active-off';
                     }
+                }
+
+                // Smart Farm specific visual sync
+                if (typeof sfOutputMap !== 'undefined') {
+                    if (output.id === sfOutputMap.pompa) {
+                        const card = document.getElementById(`output-card-${output.id}`);
+                        const pNode = document.getElementById('pipe-node-pompa');
+                        const pStatus = document.getElementById('pipe-status-pompa');
+                        const pConn1 = document.getElementById('pipe-conn-1');
+                        if (card) {
+                            if (isOn) card.classList.add('active-pump');
+                            else card.classList.remove('active-pump');
+                        }
+                        if (pNode) {
+                            if (isOn) pNode.classList.add('active');
+                            else pNode.classList.remove('active');
+                        }
+                        if (pStatus) pStatus.innerText = isOn ? 'MEMOMPA' : 'OFF';
+                        if (pConn1) {
+                            if (isOn) pConn1.classList.add('active');
+                            else pConn1.classList.remove('active');
+                        }
+                    }
+                    if (output.id === sfOutputMap.pupuk) {
+                        const card = document.getElementById(`output-card-${output.id}`);
+                        const pNode = document.getElementById('pipe-node-pupuk');
+                        const pStatus = document.getElementById('pipe-status-pupuk');
+                        if (card) {
+                            if (isOn) card.classList.add('active-dosing');
+                            else card.classList.remove('active-dosing');
+                        }
+                        if (pNode) {
+                            if (isOn) pNode.classList.add('active');
+                            else pNode.classList.remove('active');
+                        }
+                        if (pStatus) pStatus.innerText = isOn ? 'INJEKSI' : 'STANDBY';
+                    }
+                    [1, 2, 3].forEach(b => {
+                        if (output.id === sfOutputMap[`blok${b}`]) {
+                            const node = document.getElementById(`pipe-node-blok${b}`);
+                            const status = document.getElementById(`pipe-status-blok${b}`);
+                            const flow = document.getElementById(`sf-flow-blok${b}`);
+                            const flowBadge = document.getElementById(`sf-flow-badge-blok${b}`);
+                            const valveIcon = document.getElementById(`sf-valve-icon-blok${b}`);
+                            const card = document.getElementById(`output-card-${output.id}`);
+                            const isPumpOn = document.querySelector('#btn-on-' + sfOutputMap.pompa)?.classList.contains('active-on') || document.getElementById('pipe-node-pompa')?.classList.contains('active');
+                            const isFlowing = isOn && isPumpOn;
+
+                            if (node) {
+                                if (isFlowing) node.classList.add('active');
+                                else if (!isOn) node.classList.remove('active');
+                            }
+                            if (status) {
+                                status.innerText = isFlowing ? 'MENGALIR' : (isOn ? 'BUKA' : 'TUTUP');
+                            }
+                            if (flow) {
+                                flow.style.display = isFlowing ? 'inline-flex' : 'none';
+                            }
+                            if (flowBadge) {
+                                if (isFlowing) {
+                                    flowBadge.className = 'badge rounded-pill bg-success text-white';
+                                    flowBadge.innerText = 'MENGALIR';
+                                } else {
+                                    flowBadge.className = 'badge rounded-pill bg-light text-muted border';
+                                    flowBadge.innerText = 'STANDBY';
+                                }
+                            }
+                            if (valveIcon) {
+                                valveIcon.className = isOn ? 'bi bi-unlock-fill text-success' : 'bi bi-lock-fill text-muted';
+                            }
+                            if (card) {
+                                if (isFlowing) card.classList.add('active-flow');
+                                else card.classList.remove('active-flow');
+                            }
+                        }
+                    });
                 }
 
                 // Update Range/Slider Outputs

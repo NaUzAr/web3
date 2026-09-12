@@ -854,8 +854,17 @@ class MqttListener extends Command
             $siram = (int) ($status['siram'] ?? 0);
             $blok  = (int) ($status['blok']  ?? 0);
             $pupuk = (string) ($status['pupuk'] ?? 'NONE');
-            $sisa  = (int) ($status['sisa']  ?? 0);
             $error = (int) ($status['error'] ?? 0);
+
+            // Format countdown sisa adalah MMDD (misal: 0120 = 1 menit 20 detik)
+            $rawSisa = str_pad((string)($status['sisa'] ?? '0000'), 4, '0', STR_PAD_LEFT);
+            $sisaMenit = (int) substr($rawSisa, 0, 2);
+            $sisaDetik = (int) substr($rawSisa, 2, 2);
+            $totalSisaSeconds = ($sisaMenit * 60) + $sisaDetik;
+            $sisaFormatted = sprintf('%02d:%02d', $sisaMenit, $sisaDetik);
+
+            // Format jam RTC (misal: 0624 = 06:24)
+            $rawJam = isset($status['jam']) ? str_pad((string)$status['jam'], 4, '0', STR_PAD_LEFT) : null;
 
             // Update cache outputs
             $cachedOutputs = \Cache::get("device_outputs_{$device->id}", []);
@@ -864,7 +873,7 @@ class MqttListener extends Command
 
             $wasSiram = \Cache::get("device_was_siram_{$device->id}", false);
 
-            if ($sisa > 0) {
+            if ($totalSisaSeconds > 0) {
                 // Sisa countdown ada (> 0) -> Sesi otomatis berjalan aktif
                 \Cache::put("device_was_siram_{$device->id}", true, now()->addHours(1));
 
@@ -924,22 +933,24 @@ class MqttListener extends Command
             // Simpan status Smart Farm tambahan di cache
             $deviceTz = \Cache::get("device_timezone_{$device->id}", 'WIB');
             $sfStatusData = [
-                'siram'      => $siram,
-                'blok'       => $blok,
-                'pupuk'      => $pupuk,
-                'sisa'       => $sisa,
-                'error'      => $error,
-                'jam'        => $status['jam'] ?? null,
-                'hari'       => $status['hari'] ?? null,
-                'timezone'   => $deviceTz,
-                'updated_at' => now()->toIso8601String(),
+                'siram'          => $siram,
+                'blok'           => $blok,
+                'pupuk'          => $pupuk,
+                'sisa'           => $totalSisaSeconds,
+                'sisa_raw'       => $rawSisa,
+                'sisa_formatted' => $sisaFormatted,
+                'error'          => $error,
+                'jam'            => $rawJam,
+                'hari'           => $status['hari'] ?? null,
+                'timezone'       => $deviceTz,
+                'updated_at'     => now()->toIso8601String(),
             ];
 
             // Evaluasi mode operasional (OTOMATIS vs MANUAL vs STANDBY)
             $this->evaluateSmartFarmMode($sfStatusData, $cachedOutputs);
             \Cache::put("device_sf_status_{$device->id}", $sfStatusData, now()->addHours(1));
 
-            $this->info("           ✅ Smart Farm Status: Mode {$sfStatusData['mode']} | Pompa: {$sfStatusData['pompa']} | Blok: {$sfStatusData['blok']} | Sisa: {$sfStatusData['sisa_formatted']}");
+            $this->info("           ✅ Smart Farm Status: Mode {$sfStatusData['mode']} | Pompa: {$sfStatusData['pompa']} | Blok: {$sfStatusData['blok']} | Sisa: {$sfStatusData['sisa_formatted']} | Jam: " . ($sfStatusData['jam'] ?? '-'));
 
             // Broadcast ke WebSocket (termasuk status detail smart farm)
             $lastSeen = \Cache::get("device_{$device->id}_last_seen");
@@ -1230,7 +1241,13 @@ class MqttListener extends Command
         foreach (explode(':', $stripped) as $part) {
             if (!str_contains($part, '=')) continue;
             [$key, $val] = explode('=', $part, 2);
-            $result[trim($key)] = is_numeric($val) ? (int) $val : trim($val);
+            $k = trim($key);
+            $v = trim($val);
+            if ($k === 'jam' || $k === 'sisa') {
+                $result[$k] = str_pad($v, 4, '0', STR_PAD_LEFT);
+            } else {
+                $result[$k] = is_numeric($v) ? (int) $v : $v;
+            }
         }
         return empty($result) ? null : $result;
     }
