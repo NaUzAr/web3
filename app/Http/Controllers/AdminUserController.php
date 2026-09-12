@@ -36,8 +36,9 @@ class AdminUserController extends Controller
         $totalUsers = User::count();
         $totalAdmins = User::where('role', 'admin')->count();
         $totalRegular = User::where('role', '!=', 'admin')->count();
+        $totalOnline = User::where('last_active_at', '>=', now()->subMinutes(5))->count();
 
-        return view('admin.users.index', compact('users', 'totalUsers', 'totalAdmins', 'totalRegular'));
+        return view('admin.users.index', compact('users', 'totalUsers', 'totalAdmins', 'totalRegular', 'totalOnline'));
     }
 
     /**

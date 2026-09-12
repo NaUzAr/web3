@@ -16,6 +16,14 @@ return Application::configure(basePath: dirname(__DIR__))
         // Trust all proxies for dev tunnels
         $middleware->trustProxies(at: '*', headers: \Illuminate\Http\Request::HEADER_X_FORWARDED_FOR | \Illuminate\Http\Request::HEADER_X_FORWARDED_HOST | \Illuminate\Http\Request::HEADER_X_FORWARDED_PORT | \Illuminate\Http\Request::HEADER_X_FORWARDED_PROTO);
 
+        $middleware->appendToGroup('web', [
+            \App\Http\Middleware\UpdateUserLastActive::class,
+        ]);
+
+        $middleware->appendToGroup('api', [
+            \App\Http\Middleware\UpdateUserLastActive::class,
+        ]);
+
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
         ]);

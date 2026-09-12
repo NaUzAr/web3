@@ -129,6 +129,11 @@ class AuthController extends Controller
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
 
+            // Update last_active_at
+            $user->timestamps = false;
+            $user->last_active_at = now();
+            $user->save();
+
             // Generate token (pakai Sanctum)
             $token = $user->createToken('flutter-app')->plainTextToken;
 

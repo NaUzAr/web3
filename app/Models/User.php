@@ -26,6 +26,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
         'role',
         'fcm_token',
+        'last_active_at',
     ];
 
     /**
@@ -56,6 +57,7 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return [
             'email_verified_at' => 'datetime',
+            'last_active_at' => 'datetime',
             'password' => 'hashed',
         ];
     }
@@ -82,5 +84,29 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isAdmin(): bool
     {
         return $this->is_admin;
+    }
+
+    /**
+     * Helper: Check if user is currently online (active in last 5 minutes)
+     */
+    public function isOnline(): bool
+    {
+        return $this->last_active_at && $this->last_active_at->greaterThanOrEqualTo(now()->subMinutes(5));
+    }
+
+    /**
+     * Helper: Format last active time
+     */
+    public function lastActiveText(): string
+    {
+        if (!$this->last_active_at) {
+            return 'Belum pernah aktif';
+        }
+
+        if ($this->isOnline()) {
+            return 'Online sekarang';
+        }
+
+        return $this->last_active_at->diffForHumans();
     }
 }

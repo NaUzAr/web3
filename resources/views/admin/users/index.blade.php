@@ -183,7 +183,7 @@
 
         {{-- Stats Cards --}}
         <div class="row g-3 mb-4">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="stat-card">
                     <div class="stat-icon primary">
                         <i class="bi bi-people"></i>
@@ -194,7 +194,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="stat-card">
                     <div class="stat-icon danger">
                         <i class="bi bi-shield-lock"></i>
@@ -205,14 +205,25 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="stat-card">
-                    <div class="stat-icon success">
+                    <div class="stat-icon" style="background: rgba(99, 102, 241, 0.15); color: #4f46e5;">
                         <i class="bi bi-person-check"></i>
                     </div>
                     <div>
                         <div class="text-muted small fw-semibold">Pengguna Biasa</div>
                         <div class="fs-4 fw-bold text-dark">{{ $totalRegular ?? 0 }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon success">
+                        <i class="bi bi-activity"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small fw-semibold">Online Sekarang</div>
+                        <div class="fs-4 fw-bold text-success">{{ $totalOnline ?? 0 }}</div>
                     </div>
                 </div>
             </div>
@@ -255,6 +266,7 @@
                         <tr>
                             <th>Pengguna</th>
                             <th>Username</th>
+                            <th>Terakhir Aktif</th>
                             <th>Device Terhubung</th>
                             <th>Role Akun</th>
                             <th>Terdaftar</th>
@@ -266,8 +278,11 @@
                             <tr>
                                 <td>
                                     <div class="d-flex align-items-center gap-3">
-                                        <div class="user-avatar-sm">
+                                        <div class="user-avatar-sm position-relative">
                                             {{ strtoupper(substr($u->name, 0, 1)) }}
+                                            @if($u->isOnline())
+                                                <span class="position-absolute bottom-0 end-0 p-1 bg-success border border-white rounded-circle" style="width: 10px; height: 10px;" title="Online"></span>
+                                            @endif
                                         </div>
                                         <div>
                                             <div class="fw-bold text-dark">{{ $u->name }}</div>
@@ -277,6 +292,22 @@
                                 </td>
                                 <td>
                                     <span class="font-monospace small text-muted">@ {{ $u->username }}</span>
+                                </td>
+                                <td>
+                                    @if($u->isOnline())
+                                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1 rounded-pill small fw-bold">
+                                            <i class="bi bi-circle-fill text-success me-1" style="font-size: 0.45rem;"></i> Online
+                                        </span>
+                                    @else
+                                        <span class="text-muted small">
+                                            <i class="bi bi-clock me-1"></i>{{ $u->lastActiveText() }}
+                                        </span>
+                                        @if($u->last_active_at)
+                                            <div class="text-muted" style="font-size: 0.72rem;">
+                                                {{ $u->last_active_at->format('d M Y, H:i') }}
+                                            </div>
+                                        @endif
+                                    @endif
                                 </td>
                                 <td>
                                     <span class="device-count-badge">
@@ -318,7 +349,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center py-5 text-muted">
+                                <td colspan="7" class="text-center py-5 text-muted">
                                     <i class="bi bi-inbox fs-1 d-block mb-2"></i>
                                     Tidak ada data pengguna yang sesuai.
                                 </td>

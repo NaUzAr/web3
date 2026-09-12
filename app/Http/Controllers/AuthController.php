@@ -52,6 +52,11 @@ class AuthController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
+        // Update last_active_at
+        $user->timestamps = false;
+        $user->last_active_at = now();
+        $user->save();
+
         // Log activity
         ActivityLog::log('login', "User {$user->name} berhasil login");
 
