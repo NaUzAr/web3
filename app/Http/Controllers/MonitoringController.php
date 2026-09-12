@@ -57,6 +57,9 @@ class MonitoringController extends Controller
      */
     public function store(Request $request)
     {
+        $token = trim((string) $request->input('token', ''));
+        $request->merge(['token' => $token]);
+
         $request->validate([
             'token' => 'required|string|size:16',
             'custom_name' => 'nullable|string|max:100',
@@ -65,8 +68,11 @@ class MonitoringController extends Controller
             'token.size' => 'Token harus 16 karakter!',
         ]);
 
-        // Cari device berdasarkan token
-        $device = Device::where('token', $request->token)->first();
+        // Cari device berdasarkan token (exact atau case-insensitive)
+        $device = Device::where('token', $token)->first();
+        if (!$device) {
+            $device = Device::whereRaw('LOWER(token) = ?', [strtolower($token)])->first();
+        }
 
         if (!$device) {
             return back()->withErrors(['token' => 'Token tidak ditemukan! Pastikan token benar.'])->withInput();

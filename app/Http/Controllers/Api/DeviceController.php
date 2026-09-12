@@ -32,12 +32,18 @@ class DeviceController extends Controller
      */
     public function store(Request $request)
     {
+        $token = trim((string) $request->input('token', ''));
+        $request->merge(['token' => $token]);
+
         $request->validate([
             'token' => 'required|string|size:16',
             'custom_name' => 'nullable|string|max:100',
         ]);
 
-        $device = Device::where('token', $request->token)->first();
+        $device = Device::where('token', $token)->first();
+        if (!$device) {
+            $device = Device::whereRaw('LOWER(token) = ?', [strtolower($token)])->first();
+        }
 
         if (!$device) {
             return response()->json([
