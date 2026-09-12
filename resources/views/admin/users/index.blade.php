@@ -148,6 +148,140 @@
             background: #ef4444;
             color: #fff;
         }
+
+        /* ===== Pagination Styling & SVG Bounds Protection ===== */
+        .pagination {
+            margin-bottom: 0;
+            flex-wrap: wrap;
+            gap: 4px;
+            justify-content: center;
+        }
+
+        .pagination .page-item .page-link {
+            border-radius: 10px !important;
+            padding: 0.45rem 0.85rem;
+            color: #0284c7;
+            border: 1px solid rgba(14, 165, 233, 0.2);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.85rem;
+            min-width: 38px;
+            min-height: 38px;
+        }
+
+        .pagination .page-item.active .page-link {
+            background: linear-gradient(135deg, #0ea5e9, #0369a1);
+            border-color: transparent;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.25);
+        }
+
+        .pagination .page-item.disabled .page-link {
+            color: #94a3b8;
+            border-color: #e2e8f0;
+            background: #f8fafc;
+        }
+
+        /* Critical fix: Prevent any SVGs in pagination from blowing up */
+        .pagination svg,
+        nav[role="navigation"] svg {
+            width: 1rem !important;
+            height: 1rem !important;
+            max-width: 1rem !important;
+            max-height: 1rem !important;
+            display: inline-block !important;
+        }
+
+        /* ===== Mobile Responsive Optimizations (HP) ===== */
+        @media (max-width: 768px) {
+            .container {
+                padding-left: 0.75rem !important;
+                padding-right: 0.75rem !important;
+            }
+
+            .page-title {
+                font-size: 1.35rem;
+            }
+
+            .stat-card {
+                padding: 0.85rem 1rem;
+                gap: 0.75rem;
+                border-radius: 14px;
+            }
+
+            .stat-icon {
+                width: 38px;
+                height: 38px;
+                font-size: 1.15rem;
+                border-radius: 10px;
+            }
+
+            .stat-card .fs-4 {
+                font-size: 1.2rem !important;
+            }
+
+            .stat-card .small {
+                font-size: 0.75rem !important;
+            }
+
+            .table-responsive {
+                overflow: visible !important;
+            }
+
+            .user-table thead {
+                display: none;
+            }
+
+            .user-table tbody tr {
+                display: block;
+                background: var(--card-bg, #ffffff);
+                border: 1px solid var(--glass-border, #e2e8f0);
+                border-radius: 16px;
+                padding: 1rem;
+                margin-bottom: 1rem;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+            }
+
+            .user-table tbody td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.55rem 0;
+                border: none;
+                border-bottom: 1px dashed #f1f5f9;
+                font-size: 0.85rem;
+            }
+
+            .user-table tbody td:last-child {
+                border-bottom: none;
+                padding-bottom: 0;
+                margin-top: 0.35rem;
+                justify-content: flex-end;
+            }
+
+            .user-table tbody td[data-label="Pengguna"] {
+                display: block;
+                padding-top: 0;
+                padding-bottom: 0.75rem;
+                border-bottom: 1px solid #e2e8f0;
+            }
+
+            .user-table tbody td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                font-size: 0.78rem;
+                color: #64748b;
+                margin-right: 0.75rem;
+                flex-shrink: 0;
+            }
+
+            .user-table tbody td[data-label="Pengguna"]::before,
+            .user-table tbody td[data-label="Aksi"]::before {
+                display: none;
+            }
+        }
     </style>
 </head>
 
@@ -182,8 +316,8 @@
         @endif
 
         {{-- Stats Cards --}}
-        <div class="row g-3 mb-4">
-            <div class="col-md-3">
+        <div class="row g-2 g-md-3 mb-4">
+            <div class="col-6 col-md-3">
                 <div class="stat-card">
                     <div class="stat-icon primary">
                         <i class="bi bi-people"></i>
@@ -194,7 +328,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-6 col-md-3">
                 <div class="stat-card">
                     <div class="stat-icon danger">
                         <i class="bi bi-shield-lock"></i>
@@ -205,7 +339,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-6 col-md-3">
                 <div class="stat-card">
                     <div class="stat-icon" style="background: rgba(99, 102, 241, 0.15); color: #4f46e5;">
                         <i class="bi bi-person-check"></i>
@@ -216,7 +350,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-6 col-md-3">
                 <div class="stat-card">
                     <div class="stat-icon success">
                         <i class="bi bi-activity"></i>
@@ -232,26 +366,26 @@
         {{-- Filter & Search Card --}}
         <div class="glass-card mb-4 p-3">
             <form action="{{ route('admin.users.index') }}" method="GET" class="row g-2 align-items-center">
-                <div class="col-md-5">
+                <div class="col-12 col-md-5">
                     <div class="input-group">
                         <span class="input-group-text bg-light border-end-0"><i class="bi bi-search"></i></span>
                         <input type="text" name="search" class="form-control border-start-0 shadow-none" placeholder="Cari nama, email, username..." value="{{ request('search') }}">
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-6 col-md-3">
                     <select name="role" class="form-select shadow-none">
                         <option value="">Semua Role</option>
                         <option value="admin" {{ request('role') == 'admin' ? 'selected' : '' }}>Admin</option>
                         <option value="user" {{ request('role') == 'user' ? 'selected' : '' }}>User Biasa</option>
                     </select>
                 </div>
-                <div class="col-md-4 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary px-4 rounded-3">
+                <div class="col-6 col-md-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-fill rounded-3">
                         <i class="bi bi-funnel me-1"></i> Filter
                     </button>
                     @if(request()->hasAny(['search', 'role']))
-                        <a href="{{ route('admin.users.index') }}" class="btn btn-outline-secondary rounded-3">
-                            <i class="bi bi-x-circle me-1"></i> Reset
+                        <a href="{{ route('admin.users.index') }}" class="btn btn-outline-secondary rounded-3" title="Reset Filter">
+                            <i class="bi bi-x-circle"></i>
                         </a>
                     @endif
                 </div>
@@ -276,7 +410,7 @@
                     <tbody>
                         @forelse($users as $u)
                             <tr>
-                                <td>
+                                <td data-label="Pengguna">
                                     <div class="d-flex align-items-center gap-3">
                                         <div class="user-avatar-sm position-relative">
                                             {{ strtoupper(substr($u->name, 0, 1)) }}
@@ -290,31 +424,31 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="Username">
                                     <span class="font-monospace small text-muted">@ {{ $u->username }}</span>
                                 </td>
-                                <td>
+                                <td data-label="Terakhir Aktif">
                                     @if($u->isOnline())
                                         <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1 rounded-pill small fw-bold">
                                             <i class="bi bi-circle-fill text-success me-1" style="font-size: 0.45rem;"></i> Online
                                         </span>
                                     @else
-                                        <span class="text-muted small">
+                                        <div class="text-muted small">
                                             <i class="bi bi-clock me-1"></i>{{ $u->lastActiveText() }}
-                                        </span>
-                                        @if($u->last_active_at)
-                                            <div class="text-muted" style="font-size: 0.72rem;">
-                                                {{ $u->last_active_at->format('d M Y, H:i') }}
-                                            </div>
-                                        @endif
+                                            @if($u->last_active_at)
+                                                <div class="text-muted" style="font-size: 0.72rem;">
+                                                    {{ $u->last_active_at->format('d M Y, H:i') }}
+                                                </div>
+                                            @endif
+                                        </div>
                                     @endif
                                 </td>
-                                <td>
+                                <td data-label="Device">
                                     <span class="device-count-badge">
                                         <i class="bi bi-cpu me-1"></i>{{ $u->user_devices_count }} Device
                                     </span>
                                 </td>
-                                <td>
+                                <td data-label="Role">
                                     @if($u->id === auth()->id())
                                         <span class="badge-role badge-role-admin">
                                             <i class="bi bi-shield-fill"></i> Anda (Admin)
@@ -330,10 +464,10 @@
                                         </form>
                                     @endif
                                 </td>
-                                <td>
+                                <td data-label="Terdaftar">
                                     <span class="text-muted small">{{ $u->created_at ? $u->created_at->format('d M Y') : '-' }}</span>
                                 </td>
-                                <td class="text-end">
+                                <td data-label="Aksi" class="text-end">
                                     @if($u->id !== auth()->id())
                                         <form action="{{ route('admin.users.destroy', $u->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus user {{ $u->name }}? Akses device user ini juga akan dihapus.')">
                                             @csrf
@@ -360,8 +494,13 @@
             </div>
 
             @if($users->hasPages())
-                <div class="p-3 border-top">
-                    {{ $users->links() }}
+                <div class="p-3 border-top d-flex justify-content-center justify-content-md-between align-items-center flex-wrap gap-2">
+                    <div class="small text-muted d-none d-md-block">
+                        Menampilkan {{ $users->firstItem() }} - {{ $users->lastItem() }} dari {{ $users->total() }} pengguna
+                    </div>
+                    <div>
+                        {{ $users->links('pagination::bootstrap-5') }}
+                    </div>
                 </div>
             @endif
         </div>

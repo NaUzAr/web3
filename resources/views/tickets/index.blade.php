@@ -132,7 +132,7 @@
                         </a>
                     @endforeach
                     <div class="mt-4 d-flex justify-content-center">
-                        {{ $tickets->links('pagination::bootstrap-4') }}
+                        {{ $tickets->links('pagination::bootstrap-5') }}
                     </div>
                 </div>
             </div>

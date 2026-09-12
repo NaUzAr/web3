@@ -118,7 +118,7 @@
             </div>
             @if($announcements->hasPages())
                 <div class="p-3 border-top pb-0">
-                    {{ $announcements->links() }}
+                    {{ $announcements->links('pagination::bootstrap-5') }}
                 </div>
             @endif
         </div>

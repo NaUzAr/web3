@@ -80,7 +80,7 @@
 
             @if($tickets->hasPages())
                 <div class="d-flex justify-content-center mt-3 pb-3">
-                    {{ $tickets->links() }}
+                    {{ $tickets->links('pagination::bootstrap-5') }}
                 </div>
             @endif
         </div>
