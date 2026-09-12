@@ -24,11 +24,24 @@ class ScheduleController extends Controller
     private function getDevice($id)
     {
         if (Auth::user()->is_admin) {
-            return Device::findOrFail($id);
+            $device = Device::find($id);
+            if ($device) {
+                return $device;
+            }
+
+            $userDevice = UserDevice::find($id);
+            if ($userDevice && $userDevice->device) {
+                return $userDevice->device;
+            }
+
+            throw (new \Illuminate\Database\Eloquent\ModelNotFoundException)->setModel(Device::class, [$id]);
         }
 
         $userDevice = UserDevice::where('user_id', Auth::id())
-            ->where('id', $id)
+            ->where(function ($query) use ($id) {
+                $query->where('id', $id)
+                      ->orWhere('device_id', $id);
+            })
             ->firstOrFail();
 
         return $userDevice->device;
@@ -42,13 +55,23 @@ class ScheduleController extends Controller
         $device = $this->getDevice($userDeviceId);
         $isAdminView = Auth::user()->is_admin;
         
-        // For views, if admin we pass dummy userDevice so it doesn't break blade variables
+        // For views, resolve proper UserDevice or pass dummy so it doesn't break blade variables
         if ($isAdminView) {
-            $userDevice = new UserDevice(['device_id' => $device->id, 'custom_name' => $device->name]);
-            $userDevice->id = $device->id;
-            $userDevice->setRelation('device', $device);
+            $foundUserDevice = UserDevice::find($userDeviceId);
+            if ($foundUserDevice && $foundUserDevice->device_id == $device->id) {
+                $userDevice = $foundUserDevice;
+            } else {
+                $userDevice = new UserDevice(['device_id' => $device->id, 'custom_name' => $device->name]);
+                $userDevice->id = $device->id;
+                $userDevice->setRelation('device', $device);
+            }
         } else {
-            $userDevice = UserDevice::where('id', $userDeviceId)->first();
+            $userDevice = UserDevice::where('user_id', Auth::id())
+                ->where(function ($query) use ($userDeviceId) {
+                    $query->where('id', $userDeviceId)
+                          ->orWhere('device_id', $userDeviceId);
+                })
+                ->first();
         }
 
         // Check if device has schedule functionality

@@ -21,11 +21,24 @@ class AutomasiController extends Controller
     private function getDevice($id)
     {
         if (Auth::user()->is_admin) {
-            return Device::findOrFail($id);
+            $device = Device::find($id);
+            if ($device) {
+                return $device;
+            }
+
+            $userDevice = UserDevice::find($id);
+            if ($userDevice && $userDevice->device) {
+                return $userDevice->device;
+            }
+
+            throw (new \Illuminate\Database\Eloquent\ModelNotFoundException)->setModel(Device::class, [$id]);
         }
 
         $userDevice = UserDevice::where('user_id', Auth::id())
-            ->where('id', $id)
+            ->where(function ($query) use ($id) {
+                $query->where('id', $id)
+                      ->orWhere('device_id', $id);
+            })
             ->firstOrFail();
 
         return $userDevice->device;
