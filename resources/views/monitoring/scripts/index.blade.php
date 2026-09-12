@@ -236,8 +236,83 @@
                 await stopSiramQuick(false);
             }
 
+            // Toast Notification Helper
+            function showToast(message, type = 'error') {
+                let container = document.getElementById('toastContainer');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.id = 'toastContainer';
+                    container.className = 'toast-container';
+                    document.body.appendChild(container);
+                }
+
+                const toast = document.createElement('div');
+                toast.className = `custom-toast ${type === 'error' ? 'error' : ''}`;
+                
+                const iconClass = type === 'error' ? 'bi-exclamation-triangle-fill' : (type === 'success' ? 'bi-check-circle-fill' : 'bi-info-circle-fill');
+                toast.innerHTML = `
+                    <i class="bi ${iconClass}"></i>
+                    <div>
+                        <div class="fw-semibold text-dark" style="font-size: 0.88rem;">${message}</div>
+                    </div>
+                `;
+                
+                container.appendChild(toast);
+                requestAnimationFrame(() => {
+                    toast.classList.add('show');
+                });
+
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.remove(), 400);
+                }, 3500);
+            }
+
             // Set output ON/OFF (for buttons)
             function setOutput(outputId, isOn) {
+                // Client-side interlock: Pupuk hanya bisa aktif jika Pompa dan salah satu Blok aktif
+                if (typeof sfOutputMap !== 'undefined' && sfOutputMap.pupuk && outputId === sfOutputMap.pupuk && isOn) {
+                    const isPompaActive = document.getElementById(`btn-on-${sfOutputMap.pompa}`)?.classList.contains('active-on');
+                    const isBlokActive = [1, 2, 3].some(b => {
+                        const btn = document.getElementById(`btn-on-${sfOutputMap['blok' + b]}`);
+                        return btn && btn.classList.contains('active-on');
+                    });
+
+                    if (!isPompaActive || !isBlokActive) {
+                        let reason = '';
+                        if (!isPompaActive && !isBlokActive) {
+                            reason = 'Pompa Utama dan Katup Blok irigasi belum aktif.';
+                        } else if (!isPompaActive) {
+                            reason = 'Pompa Utama belum aktif.';
+                        } else {
+                            reason = 'Belum ada Katup Blok irigasi yang dibuka.';
+                        }
+                        showToast(`Pupuk tidak dapat dinyalakan: ${reason} Harap nyalakan blok dan pompa terlebih dahulu.`, 'error');
+                        return;
+                    }
+                }
+
+                // If turning OFF pompa or all bloks, optimistically turn OFF pupuk too
+                if (typeof sfOutputMap !== 'undefined') {
+                    if (sfOutputMap.pompa && outputId === sfOutputMap.pompa && !isOn) {
+                        if (sfOutputMap.pupuk) setOptimisticUI(sfOutputMap.pupuk, false);
+                        [1, 2, 3].forEach(b => {
+                            if (sfOutputMap['blok' + b]) setOptimisticUI(sfOutputMap['blok' + b], false);
+                        });
+                    } else if ([sfOutputMap.blok1, sfOutputMap.blok2, sfOutputMap.blok3].includes(outputId) && !isOn) {
+                        const otherBlokOn = [1, 2, 3].some(b => {
+                            const bId = sfOutputMap['blok' + b];
+                            if (!bId || bId === outputId) return false;
+                            const btn = document.getElementById(`btn-on-${bId}`);
+                            return btn && btn.classList.contains('active-on');
+                        });
+                        if (!otherBlokOn) {
+                            if (sfOutputMap.pompa) setOptimisticUI(sfOutputMap.pompa, false);
+                            if (sfOutputMap.pupuk) setOptimisticUI(sfOutputMap.pupuk, false);
+                        }
+                    }
+                }
+
                 const url = getBaseUrl() + `/output/${outputId}/toggle`;
 
                 fetch(url, {
@@ -248,9 +323,9 @@
                     },
                     body: JSON.stringify({ value: isOn })
                 })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
+                    .then(response => response.json().then(data => ({ ok: response.ok, data })))
+                    .then(({ ok, data }) => {
+                        if (ok && data.success) {
                             setOptimisticUI(outputId, isOn);
 
                             // Flash card border
@@ -271,13 +346,15 @@
                             }, 1000);
                             @endif
                         } else {
-                            console.error('Failed to update output');
-                            showToast('Gagal mengubah status: ' + (data.message || 'Silakan coba lagi.'));
+                            console.error('Failed to update output:', data.message);
+                            setOptimisticUI(outputId, !isOn);
+                            showToast(data.message || 'Gagal mengubah status. Silakan coba lagi.', 'error');
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        showToast('Terjadi kesalahan saat mengupdate output.');
+                        setOptimisticUI(outputId, !isOn);
+                        showToast('Terjadi kesalahan saat mengupdate output.', 'error');
                     });
             }
 

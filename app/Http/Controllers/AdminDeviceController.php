@@ -765,6 +765,33 @@ class AdminDeviceController extends Controller
             $newValue = (float) $newValue;
         }
 
+        // === SMART FARM INTERLOCK: Pupuk hanya boleh hidup jika Pompa dan salah satu Blok aktif ===
+        if ($device->type === 'smart_farm' && $output->output_name === 'sf_pupuk' && (int)$newValue === 1) {
+            $cachedOutputs = \Cache::get("device_outputs_{$device->id}", []);
+            $pompaVal = $cachedOutputs['sf_pompa'] ?? \App\Models\DeviceOutput::where('device_id', $device->id)->where('output_name', 'sf_pompa')->value('current_value');
+
+            $hasActiveBlok = false;
+            for ($b = 1; $b <= 3; $b++) {
+                if ((int)($cachedOutputs["sf_blok{$b}"] ?? 0) === 1) {
+                    $hasActiveBlok = true;
+                    break;
+                }
+            }
+            if (!$hasActiveBlok) {
+                $hasActiveBlok = \App\Models\DeviceOutput::where('device_id', $device->id)
+                    ->whereIn('output_name', ['sf_blok1', 'sf_blok2', 'sf_blok3'])
+                    ->where('current_value', 1)
+                    ->exists();
+            }
+
+            if ((int)$pompaVal !== 1 || !$hasActiveBlok) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pupuk hanya dapat dinyalakan jika Pompa Utama dan salah satu Blok irigasi sudah aktif!',
+                ], 422);
+            }
+        }
+
         // Update current_value di database
         $output->current_value = $newValue;
         $output->save();
@@ -799,8 +826,11 @@ class AdminDeviceController extends Controller
                         $cachedOutputs['sf_pompa'] = 1;
                         \Cache::put("device_outputs_{$device->id}", $cachedOutputs, now()->addHours(24));
                     } else {
+                        // Jika semua blok mati, otomatis matikan pupuk juga
+                        $smartFarmService->sendRelay($topic, 4, 0);
+
                         \App\Models\DeviceOutput::where('device_id', $device->id)
-                            ->whereIn('output_name', ['sf_blok1', 'sf_blok2', 'sf_blok3', 'sf_pompa'])
+                            ->whereIn('output_name', ['sf_blok1', 'sf_blok2', 'sf_blok3', 'sf_pompa', 'sf_pupuk'])
                             ->update(['current_value' => 0]);
 
                         $cachedOutputs = \Cache::get("device_outputs_{$device->id}", []);
@@ -808,6 +838,7 @@ class AdminDeviceController extends Controller
                         $cachedOutputs['sf_blok2'] = 0;
                         $cachedOutputs['sf_blok3'] = 0;
                         $cachedOutputs['sf_pompa'] = 0;
+                        $cachedOutputs['sf_pupuk'] = 0;
                         \Cache::put("device_outputs_{$device->id}", $cachedOutputs, now()->addHours(24));
                     }
 
@@ -828,9 +859,11 @@ class AdminDeviceController extends Controller
                 } elseif ($output->output_name === 'sf_pompa') {
                     if ((int) $newValue === 0) {
                         $smartFarmService->sendBlok($topic, 0);
+                        // Jika pompa mati, otomatis matikan pupuk juga
+                        $smartFarmService->sendRelay($topic, 4, 0);
 
                         \App\Models\DeviceOutput::where('device_id', $device->id)
-                            ->whereIn('output_name', ['sf_blok1', 'sf_blok2', 'sf_blok3', 'sf_pompa'])
+                            ->whereIn('output_name', ['sf_blok1', 'sf_blok2', 'sf_blok3', 'sf_pompa', 'sf_pupuk'])
                             ->update(['current_value' => 0]);
 
                         $cachedOutputs = \Cache::get("device_outputs_{$device->id}", []);
@@ -838,6 +871,7 @@ class AdminDeviceController extends Controller
                         $cachedOutputs['sf_blok2'] = 0;
                         $cachedOutputs['sf_blok3'] = 0;
                         $cachedOutputs['sf_pompa'] = 0;
+                        $cachedOutputs['sf_pupuk'] = 0;
                         \Cache::put("device_outputs_{$device->id}", $cachedOutputs, now()->addHours(24));
                     } else {
                         $smartFarmService->sendRelay($topic, 0, 1);
@@ -882,7 +916,15 @@ class AdminDeviceController extends Controller
                     $sfStatusData['mode_label'] = 'Otomatis (Jadwal)';
                 } else {
                     $sfStatusData['mode'] = 'MANUAL';
-                    $sfStatusData['mode_label'] = 'Manual (Aktif)';
+                    if ($activeBlok > 0) {
+                        $sfStatusData['mode_label'] = "Manual (Blok {$activeBlok})";
+                    } elseif ($pompaVal === 1) {
+                        $sfStatusData['mode_label'] = 'Manual (Pompa)';
+                    } elseif ($pupukVal === 1) {
+                        $sfStatusData['mode_label'] = 'Manual (Pupuk)';
+                    } else {
+                        $sfStatusData['mode_label'] = 'Manual (Aktif)';
+                    }
                     $sfStatusData['sisa'] = 0;
                     $sfStatusData['sisa_formatted'] = '00:00';
                 }

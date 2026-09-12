@@ -272,7 +272,7 @@
                                     </div>
                                     <div>
                                         <div class="fw-bold text-dark" style="font-size: 0.95rem;">Injeksi Pupuk</div>
-                                        <div class="text-muted" style="font-size: 0.76rem;"><i class="bi bi-shield-check text-warning me-1"></i>Dosing nutrisi ke pipa</div>
+                                        <div class="text-muted" style="font-size: 0.75rem;"><i class="bi bi-info-circle text-warning me-1"></i>Hanya aktif saat Pompa & Blok ON</div>
                                     </div>
                                 </div>
                                 <span id="output-status-{{ $sfPupuk->id }}" class="output-status {{ $isPupukOn ? 'on' : 'off' }} badge rounded-pill px-2.5 py-1 small m-0" data-on-text="INJEKSI AKTIF" data-off-text="STANDBY">

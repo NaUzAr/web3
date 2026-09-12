@@ -1307,7 +1307,15 @@ class MqttListener extends Command
             $sfStatusData['sisa_formatted'] = sprintf('%02d:%02d', $m, $s);
         } else {
             $sfStatusData['mode'] = 'MANUAL';
-            $sfStatusData['mode_label'] = 'Manual (Aktif)';
+            if ($activeBlok > 0) {
+                $sfStatusData['mode_label'] = "Manual (Blok {$activeBlok})";
+            } elseif ($pompaVal === 1) {
+                $sfStatusData['mode_label'] = 'Manual (Pompa)';
+            } elseif ($pupukVal === 1) {
+                $sfStatusData['mode_label'] = 'Manual (Pupuk)';
+            } else {
+                $sfStatusData['mode_label'] = 'Manual (Aktif)';
+            }
             $sfStatusData['sisa'] = 0;
             $sfStatusData['sisa_formatted'] = '00:00';
         }
