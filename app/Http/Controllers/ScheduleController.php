@@ -44,7 +44,8 @@ class ScheduleController extends Controller
         
         // For views, if admin we pass dummy userDevice so it doesn't break blade variables
         if ($isAdminView) {
-            $userDevice = new UserDevice(['id' => $device->id, 'device_id' => $device->id, 'custom_name' => $device->name]);
+            $userDevice = new UserDevice(['device_id' => $device->id, 'custom_name' => $device->name]);
+            $userDevice->id = $device->id;
             $userDevice->setRelation('device', $device);
         } else {
             $userDevice = UserDevice::where('id', $userDeviceId)->first();
