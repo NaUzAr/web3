@@ -204,6 +204,13 @@
                     const modalInstance = bootstrap.Modal.getInstance(modalEl);
                     if (modalInstance) modalInstance.hide();
 
+                    @if(($device->type ?? '') === 'smart_farm')
+                    // Jeda 1 detik untuk meminta status relay aktual ke STM32
+                    setTimeout(() => {
+                        requestRelayStatus(true);
+                    }, 1000);
+                    @endif
+
                 } catch (err) {
                     console.error('Siram manual error:', err);
                     alert('Gagal memulai penyiraman: ' + err.message);
@@ -256,6 +263,13 @@
                             }
 
                             console.log('Output toggled:', data.message);
+
+                            @if(($device->type ?? '') === 'smart_farm')
+                            // Dengarkan / polling ulang status relay setelah 1 detik untuk sinkronisasi hardware aktual
+                            setTimeout(() => {
+                                requestRelayStatus(true);
+                            }, 1000);
+                            @endif
                         } else {
                             console.error('Failed to update output');
                             showToast('Gagal mengubah status: ' + (data.message || 'Silakan coba lagi.'));
@@ -817,6 +831,13 @@
             } else {
                 console.warn("Laravel Echo is not initialized. WebSockets will not work.");
             }
+
+            @if(($device->type ?? '') === 'smart_farm')
+            // Otomatis kirim CMD:RELAY_STATUS saat pertama kali halaman monitoring dibuka
+            setTimeout(() => {
+                requestRelayStatus(true);
+            }, 600);
+            @endif
         });
 
         function updateSmartFarmLiveStatus(sf) {
@@ -1127,7 +1148,7 @@
             }
         }
 
-        async function checkRelayStatusQuick() {
+        async function checkRelayStatusQuick(silent = false) {
             try {
                 const targetId = '{{ ($isAdminView ?? false) ? $device->id : ($userDevice->id ?? $device->id) }}';
                 const res = await fetch(`/device/${targetId}/schedule/relay-status`, {
@@ -1139,17 +1160,30 @@
                 });
                 const data = await res.json();
                 if (data.success) {
-                    if (typeof showToast === 'function') {
-                        showToast(data.message || 'Permintaan status relay dikirim!', 'info');
-                    } else {
-                        alert(data.message || 'Permintaan status relay dikirim ke device!');
+                    if (!silent) {
+                        if (typeof showToast === 'function') {
+                            showToast(data.message || 'Permintaan status relay dikirim!', 'info');
+                        } else {
+                            alert(data.message || 'Permintaan status relay dikirim ke device!');
+                        }
                     }
+                    console.log('CMD:RELAY_STATUS sent to device (silent:', silent, ')');
                 } else {
-                    alert('Gagal: ' + (data.message || 'Terjadi kesalahan'));
+                    if (!silent) {
+                        alert('Gagal: ' + (data.message || 'Terjadi kesalahan'));
+                    }
+                    console.warn('Failed CMD:RELAY_STATUS:', data.message);
                 }
             } catch (e) {
-                alert('Gagal mengirim permintaan status relay: ' + e.message);
+                if (!silent) {
+                    alert('Gagal mengirim permintaan status relay: ' + e.message);
+                }
+                console.error('Error CMD:RELAY_STATUS:', e);
             }
+        }
+
+        function requestRelayStatus(silent = true) {
+            return checkRelayStatusQuick(silent);
         }
 
         async function stopSiramQuick(askConfirm = true) {
@@ -1166,7 +1200,11 @@
                 const data = await res.json();
                 if (data.success) {
                     if (askConfirm) alert(data.message || 'Perintah stop penyiraman dikirim!');
-                    updateSmartFarmLiveStatus({ siram: 0, blok: 0, pupuk: 'NONE', sisa: 0 });
+                    updateSmartFarmLiveStatus({ siram: 0, blok: 0, pupuk: 'NONE', sisa: 0, mode: 'STANDBY' });
+                    // Tunggu 1 detik lalu tanyakan status aktual ke STM32 untuk sinkronisasi fisik
+                    setTimeout(() => {
+                        requestRelayStatus(true);
+                    }, 1000);
                 } else {
                     if (askConfirm) alert('Gagal: ' + (data.message || 'Terjadi kesalahan'));
                 }

@@ -453,6 +453,47 @@ class MonitoringController extends Controller
                 } else {
                     $smartFarmService->sendRelayByName($topic, $output->output_name, (int) $newValue);
                 }
+
+                // Sinkronisasi status live Smart Farm dan broadcast WebSocket langsung
+                $sfStatusData = \Cache::get("device_sf_status_{$device->id}", []);
+                $cachedOutputs = \Cache::get("device_outputs_{$device->id}", []);
+
+                $pompaVal = (int) ($cachedOutputs['sf_pompa'] ?? 0);
+                $activeBlok = 0;
+                if (($cachedOutputs['sf_blok1'] ?? 0) == 1) $activeBlok = 1;
+                elseif (($cachedOutputs['sf_blok2'] ?? 0) == 1) $activeBlok = 2;
+                elseif (($cachedOutputs['sf_blok3'] ?? 0) == 1) $activeBlok = 3;
+
+                $sfStatusData['pompa'] = $pompaVal;
+                $sfStatusData['blok'] = $activeBlok;
+                $sfStatusData['siram'] = ($pompaVal === 1 || $activeBlok > 0) ? 1 : 0;
+                if (isset($cachedOutputs['sf_pupuk'])) {
+                    $sfStatusData['pupuk'] = ((int)$cachedOutputs['sf_pupuk'] === 1) ? 'ON' : 'NONE';
+                }
+
+                $sisa = (int) ($sfStatusData['sisa'] ?? 0);
+                if ($sfStatusData['siram'] === 0) {
+                    $sfStatusData['mode'] = 'STANDBY';
+                    $sfStatusData['mode_label'] = 'Standby (Siaga)';
+                    $sfStatusData['sisa'] = 0;
+                    $sfStatusData['sisa_formatted'] = '00:00';
+                } elseif ($sisa > 0) {
+                    $sfStatusData['mode'] = 'OTOMATIS';
+                    $sfStatusData['mode_label'] = 'Otomatis (Jadwal)';
+                } else {
+                    $sfStatusData['mode'] = 'MANUAL';
+                    $sfStatusData['mode_label'] = 'Manual (Aktif)';
+                    $sfStatusData['sisa'] = 0;
+                    $sfStatusData['sisa_formatted'] = '00:00';
+                }
+
+                \Cache::put("device_sf_status_{$device->id}", $sfStatusData, now()->addHours(1));
+
+                $deviceOutputs = \App\Models\DeviceOutput::where('device_id', $device->id)->get();
+                $formattedOutputs = $deviceOutputs->map(fn($o) => ['id' => $o->id, 'value' => $cachedOutputs[$o->output_name] ?? $o->current_value])->toArray();
+                $lastSeen = \Cache::get("device_{$device->id}_last_seen", $device->last_seen_at);
+                $sensorBuffer = \Cache::get("sensor_buffer_{$device->id}", []);
+                event(new \App\Events\DeviceStatusUpdated($device->id, $sensorBuffer, $formattedOutputs, $lastSeen, $sfStatusData));
             }
             // === DEVICE LAIN: Format legacy <CMD#val#> ===
             else {

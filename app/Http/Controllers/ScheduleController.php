@@ -412,8 +412,12 @@ class ScheduleController extends Controller
         $sfStatus = \Cache::get("device_sf_status_{$device->id}", []);
         $sfStatus['siram'] = 0;
         $sfStatus['blok'] = 0;
+        $sfStatus['pompa'] = 0;
         $sfStatus['pupuk'] = 'NONE';
         $sfStatus['sisa'] = 0;
+        $sfStatus['sisa_formatted'] = '00:00';
+        $sfStatus['mode'] = 'STANDBY';
+        $sfStatus['mode_label'] = 'Standby (Siaga)';
         \Cache::put("device_sf_status_{$device->id}", $sfStatus, now()->addHours(1));
         \Cache::forget("device_was_siram_{$device->id}");
 
