@@ -396,7 +396,7 @@
                                     </div>
 
                                     <!-- Solenoid Valve Telemetry Boxes (Murni Indikator) -->
-                                    <div class="d-flex flex-column gap-2 mb-3">
+                                    <div class="d-flex flex-column gap-2 mb-0">
                                         <div class="sf-zone-telemetry">
                                             <div class="d-flex align-items-center gap-2 text-muted" style="font-size: 0.78rem;">
                                                 <i class="bi {{ $isBlkOn ? 'bi-unlock-fill text-success' : 'bi-lock-fill text-muted' }}" id="sf-valve-icon-blok{{ $b['num'] }}" style="font-size: 0.95rem;"></i>
@@ -423,16 +423,6 @@
                                             </span>
                                         </div>
                                     </div>
-                                </div>
-
-                                <!-- Action Trigger (Siram Blok Ini / Hentikan) -->
-                                <div class="mt-auto pt-1">
-                                    <button type="button" 
-                                        class="sf-zone-action-btn w-100 {{ $isFlowing ? 'active-action' : '' }}"
-                                        onclick="{{ $isFlowing ? 'stopSmartFarmSiram()' : 'openSmartFarmSiramModal(' . $b['num'] . ')' }}">
-                                        <i class="bi {{ $isFlowing ? 'bi-stop-circle-fill text-danger' : 'bi-play-circle-fill' }} me-1.5" style="color: {{ $isFlowing ? '#ef4444' : $b['color_dark'] }}; font-size: 0.95rem;"></i>
-                                        <span>{{ $isFlowing ? 'Hentikan Siram Blok ' . $b['num'] : 'Siram ' . $b['name'] }}</span>
-                                    </button>
                                 </div>
                             </div>
                         </div>
