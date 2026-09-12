@@ -43,8 +43,12 @@ class AdminAnnouncementController extends Controller
         $announcement->sent_at = Carbon::now();
         $announcement->save();
 
+        if (!$firebaseService->isConfigured()) {
+            return redirect()->back()->with('error', 'Gagal: ' . ($firebaseService->getLastError() ?: 'Kredensial Firebase (firebase-adminsdk.json) belum ditemukan di server.'));
+        }
+
         if (empty($tokens)) {
-            return redirect()->back()->with('error', 'Tidak ada perangkat yang terdaftar untuk menerima notifikasi.');
+            return redirect()->back()->with('error', 'Tidak ada perangkat yang terdaftar untuk menerima notifikasi (belum ada user yang login via aplikasi mobile).');
         }
 
         // Kirim via firebase (Multicast)
@@ -63,6 +67,7 @@ class AdminAnnouncementController extends Controller
             return redirect()->back()->with('success', $msg);
         }
 
-        return redirect()->back()->with('error', 'Gagal mengirim pengumuman. Service FCM tidak merespons atau tidak diatur dengan benar.');
+        $detailError = $firebaseService->getLastError() ?: 'Service FCM tidak merespons atau tidak diatur dengan benar.';
+        return redirect()->back()->with('error', 'Gagal mengirim pengumuman: ' . $detailError);
     }
 }
