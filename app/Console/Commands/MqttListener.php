@@ -1275,10 +1275,10 @@ class MqttListener extends Command
         elseif ($blok2Val === 1) $activeBlok = 2;
         elseif ($blok3Val === 1) $activeBlok = 3;
 
-        $physicalOn = ($pompaVal === 1) || ($activeBlok > 0);
+        $physicalOn = ($pompaVal === 1) || ($activeBlok > 0) || ($pupukVal === 1);
         $sisa = (int) ($sfStatusData['sisa'] ?? 0);
 
-        // Jika secara fisik semua mati (pompa=0 dan blok=0)
+        // Jika secara fisik semua mati (pompa=0, blok=0, pupuk=0)
         if (!$physicalOn) {
             $sfStatusData['pompa'] = 0;
             $sfStatusData['blok'] = 0;
@@ -1287,20 +1287,16 @@ class MqttListener extends Command
             $sfStatusData['sisa_formatted'] = '00:00';
             $sfStatusData['mode'] = 'STANDBY';
             $sfStatusData['mode_label'] = 'Standby (Siaga)';
-            if (isset($cachedOutputs['sf_pupuk'])) {
-                $sfStatusData['pupuk'] = ($pupukVal === 1) ? 'ON' : 'NONE';
-            }
+            $sfStatusData['pupuk'] = 'NONE';
             return;
         }
 
         // Secara fisik ada yang menyala ($physicalOn == true):
         // Sinkronkan kondisi fisik relay ke status
         $sfStatusData['pompa'] = $pompaVal;
-        $sfStatusData['blok'] = $activeBlok ?: (isset($sfStatusData['blok']) && (int)$sfStatusData['blok'] > 0 ? (int)$sfStatusData['blok'] : 1);
-        $sfStatusData['siram'] = 1;
-        if (isset($cachedOutputs['sf_pupuk'])) {
-            $sfStatusData['pupuk'] = ($pupukVal === 1) ? 'ON' : 'NONE';
-        }
+        $sfStatusData['blok'] = $activeBlok ?: (isset($sfStatusData['blok']) && (int)$sfStatusData['blok'] > 0 ? (int)$sfStatusData['blok'] : 0);
+        $sfStatusData['siram'] = ($pompaVal === 1 || $activeBlok > 0) ? 1 : 0;
+        $sfStatusData['pupuk'] = ($pupukVal === 1) ? 'ON' : 'NONE';
 
         // Cek apakah mode OTOMATIS (ada countdown) atau MANUAL (tanpa countdown)
         if ($sisa > 0) {

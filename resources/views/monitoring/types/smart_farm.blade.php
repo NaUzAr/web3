@@ -16,14 +16,19 @@
                 $sfBlok3 = $outputs->firstWhere('output_name', 'sf_blok3');
                 $sfPupuk = $outputs->firstWhere('output_name', 'sf_pupuk');
 
-                $isPompaActive = (bool) (($sfPompa && $sfPompa->current_value) || $isSiram);
+                $isPompaActive = (bool) (($sfPompa && (float)$sfPompa->current_value > 0) || $isSiram);
+                $isPupukActive = (bool) (($sfPupuk && (float)$sfPupuk->current_value > 0) || $siramPupuk);
+                $activeBlokCount = ($sfBlok1 && (float)$sfBlok1->current_value > 0 ? 1 : 0) + 
+                                   ($sfBlok2 && (float)$sfBlok2->current_value > 0 ? 1 : 0) + 
+                                   ($sfBlok3 && (float)$sfBlok3->current_value > 0 ? 1 : 0);
+
                 $otherOutputs = $outputs->whereNotIn('output_name', ['sf_pompa', 'sf_blok1', 'sf_blok2', 'sf_blok3', 'sf_pupuk']);
 
                 $sfMode = $sfStatus['mode'] ?? null;
                 if (!$sfMode) {
                     if ($isSiram && $sisaDetik > 0) {
                         $sfMode = 'OTOMATIS';
-                    } elseif ($isSiram || $isPompaActive) {
+                    } elseif ($isSiram || $isPompaActive || $isPupukActive || $activeBlokCount > 0) {
                         $sfMode = 'MANUAL';
                     } else {
                         $sfMode = 'STANDBY';
@@ -34,10 +39,6 @@
             <!-- ==================================================== -->
             <!-- 🌿 SMART FARM CONTROL CENTER: UNIFIED ARCHITECTURE   -->
             <!-- ==================================================== -->
-
-            @php
-                $isPupukActive = (bool) (($sfPupuk && $sfPupuk->current_value) || ($isSiram && $siramPupuk));
-            @endphp
 
             <!-- LEVEL 1: HERO STATUS & OPERATIONAL COMMAND BAR -->
             <div class="sf-hero-card mb-4" id="sf-status-card">
@@ -54,7 +55,15 @@
                                         @if($sfMode === 'OTOMATIS')
                                             OTOMATIS (BLOK {{ $siramBlok }})
                                         @elseif($sfMode === 'MANUAL')
-                                            MANUAL (BLOK {{ $siramBlok }})
+                                            @if($siramBlok > 0)
+                                                MANUAL (BLOK {{ $siramBlok }})
+                                            @elseif($isPompaActive)
+                                                MANUAL (POMPA)
+                                            @elseif($isPupukActive)
+                                                MANUAL (PUPUK)
+                                            @else
+                                                MANUAL (AKTIF)
+                                            @endif
                                         @else
                                             SIAGA (STANDBY)
                                         @endif
@@ -78,26 +87,22 @@
                                     @endif
                                     @if($siramPupuk)
                                         &bull; <span class="text-warning fw-bold d-inline-flex align-items-center gap-1">
-                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="M10 2v5L4.5 17.5A2.5 2.5 0 0 0 6.6 21h10.8a2.5 2.5 0 0 0 2.1-3.5L14 7V2"></path>
-                                                <line x1="8.5" y1="2" x2="15.5" y2="2"></line>
-                                                <path d="M7.5 15h9"></path>
-                                                <circle cx="12" cy="11.5" r="1" fill="currentColor"></circle>
-                                            </svg>
-                                            Pupuk Aktif
+                                            <i class="bi bi-droplet-half me-1"></i>Pupuk Aktif
                                         </span>
                                     @endif
                                 @elseif($sfMode === 'MANUAL')
-                                    Penyiraman Manual <strong>Blok {{ $siramBlok }}</strong> &bull; <span class="text-primary fw-bold"><i class="bi bi-play-circle-fill me-1"></i>Manual Aktif</span>
-                                    @if($siramPupuk)
+                                    @if($siramBlok > 0)
+                                        Penyiraman Manual <strong>Blok {{ $siramBlok }}</strong> &bull; <span class="text-primary fw-bold"><i class="bi bi-play-circle-fill me-1"></i>Manual Aktif</span>
+                                    @elseif($isPompaActive)
+                                        Pompa Utama Manual &bull; <span class="text-primary fw-bold"><i class="bi bi-play-circle-fill me-1"></i>Menyala</span>
+                                    @elseif($isPupukActive)
+                                        Injeksi Pupuk Manual &bull; <span class="text-warning fw-bold"><i class="bi bi-droplet-half me-1"></i>Aktif</span>
+                                    @else
+                                        Operasi Manual &bull; <span class="text-primary fw-bold">Aktif</span>
+                                    @endif
+                                    @if($siramPupuk && $siramBlok > 0)
                                         &bull; <span class="text-warning fw-bold d-inline-flex align-items-center gap-1">
-                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="M10 2v5L4.5 17.5A2.5 2.5 0 0 0 6.6 21h10.8a2.5 2.5 0 0 0 2.1-3.5L14 7V2"></path>
-                                                <line x1="8.5" y1="2" x2="15.5" y2="2"></line>
-                                                <path d="M7.5 15h9"></path>
-                                                <circle cx="12" cy="11.5" r="1" fill="currentColor"></circle>
-                                            </svg>
-                                            Pupuk Aktif
+                                            <i class="bi bi-droplet-half me-1"></i>Pupuk Aktif
                                         </span>
                                     @endif
                                 @else
@@ -109,7 +114,7 @@
 
                     <!-- Quick Operation Buttons -->
                     <div class="d-flex align-items-center gap-2 flex-wrap sf-actions-group" id="sf-actions-container">
-                        @if($isSiram || $isPompaActive)
+                        @if($isSiram || $isPompaActive || $isPupukActive || $sfMode === 'MANUAL' || $sfMode === 'OTOMATIS')
                             <button type="button" id="sf-btn-stop" class="btn btn-danger btn-sm d-inline-flex align-items-center gap-2 shadow-sm" style="border-radius: 50px; padding: 0.65rem 1.4rem; font-weight: 700;" onclick="stopSiramQuick()">
                                 <i class="bi bi-stop-circle-fill"></i> Stop Siram
                             </button>

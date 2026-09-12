@@ -847,39 +847,22 @@
             const isSiram = sf.siram === 1 || sf.siram === '1' || sf.siram === true;
             const sisa = parseInt(sf.sisa) || 0;
             
+            const isPupuk = (sf.pupuk === 'ON' || sf.pupuk === 1 || sf.pupuk === '1');
+            const isPompa = (sf.pompa === 1 || sf.pompa === '1' || sf.pompa === true);
+            const activeBlok = parseInt(sf.blok) || 0;
+
             // Evaluasi mode: gunakan sf.mode dari backend atau fallback
             let mode = sf.mode;
             if (!mode) {
                 if (isSiram && sisa > 0) mode = 'OTOMATIS';
-                else if (isSiram) mode = 'MANUAL';
+                else if (isSiram || isPompa || isPupuk || activeBlok > 0) mode = 'MANUAL';
                 else mode = 'STANDBY';
             }
 
-            const badgeSiram = document.getElementById('sf-badge-siram');
-            const textSiram = document.getElementById('sf-text-siram');
-            const iconBadge = document.getElementById('sf-icon-badge');
-            const iconWrapper = document.getElementById('sf-icon-wrapper');
-            const iconMain = document.getElementById('sf-icon-main');
-            const detailSiram = document.getElementById('sf-detail-siram');
-            const badgeJam = document.getElementById('sf-badge-jam');
-            const actionsContainer = document.getElementById('sf-actions-container');
-            let btnStop = document.getElementById('sf-btn-stop');
-            let btnStart = document.getElementById('sf-btn-start');
-
-            // Pipeline Elements
-            const pNodePompa = document.getElementById('pipe-node-pompa');
-            const pNodePupuk = document.getElementById('pipe-node-pupuk');
-            const pConn1 = document.getElementById('pipe-conn-1');
-            const pConn2 = document.getElementById('pipe-conn-2');
-            const pStatusPompa = document.getElementById('pipe-status-pompa');
-            const pStatusPupuk = document.getElementById('pipe-status-pupuk');
-
-            const isPupuk = (sf.pupuk === 'ON' || sf.pupuk === 1 || sf.pupuk === '1');
-            const activeBlok = sf.blok || 1;
-
             if (mode === 'OTOMATIS') {
+                const displayBlok = activeBlok || 1;
                 if (badgeSiram) badgeSiram.className = 'badge rounded-pill bg-success text-white';
-                if (textSiram) textSiram.innerText = `OTOMATIS (BLOK ${activeBlok})`;
+                if (textSiram) textSiram.innerText = `OTOMATIS (BLOK ${displayBlok})`;
                 if (iconBadge) iconBadge.className = 'bi bi-clock-history me-1';
                 if (iconWrapper) iconWrapper.style.background = 'linear-gradient(135deg, #059669, #10b981)';
                 if (iconMain) iconMain.className = 'bi bi-droplet-fill';
@@ -888,7 +871,7 @@
                     const m = Math.floor(sisa / 60);
                     const s = sisa % 60;
                     let pupukHtml = isPupuk ? ' &bull; <span class="text-warning fw-bold"><i class="bi bi-droplet-half me-1"></i>Pupuk Aktif</span>' : '';
-                    detailSiram.innerHTML = `Penyiraman Otomatis <strong>Blok ${activeBlok}</strong> &bull; Sisa Waktu: <strong><span id="sf-sisa-waktu">${m}m ${s}s</span></strong>${pupukHtml}`;
+                    detailSiram.innerHTML = `Penyiraman Otomatis <strong>Blok ${displayBlok}</strong> &bull; Sisa Waktu: <strong><span id="sf-sisa-waktu">${m}m ${s}s</span></strong>${pupukHtml}`;
                 }
 
                 if (btnStart) btnStart.style.display = 'none';
@@ -923,7 +906,7 @@
                     const node = document.getElementById(`pipe-node-blok${b}`);
                     const status = document.getElementById(`pipe-status-blok${b}`);
                     const flow = document.getElementById(`sf-flow-blok${b}`);
-                    const isTarget = (activeBlok == b);
+                    const isTarget = (displayBlok == b);
                     if (node) {
                         if (isTarget) node.classList.add('active');
                         else node.classList.remove('active');
@@ -933,14 +916,28 @@
                 });
             } else if (mode === 'MANUAL') {
                 if (badgeSiram) badgeSiram.className = 'badge rounded-pill bg-primary text-white';
-                if (textSiram) textSiram.innerText = `MANUAL (BLOK ${activeBlok})`;
+                
+                let manualText = 'MANUAL (AKTIF)';
+                if (activeBlok > 0) manualText = `MANUAL (BLOK ${activeBlok})`;
+                else if (isPompa) manualText = 'MANUAL (POMPA)';
+                else if (isPupuk) manualText = 'MANUAL (PUPUK)';
+                if (textSiram) textSiram.innerText = manualText;
+
                 if (iconBadge) iconBadge.className = 'bi bi-play-circle-fill me-1';
                 if (iconWrapper) iconWrapper.style.background = 'linear-gradient(135deg, #0284c7, #38bdf8)';
                 if (iconMain) iconMain.className = 'bi bi-droplet-fill';
 
                 if (detailSiram) {
                     let pupukHtml = isPupuk ? ' &bull; <span class="text-warning fw-bold"><i class="bi bi-droplet-half me-1"></i>Pupuk Aktif</span>' : '';
-                    detailSiram.innerHTML = `Penyiraman Manual <strong>Blok ${activeBlok}</strong> &bull; <span class="text-primary fw-bold"><i class="bi bi-play-circle-fill me-1"></i>Manual Aktif</span>${pupukHtml}`;
+                    if (activeBlok > 0) {
+                        detailSiram.innerHTML = `Penyiraman Manual <strong>Blok ${activeBlok}</strong> &bull; <span class="text-primary fw-bold"><i class="bi bi-play-circle-fill me-1"></i>Manual Aktif</span>${pupukHtml}`;
+                    } else if (isPompa) {
+                        detailSiram.innerHTML = `Pompa Utama Manual &bull; <span class="text-primary fw-bold"><i class="bi bi-play-circle-fill me-1"></i>Menyala</span>${pupukHtml}`;
+                    } else if (isPupuk) {
+                        detailSiram.innerHTML = `Injeksi Pupuk Manual &bull; <span class="text-warning fw-bold"><i class="bi bi-droplet-half me-1"></i>Aktif</span>`;
+                    } else {
+                        detailSiram.innerHTML = `Operasi Manual Aktif`;
+                    }
                 }
 
                 if (btnStart) btnStart.style.display = 'none';
@@ -960,10 +957,20 @@
                 }
 
                 // Pipeline Nodes
-                if (pNodePompa) pNodePompa.classList.add('active');
-                if (pStatusPompa) pStatusPompa.innerText = 'MEMOMPA';
-                if (pConn1) pConn1.classList.add('active');
-                if (pConn2) pConn2.classList.add('active');
+                const pumpActive = isPompa || activeBlok > 0;
+                if (pNodePompa) {
+                    if (pumpActive) pNodePompa.classList.add('active');
+                    else pNodePompa.classList.remove('active');
+                }
+                if (pStatusPompa) pStatusPompa.innerText = pumpActive ? 'MEMOMPA' : 'OFF';
+                if (pConn1) {
+                    if (pumpActive) pConn1.classList.add('active');
+                    else pConn1.classList.remove('active');
+                }
+                if (pConn2) {
+                    if (pumpActive) pConn2.classList.add('active');
+                    else pConn2.classList.remove('active');
+                }
 
                 if (pNodePupuk) {
                     if (isPupuk) pNodePupuk.classList.add('active');

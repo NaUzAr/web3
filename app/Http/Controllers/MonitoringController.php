@@ -445,6 +445,9 @@ class MonitoringController extends Controller
                         \Cache::put("device_outputs_{$device->id}", $cachedOutputs, now()->addHours(24));
                     } else {
                         $smartFarmService->sendRelay($topic, 0, 1);
+                        $cachedOutputs = \Cache::get("device_outputs_{$device->id}", []);
+                        $cachedOutputs['sf_pompa'] = 1;
+                        \Cache::put("device_outputs_{$device->id}", $cachedOutputs, now()->addHours(24));
                     }
 
                     \Log::info("Smart Farm Pompa Control sent", [
@@ -464,15 +467,16 @@ class MonitoringController extends Controller
                 elseif (($cachedOutputs['sf_blok2'] ?? 0) == 1) $activeBlok = 2;
                 elseif (($cachedOutputs['sf_blok3'] ?? 0) == 1) $activeBlok = 3;
 
+                $pupukVal = (int) ($cachedOutputs['sf_pupuk'] ?? 0);
+                $physicalOn = ($pompaVal === 1) || ($activeBlok > 0) || ($pupukVal === 1);
+
                 $sfStatusData['pompa'] = $pompaVal;
-                $sfStatusData['blok'] = $activeBlok;
+                $sfStatusData['blok'] = $activeBlok ?: ($sfStatusData['blok'] ?? 0);
                 $sfStatusData['siram'] = ($pompaVal === 1 || $activeBlok > 0) ? 1 : 0;
-                if (isset($cachedOutputs['sf_pupuk'])) {
-                    $sfStatusData['pupuk'] = ((int)$cachedOutputs['sf_pupuk'] === 1) ? 'ON' : 'NONE';
-                }
+                $sfStatusData['pupuk'] = ($pupukVal === 1) ? 'ON' : 'NONE';
 
                 $sisa = (int) ($sfStatusData['sisa'] ?? 0);
-                if ($sfStatusData['siram'] === 0) {
+                if (!$physicalOn) {
                     $sfStatusData['mode'] = 'STANDBY';
                     $sfStatusData['mode_label'] = 'Standby (Siaga)';
                     $sfStatusData['sisa'] = 0;
