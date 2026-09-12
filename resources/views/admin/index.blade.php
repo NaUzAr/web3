@@ -75,6 +75,17 @@
             display: inline-block;
         }
 
+        .badge-sensor {
+            background: rgba(14, 165, 233, 0.12);
+            color: #0284c7;
+            font-weight: 600;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            margin: 2px;
+            font-size: 0.75rem;
+            display: inline-block;
+        }
+
         .badge-token {
             background: rgba(100, 116, 139, 0.15);
             color: #475569;
@@ -326,10 +337,12 @@
             color: var(--primary-light);
         }
 
-        /* ========= Mobile Responsive ========= */
+        /* ========= Mobile Responsive Optimizations (HP) ========= */
         @media (max-width: 768px) {
-            .container.py-5 {
-                padding: 1.5rem 0.75rem !important;
+            .container {
+                padding-left: 0.75rem !important;
+                padding-right: 0.75rem !important;
+                padding-bottom: 3.5rem !important;
             }
 
             .page-title {
@@ -343,8 +356,15 @@
             }
 
             .glass-card {
-                border-radius: 16px;
-                padding: 0.5rem;
+                background: transparent !important;
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+                border-radius: 0 !important;
+            }
+
+            .table-responsive {
+                overflow: visible !important;
             }
 
             /* Table → Card Layout */
@@ -354,46 +374,69 @@
 
             .table tbody tr {
                 display: block;
-                background: var(--glass-bg);
-                border: 1px solid var(--glass-border);
-                border-radius: 12px;
-                padding: 0.75rem;
-                margin-bottom: 0.75rem;
+                background: #ffffff;
+                border: 1px solid #e2e8f0;
+                border-radius: 16px;
+                padding: 1rem;
+                margin-bottom: 1rem;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
             }
 
             .table tbody td {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                padding: 0.35rem 0.5rem;
+                padding: 0.55rem 0;
                 border: none;
+                border-bottom: 1px dashed #f1f5f9;
                 font-size: 0.85rem;
             }
 
             .table tbody td::before {
                 content: attr(data-label);
                 font-weight: 600;
-                font-size: 0.75rem;
-                color: var(--text-secondary);
+                font-size: 0.8rem;
+                color: #64748b;
                 margin-right: 0.75rem;
                 flex-shrink: 0;
             }
 
+            .table tbody td[data-label="#"] {
+                display: none !important;
+            }
+
+            .table tbody td[data-label="Device"] {
+                display: block !important;
+                padding-top: 0 !important;
+                padding-bottom: 0.75rem !important;
+                border-bottom: 1px solid #e2e8f0 !important;
+            }
+
+            .table tbody td[data-label="Device"]::before {
+                display: none !important;
+            }
+
             .table tbody td:last-child {
                 justify-content: flex-end;
-                padding-top: 0.5rem;
-                border-top: 1px solid var(--glass-border);
+                padding-top: 0.75rem !important;
+                padding-bottom: 0 !important;
+                border-bottom: none !important;
                 margin-top: 0.25rem;
+                gap: 8px;
+            }
+
+            .table tbody td:last-child::before {
+                display: none !important;
             }
 
             /* Hide less important on small screens */
             .table tbody td.d-mobile-none {
-                display: none;
+                display: none !important;
             }
 
             .btn-action {
-                width: 40px;
-                height: 40px;
+                width: 38px;
+                height: 38px;
             }
         }
 
@@ -506,32 +549,36 @@
                                     </span>
                                 </td>
                                 <td data-label="Sensors">
-                                    @if($device->sensors->count() > 0)
-                                        @foreach($device->sensors->take(4) as $sensor)
-                                            <span class="badge-sensor" title="{{ $sensor->sensor_label }}">
-                                                {{ $sensor->sensor_name }}
-                                            </span>
-                                        @endforeach
-                                        @if($device->sensors->count() > 4)
-                                            <span class="badge-sensor">+{{ $device->sensors->count() - 4 }}</span>
+                                    <div class="d-flex flex-wrap gap-1 justify-content-end align-items-center" style="max-width: 70%;">
+                                        @if($device->sensors->count() > 0)
+                                            @foreach($device->sensors->take(4) as $sensor)
+                                                <span class="badge-sensor" title="{{ $sensor->sensor_label }}">
+                                                    {{ $sensor->sensor_name }}
+                                                </span>
+                                            @endforeach
+                                            @if($device->sensors->count() > 4)
+                                                <span class="badge-sensor">+{{ $device->sensors->count() - 4 }}</span>
+                                            @endif
+                                        @else
+                                            <span class="text-muted small">-</span>
                                         @endif
-                                    @else
-                                        <span style="color: var(--text-secondary);">-</span>
-                                    @endif
+                                    </div>
                                 </td>
                                 <td data-label="Outputs">
-                                    @if($device->outputs->count() > 0)
-                                        @foreach($device->outputs->take(3) as $output)
-                                            <span class="badge-output" title="{{ $output->output_label }}">
-                                                <i class="bi bi-toggle-on me-1"></i>{{ $output->output_name }}
-                                            </span>
-                                        @endforeach
-                                        @if($device->outputs->count() > 3)
-                                            <span class="badge-output">+{{ $device->outputs->count() - 3 }}</span>
+                                    <div class="d-flex flex-wrap gap-1 justify-content-end align-items-center" style="max-width: 70%;">
+                                        @if($device->outputs->count() > 0)
+                                            @foreach($device->outputs->take(3) as $output)
+                                                <span class="badge-output" title="{{ $output->output_label }}">
+                                                    <i class="bi bi-toggle-on me-1"></i>{{ $output->output_name }}
+                                                </span>
+                                            @endforeach
+                                            @if($device->outputs->count() > 3)
+                                                <span class="badge-output">+{{ $device->outputs->count() - 3 }}</span>
+                                            @endif
+                                        @else
+                                            <span class="text-muted small">-</span>
                                         @endif
-                                    @else
-                                        <span style="color: var(--text-secondary);">-</span>
-                                    @endif
+                                    </div>
                                 </td>
                                 <td data-label="MQTT" class="d-mobile-none">
                                     <code class="text-info">{{ $device->mqtt_topic }}</code>
@@ -540,58 +587,60 @@
                                 <td data-label="Dibuat" class="d-mobile-none">
                                     <small style="color: #64748b;">{{ $device->created_at ? $device->created_at->format('d M Y, H:i') : '-' }}</small>
                                 </td>
-                                <td data-label="" class="text-center">
-                                    <button type="button" class="btn-action btn-action-qr" title="QR Code"
-                                        onclick="showQrModal('{{ $device->token }}', '{{ $device->name }}')">
-                                        <i class="bi bi-qr-code"></i>
-                                    </button>
-                                    <div class="dropdown d-inline">
-                                        <button class="btn-action btn-action-copy" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Copy Data">
-                                            <i class="bi bi-clipboard"></i>
+                                <td data-label="Aksi" class="text-end">
+                                    <div class="d-flex align-items-center justify-content-end gap-2">
+                                        <button type="button" class="btn-action btn-action-qr" title="QR Code"
+                                            onclick="showQrModal('{{ $device->token }}', '{{ $device->name }}')">
+                                            <i class="bi bi-qr-code"></i>
                                         </button>
-                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="border-radius: 12px; font-size: 0.9rem;">
-                                            <li>
-                                                <a class="dropdown-item py-2 d-flex align-items-center" href="#" onclick="copyToClipboard(event, '{{ $device->token }}', this)">
-                                                    <i class="bi bi-key me-2 text-secondary"></i> Copy Token
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a class="dropdown-item py-2 d-flex align-items-center" href="#" onclick="copyToClipboard(event, '{{ $device->mqtt_topic }}', this)">
-                                                    <i class="bi bi-broadcast me-2 text-secondary"></i> Copy MQTT Topic
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                    <div class="dropdown d-inline">
-                                        <button class="btn-action btn-action-edit" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Edit & Kelola Device">
-                                            <i class="bi bi-pencil"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="border-radius: 12px; font-size: 0.9rem; min-width: 200px;">
-                                            <li>
-                                                <a class="dropdown-item py-2 d-flex align-items-center" href="{{ route('admin.device.edit', $device->id) }}">
-                                                    <i class="bi bi-pencil me-2 text-secondary"></i> Edit Device
-                                                </a>
-                                            </li>
-                                            @if($device->type === 'smart_gh' || $device->table_name)
+                                        <div class="dropdown d-inline">
+                                            <button class="btn-action btn-action-copy" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Copy Data">
+                                                <i class="bi bi-clipboard"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="border-radius: 12px; font-size: 0.9rem;">
                                                 <li>
-                                                    <a class="dropdown-item py-2 d-flex align-items-center" href="#"
-                                                        onclick="openClearDataModal({{ $device->id }}, '{{ addslashes($device->name) }}', '{{ $device->table_name }}')">
-                                                        <i class="bi bi-database-dash me-2 text-warning"></i> Hapus Data Sensor
+                                                    <a class="dropdown-item py-2 d-flex align-items-center" href="#" onclick="copyToClipboard(event, '{{ $device->token }}', this)">
+                                                        <i class="bi bi-key me-2 text-secondary"></i> Copy Token
                                                     </a>
                                                 </li>
-                                            @endif
-                                            <li><hr class="dropdown-divider my-1"></li>
-                                            <li>
-                                                <form action="{{ route('admin.device.destroy', $device->id) }}" method="POST"
-                                                    onsubmit="return confirm('⚠️ BAHAYA: Menghapus device akan MENGHAPUS TABEL {{ $device->table_name }} secara permanen!\n\nLanjutkan?');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="dropdown-item py-2 d-flex align-items-center text-danger border-0 bg-transparent w-100 text-start">
-                                                        <i class="bi bi-trash me-2"></i> Hapus Device
-                                                    </button>
-                                                </form>
-                                            </li>
-                                        </ul>
+                                                <li>
+                                                    <a class="dropdown-item py-2 d-flex align-items-center" href="#" onclick="copyToClipboard(event, '{{ $device->mqtt_topic }}', this)">
+                                                        <i class="bi bi-broadcast me-2 text-secondary"></i> Copy MQTT Topic
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <div class="dropdown d-inline">
+                                            <button class="btn-action btn-action-edit" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Edit & Kelola Device">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="border-radius: 12px; font-size: 0.9rem; min-width: 200px;">
+                                                <li>
+                                                    <a class="dropdown-item py-2 d-flex align-items-center" href="{{ route('admin.device.edit', $device->id) }}">
+                                                        <i class="bi bi-pencil me-2 text-secondary"></i> Edit Device
+                                                    </a>
+                                                </li>
+                                                @if($device->type === 'smart_gh' || $device->table_name)
+                                                    <li>
+                                                        <a class="dropdown-item py-2 d-flex align-items-center" href="#"
+                                                            onclick="openClearDataModal({{ $device->id }}, '{{ addslashes($device->name) }}', '{{ $device->table_name }}')">
+                                                            <i class="bi bi-database-dash me-2 text-warning"></i> Hapus Data Sensor
+                                                        </a>
+                                                    </li>
+                                                @endif
+                                                <li><hr class="dropdown-divider my-1"></li>
+                                                <li>
+                                                    <form action="{{ route('admin.device.destroy', $device->id) }}" method="POST"
+                                                        onsubmit="return confirm('⚠️ BAHAYA: Menghapus device akan MENGHAPUS TABEL {{ $device->table_name }} secara permanen!\n\nLanjutkan?');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="dropdown-item py-2 d-flex align-items-center text-danger border-0 bg-transparent w-100 text-start">
+                                                            <i class="bi bi-trash me-2"></i> Hapus Device
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            </ul>
+                                        </div>
                                     </div>
                                 </td>
                             </tr>
