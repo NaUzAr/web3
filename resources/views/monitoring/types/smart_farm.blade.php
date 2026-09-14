@@ -292,68 +292,27 @@
                 @endif
             </div>
 
-            <!-- LEVEL 4: DISTRIBUSI ZONA LAHAN (KATUP SOLENOID SEBAGAI INDIKATOR) -->
+            <!-- LEVEL 4: INDIKATOR BLOK -->
             <div class="sf-hub-card mb-4">
-                <div class="sf-hub-header">
-                    <div>
-                        <h6 class="sf-hub-title">
-                            <i class="bi bi-grid-3x3-gap-fill text-success"></i> Indikator Katup & Distribusi Zona Lahan
-                        </h6>
-                        <div class="sf-hub-subtitle">
-                            Pemantauan status katup solenoid fisik dan alur suplai air ke masing-masing blok
+                <div class="sf-hub-header mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="sf-section-icon" style="width: 32px; height: 32px; border-radius: 10px; background: rgba(16, 185, 129, 0.12); color: #059669; display: flex; align-items: center; justify-content: center; font-size: 1rem;">
+                            <i class="bi bi-grid-3x3-gap-fill"></i>
+                        </div>
+                        <div>
+                            <h6 class="sf-hub-title mb-0">Indikator Blok</h6>
+                            <div class="sf-hub-subtitle">Status katup dan aliran air tiap blok lahan</div>
                         </div>
                     </div>
-                    <span class="badge rounded-pill bg-light text-muted border px-2.5 py-1 small">3 Zona Lahan</span>
+                    <span class="badge rounded-pill bg-light text-muted border px-2.5 py-1 small">3 Blok</span>
                 </div>
 
                 <div class="row g-3">
                     @php
                         $blocks = [
-                            [
-                                'num' => 1,
-                                'name' => 'Blok 1',
-                                'zone' => 'Zona 1',
-                                'crop' => 'Tanaman Utama',
-                                'valve' => 'Katup Solenoid #1',
-                                'obj' => $sfBlok1,
-                                'icon' => 'bi-tree-fill',
-                                'color' => '#10b981',
-                                'color_dark' => '#059669',
-                                'gradient' => 'linear-gradient(135deg, #10b981, #059669)',
-                                'bg' => 'rgba(16, 185, 129, 0.12)',
-                                'border_light' => 'rgba(16, 185, 129, 0.25)',
-                                'glow' => 'rgba(16, 185, 129, 0.28)'
-                            ],
-                            [
-                                'num' => 2,
-                                'name' => 'Blok 2',
-                                'zone' => 'Zona 2',
-                                'crop' => 'Hortikultura / Sayur',
-                                'valve' => 'Katup Solenoid #2',
-                                'obj' => $sfBlok2,
-                                'icon' => 'bi-flower2',
-                                'color' => '#0ea5e9',
-                                'color_dark' => '#0284c7',
-                                'gradient' => 'linear-gradient(135deg, #0ea5e9, #0284c7)',
-                                'bg' => 'rgba(14, 165, 233, 0.12)',
-                                'border_light' => 'rgba(14, 165, 233, 0.25)',
-                                'glow' => 'rgba(14, 165, 233, 0.28)'
-                            ],
-                            [
-                                'num' => 3,
-                                'name' => 'Blok 3',
-                                'zone' => 'Zona 3',
-                                'crop' => 'Bibit & Pembesaran',
-                                'valve' => 'Katup Solenoid #3',
-                                'obj' => $sfBlok3,
-                                'icon' => 'bi-flower1',
-                                'color' => '#8b5cf6',
-                                'color_dark' => '#7c3aed',
-                                'gradient' => 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
-                                'bg' => 'rgba(139, 92, 246, 0.12)',
-                                'border_light' => 'rgba(139, 92, 246, 0.25)',
-                                'glow' => 'rgba(139, 92, 246, 0.28)'
-                            ],
+                            ['num' => 1, 'name' => 'Blok 1', 'obj' => $sfBlok1, 'color' => '#10b981', 'bg' => 'rgba(16, 185, 129, 0.12)', 'text' => '#059669'],
+                            ['num' => 2, 'name' => 'Blok 2', 'obj' => $sfBlok2, 'color' => '#0ea5e9', 'bg' => 'rgba(14, 165, 233, 0.12)', 'text' => '#0284c7'],
+                            ['num' => 3, 'name' => 'Blok 3', 'obj' => $sfBlok3, 'color' => '#8b5cf6', 'bg' => 'rgba(139, 92, 246, 0.12)', 'text' => '#7c3aed'],
                         ];
                     @endphp
 
@@ -364,64 +323,37 @@
                             $isFlowing = ($isBlkOn && $isPompaActive) || ($isSiram && $siramBlok == $b['num']);
                         @endphp
                         <div class="col-12 col-md-4">
-                            <div class="sf-zone-card {{ $isFlowing ? 'active-flow' : '' }}" 
+                            <div class="sf-zone-card sf-zone-simple {{ $isFlowing ? 'active-flow' : '' }}" 
                                  id="output-card-{{ $blk?->id }}"
-                                 style="--zone-color: {{ $b['color'] }}; --zone-glow: {{ $b['glow'] }};">
-                                
-                                <!-- Top Accent Line -->
-                                <div class="sf-zone-accent" style="background: {{ $b['gradient'] }};"></div>
-
-                                <div>
-                                    <!-- Zone Header: Avatar, Name, Zone Tag, Flow Indicator -->
-                                    <div class="d-flex align-items-center justify-content-between mb-3">
-                                        <div class="d-flex align-items-center gap-2.5">
-                                            <div class="sf-zone-avatar" style="background: {{ $b['bg'] }}; color: {{ $b['color_dark'] }}; border: 1.5px solid {{ $b['border_light'] }}; font-weight: 800; font-size: 1.15rem;">
-                                                {{ $b['num'] }}
-                                            </div>
-                                            <div>
-                                                <div class="d-flex align-items-center gap-1.5">
-                                                    <span class="fw-bold text-dark" style="font-size: 1rem;">{{ $b['name'] }}</span>
-                                                    <span class="sf-zone-pill-tag" style="background: {{ $b['bg'] }}; color: {{ $b['color_dark'] }}; border: 1px solid {{ $b['border_light'] }};">
-                                                        {{ $b['zone'] }}
-                                                    </span>
-                                                </div>
-                                                <div class="text-muted" style="font-size: 0.74rem;">{{ $b['crop'] }}</div>
+                                 style="--zone-color: {{ $b['color'] }};">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center gap-2.5">
+                                        <div class="sf-zone-avatar-sm" style="background: {{ $b['bg'] }}; color: {{ $b['text'] }}; border: 1.5px solid {{ $b['color'] }}33;">
+                                            {{ $b['num'] }}
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold text-dark" style="font-size: 0.95rem; line-height: 1.2;">{{ $b['name'] }}</div>
+                                            <div class="d-flex align-items-center gap-1 mt-1 text-muted" style="font-size: 0.75rem;">
+                                                <i class="bi {{ $isBlkOn ? 'bi-unlock-fill text-success' : 'bi-lock-fill text-muted' }}" id="sf-valve-icon-blok{{ $b['num'] }}"></i>
+                                                <span>Katup:</span>
+                                                <span class="output-status {{ $isBlkOn ? 'on' : 'off' }}" 
+                                                      id="output-status-{{ $blk?->id }}"
+                                                      data-on-text="TERBUKA"
+                                                      data-off-text="TERTUTUP">
+                                                    {{ $isBlkOn ? 'TERBUKA' : 'TERTUTUP' }}
+                                                </span>
                                             </div>
                                         </div>
-
+                                    </div>
+                                    <div class="d-flex align-items-center gap-1">
                                         <span class="sf-flow-indicator" id="sf-flow-blok{{ $b['num'] }}" style="display: {{ $isFlowing ? 'inline-flex' : 'none' }};">
                                             <span class="sf-flow-dot"></span>
-                                            <i class="bi bi-droplet-fill"></i> Mengalir
                                         </span>
-                                    </div>
-
-                                    <!-- Solenoid Valve Telemetry Boxes (Murni Indikator) -->
-                                    <div class="d-flex flex-column gap-2 mb-0">
-                                        <div class="sf-zone-telemetry">
-                                            <div class="d-flex align-items-center gap-2 text-muted" style="font-size: 0.78rem;">
-                                                <i class="bi {{ $isBlkOn ? 'bi-unlock-fill text-success' : 'bi-lock-fill text-muted' }}" id="sf-valve-icon-blok{{ $b['num'] }}" style="font-size: 0.95rem;"></i>
-                                                <span class="fw-semibold">Katup Solenoid:</span>
-                                            </div>
-                                            <span class="output-status {{ $isBlkOn ? 'on' : 'off' }} m-0"
-                                                id="output-status-{{ $blk?->id }}"
-                                                data-on-text="TERBUKA"
-                                                data-off-text="TERTUTUP"
-                                                style="letter-spacing: 0.3px; font-size: 0.74rem;">
-                                                {{ $isBlkOn ? 'TERBUKA' : 'TERTUTUP' }}
-                                            </span>
-                                        </div>
-
-                                        <div class="sf-zone-telemetry">
-                                            <div class="d-flex align-items-center gap-2 text-muted" style="font-size: 0.78rem;">
-                                                <i class="bi bi-water text-primary" style="font-size: 0.95rem;"></i>
-                                                <span class="fw-semibold">Status Aliran:</span>
-                                            </div>
-                                            <span class="badge rounded-pill {{ $isFlowing ? 'bg-success text-white' : 'bg-light text-muted border' }}"
-                                                  id="sf-flow-badge-blok{{ $b['num'] }}"
-                                                  style="font-size: 0.72rem; padding: 0.28rem 0.65rem;">
-                                                {{ $isFlowing ? 'MENGALIR' : 'STANDBY' }}
-                                            </span>
-                                        </div>
+                                        <span class="badge rounded-pill {{ $isFlowing ? 'bg-success text-white' : 'bg-light text-muted border' }}"
+                                              id="sf-flow-badge-blok{{ $b['num'] }}"
+                                              style="font-size: 0.72rem; padding: 0.35rem 0.75rem; font-weight: 700; letter-spacing: 0.3px;">
+                                            {{ $isFlowing ? 'MENGALIR' : 'STANDBY' }}
+                                        </span>
                                     </div>
                                 </div>
                             </div>

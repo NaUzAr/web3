@@ -771,6 +771,63 @@
             background: linear-gradient(180deg, #ffffff 0%, rgba(240, 253, 244, 0.6) 100%);
         }
 
+        /* Simplified Modern Zone Indicator */
+        .sf-zone-card.sf-zone-simple {
+            padding: 0.85rem 1.1rem;
+            border-radius: 14px;
+            display: block;
+            height: auto;
+            border: 1px solid #e2e8f0;
+            background: #ffffff;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sf-zone-card.sf-zone-simple:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+            border-color: #cbd5e1;
+        }
+
+        .sf-zone-card.sf-zone-simple.active-flow {
+            border-color: var(--zone-color, #10b981) !important;
+            background: linear-gradient(180deg, #ffffff 0%, rgba(240, 253, 244, 0.75) 100%) !important;
+            box-shadow: 0 4px 16px rgba(16, 185, 129, 0.18) !important;
+        }
+
+        .sf-zone-avatar-sm {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.05rem;
+            flex-shrink: 0;
+            transition: transform 0.2s ease;
+        }
+
+        .sf-zone-card.sf-zone-simple:hover .sf-zone-avatar-sm {
+            transform: scale(1.06);
+        }
+
+        .sf-zone-card.sf-zone-simple .output-status {
+            font-size: 0.7rem !important;
+            padding: 0.15rem 0.5rem !important;
+            border-radius: 6px !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.2px;
+        }
+
+        .sf-zone-card.sf-zone-simple .sf-flow-indicator {
+            padding: 2px 4px;
+            border-radius: 50%;
+            background: transparent;
+            border: none;
+            animation: none;
+        }
+
         .sf-zone-avatar {
             width: 40px;
             height: 40px;
