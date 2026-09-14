@@ -38,52 +38,29 @@
             justify-content: space-between;
             margin-bottom: 1rem;
             gap: 0.75rem;
-            flex-wrap: wrap;
         }
 
-        .header-title-wrap {
-            display: flex;
-            align-items: center;
-            gap: 0.65rem;
-        }
-
-        .btn-back-circle {
-            width: 34px;
-            height: 34px;
-            border-radius: 50%;
+        .btn-nav-back {
             display: inline-flex;
             align-items: center;
-            justify-content: center;
+            gap: 0.45rem;
+            padding: 0.35rem 0.85rem;
+            border-radius: 50px;
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
             color: var(--text-main);
-            font-size: 0.95rem;
+            font-size: 0.8rem;
+            font-weight: 600;
             text-decoration: none;
             transition: all 0.2s ease;
             backdrop-filter: blur(10px);
-            flex-shrink: 0;
         }
 
-        .btn-back-circle:hover {
+        .btn-nav-back:hover {
             color: var(--primary);
             border-color: var(--primary);
             background: rgba(14, 165, 233, 0.08);
             transform: translateX(-2px);
-        }
-
-        .header-heading {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--text-main);
-            margin: 0;
-            line-height: 1.2;
-            letter-spacing: -0.02em;
-        }
-
-        .header-sub {
-            font-size: 0.76rem;
-            color: var(--text-secondary);
-            margin: 0.15rem 0 0 0;
         }
 
         .live-tag {
@@ -237,30 +214,34 @@
 
         .form-control-compact,
         .form-select-compact {
-            height: 34px;
-            font-size: 0.78rem;
+            height: 38px !important;
+            min-height: 38px !important;
+            font-size: 0.82rem !important;
+            line-height: 1.4 !important;
             border-radius: 8px;
-            background: var(--glass-bg);
+            background-color: var(--glass-bg);
             border: 1px solid var(--glass-border);
             color: var(--text-main);
             transition: all 0.2s ease;
         }
 
         .form-control-compact {
-            padding-left: 2.1rem;
-            padding-right: 0.75rem;
+            padding: 0.35rem 0.75rem 0.35rem 2.2rem !important;
         }
 
         .form-select-compact {
-            padding-left: 0.65rem;
-            padding-right: 1.8rem;
+            padding: 0.35rem 2rem 0.35rem 0.75rem !important;
+            background-position: right 0.65rem center !important;
+            background-size: 14px 10px !important;
+            display: inline-block;
+            vertical-align: middle;
         }
 
         .form-control-compact:focus,
         .form-select-compact:focus {
             border-color: var(--primary);
             box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.15);
-            background: var(--glass-bg);
+            background-color: var(--glass-bg);
             color: var(--text-main);
             outline: none;
         }
@@ -271,9 +252,10 @@
         }
 
         .btn-compact-filter {
-            height: 34px;
-            padding: 0 0.85rem;
-            font-size: 0.78rem;
+            height: 38px !important;
+            min-height: 38px !important;
+            padding: 0 0.85rem !important;
+            font-size: 0.82rem !important;
             font-weight: 600;
             border-radius: 8px;
             display: inline-flex;
@@ -644,15 +626,9 @@
     <div class="riwayat-container">
         <!-- Sleek Minimal Header -->
         <div class="header-bar">
-            <div class="header-title-wrap">
-                <a href="{{ route('monitoring.index') }}" class="btn-back-circle" title="Kembali ke Monitoring">
-                    <i class="bi bi-arrow-left"></i>
-                </a>
-                <div>
-                    <h1 class="header-heading">Riwayat Aktivitas</h1>
-                    <p class="header-sub">Rekam jejak kontrol perangkat & sistem IoT</p>
-                </div>
-            </div>
+            <a href="{{ route('monitoring.index') }}" class="btn-nav-back" title="Kembali ke Monitoring">
+                <i class="bi bi-arrow-left"></i> Kembali ke Monitoring
+            </a>
             <div class="live-tag">
                 <span class="live-dot"></span>
                 <span>Realtime Log</span>
