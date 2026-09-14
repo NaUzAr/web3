@@ -677,7 +677,294 @@
             color: var(--text-secondary);
             opacity: 0.5;
         }
+
+        /* ========================================
+           MOBILE RESPONSIVE OVERRIDES
+           ======================================== */
+        @media (max-width: 767.98px) {
+            .container.py-4 {
+                padding-left: 0.75rem !important;
+                padding-right: 0.75rem !important;
+                padding-top: 1rem !important;
+            }
+
+            /* Hero Banner - compact */
+            .hero-banner {
+                padding: 1rem 1rem;
+                margin-bottom: 1rem;
+                border-radius: 14px;
+            }
+
+            .hero-banner::before {
+                width: 100px;
+                height: 100px;
+                top: -20px;
+                right: -20px;
+            }
+
+            .btn-nav-back {
+                padding: 0.3rem 0.75rem;
+                font-size: 0.78rem;
+            }
+
+            .badge-live-pulse {
+                padding: 0.25rem 0.6rem;
+                font-size: 0.68rem;
+            }
+
+            .page-title-icon {
+                width: 34px;
+                height: 34px;
+                border-radius: 10px;
+                font-size: 1rem;
+            }
+
+            .page-title {
+                font-size: 1.2rem;
+                letter-spacing: -0.3px;
+            }
+
+            .page-subtitle {
+                font-size: 0.78rem;
+                margin-top: 0.2rem;
+            }
+
+            /* Stat Cards - compact 2x2 grid */
+            .stat-card {
+                padding: 0.75rem 0.85rem;
+                border-radius: 12px;
+                gap: 0.7rem;
+            }
+
+            .stat-card::after {
+                width: 50px;
+                height: 50px;
+            }
+
+            .stat-icon-wrap {
+                width: 38px;
+                height: 38px;
+                border-radius: 10px;
+                font-size: 1.05rem;
+            }
+
+            .stat-number {
+                font-size: 1.15rem;
+                letter-spacing: -0.3px;
+            }
+
+            .stat-label {
+                font-size: 0.65rem;
+                letter-spacing: 0.4px;
+            }
+
+            /* Filter Toolbar - compact */
+            .filter-toolbar {
+                padding: 0.85rem 0.85rem;
+                margin-bottom: 1rem;
+                border-radius: 14px;
+            }
+
+            .category-pills-scroll {
+                gap: 0.35rem;
+                padding-bottom: 0.35rem;
+            }
+
+            .btn-filter-pill {
+                padding: 0.35rem 0.7rem;
+                font-size: 0.72rem;
+                gap: 0.3rem;
+            }
+
+            .btn-filter-pill i {
+                font-size: 0.8rem;
+            }
+
+            .form-control-modern, .form-select-modern {
+                padding: 0.45rem 0.75rem 0.45rem 2.2rem;
+                font-size: 0.8rem;
+                border-radius: 10px;
+            }
+
+            .form-select-modern {
+                padding-left: 0.75rem;
+            }
+
+            .search-input-wrap i.bi-search {
+                left: 0.75rem;
+                font-size: 0.82rem;
+            }
+
+            .btn-action-filter {
+                padding: 0.45rem 0.85rem;
+                font-size: 0.8rem;
+                border-radius: 10px;
+            }
+
+            /* Timeline Feed - compact */
+            .timeline-date-divider {
+                margin: 1.25rem 0 0.75rem 0;
+                gap: 0.6rem;
+            }
+
+            .timeline-date-pill {
+                padding: 0.3rem 0.8rem;
+                font-size: 0.72rem;
+                gap: 0.35rem;
+            }
+
+            .timeline-date-pill i {
+                font-size: 0.75rem;
+            }
+
+            .log-item {
+                margin-bottom: 0.6rem;
+            }
+
+            .log-card {
+                padding: 0.8rem 0.9rem;
+                border-radius: 12px;
+            }
+
+            .log-card:hover {
+                transform: none;
+            }
+
+            .log-header {
+                gap: 0.5rem;
+                margin-bottom: 0.35rem;
+            }
+
+            .log-title {
+                font-size: 0.85rem;
+                font-weight: 600;
+                gap: 0.4rem;
+            }
+
+            .log-time-badge {
+                font-size: 0.68rem;
+                padding: 0.2rem 0.5rem;
+                border-radius: 6px;
+            }
+
+            .badges-flow {
+                gap: 0.35rem;
+                margin-top: 0.4rem;
+            }
+
+            .pill-chip {
+                padding: 0.2rem 0.55rem;
+                font-size: 0.68rem;
+                border-radius: 6px;
+                gap: 0.25rem;
+            }
+
+            .pill-chip i {
+                font-size: 0.7rem;
+            }
+
+            .btn-link-device {
+                font-size: 0.7rem;
+                padding: 0.2rem 0.45rem;
+            }
+
+            /* Empty State - compact */
+            .empty-state-panel {
+                padding: 2.5rem 1rem;
+                margin: 1rem 0;
+                border-radius: 16px;
+            }
+
+            .empty-icon-box {
+                width: 56px;
+                height: 56px;
+                border-radius: 16px;
+                font-size: 1.75rem;
+                margin-bottom: 1rem;
+            }
+
+            .empty-title {
+                font-size: 1rem;
+            }
+
+            .empty-desc {
+                font-size: 0.8rem;
+            }
+
+            /* Pagination - compact */
+            .pagination-wrap {
+                margin-top: 1.5rem;
+            }
+
+            .pagination {
+                gap: 0.2rem;
+            }
+
+            .pagination .page-link {
+                padding: 0.4rem 0.7rem;
+                font-size: 0.78rem;
+                border-radius: 8px;
+            }
+
+            /* Glass Panel base on mobile */
+            .glass-panel {
+                border-radius: 14px;
+            }
+
+            /* Stat cards -> 2 per row with col-6 */
+            .row.g-3.mb-4 {
+                margin-bottom: 0.75rem !important;
+            }
+
+            .row.g-3.mb-4 > [class*="col-"] {
+                padding: 0.25rem !important;
+            }
+        }
+
+        /* Small phones (< 400px) - extra compact */
+        @media (max-width: 399.98px) {
+            .page-title {
+                font-size: 1.05rem;
+            }
+
+            .page-subtitle {
+                font-size: 0.72rem;
+            }
+
+            .stat-number {
+                font-size: 1rem;
+            }
+
+            .stat-label {
+                font-size: 0.6rem;
+            }
+
+            .stat-icon-wrap {
+                width: 34px;
+                height: 34px;
+                font-size: 0.92rem;
+            }
+
+            .btn-filter-pill {
+                padding: 0.3rem 0.55rem;
+                font-size: 0.68rem;
+            }
+
+            .log-title {
+                font-size: 0.8rem;
+            }
+
+            .log-time-badge {
+                font-size: 0.65rem;
+            }
+
+            .pill-chip {
+                font-size: 0.65rem;
+                padding: 0.18rem 0.45rem;
+            }
+        }
     </style>
+
 </head>
 
 <body>
@@ -719,7 +1006,7 @@
 
         <!-- 4 KPI Stat Highlight Cards -->
         <div class="row g-3 mb-4">
-            <div class="col-12 col-sm-6 col-xl-3">
+            <div class="col-6 col-xl-3">
                 <div class="stat-card" style="--stat-glow: rgba(2, 132, 199, 0.2);">
                     <div class="stat-icon-wrap" style="background: linear-gradient(135deg, #0284c7, #38bdf8);">
                         <i class="bi bi-activity"></i>
@@ -731,7 +1018,7 @@
                 </div>
             </div>
 
-            <div class="col-12 col-sm-6 col-xl-3">
+            <div class="col-6 col-xl-3">
                 <div class="stat-card" style="--stat-glow: rgba(16, 185, 129, 0.2);">
                     <div class="stat-icon-wrap" style="background: linear-gradient(135deg, #059669, #10b981);">
                         <i class="bi bi-calendar-check-fill"></i>
@@ -743,7 +1030,7 @@
                 </div>
             </div>
 
-            <div class="col-12 col-sm-6 col-xl-3">
+            <div class="col-6 col-xl-3">
                 <div class="stat-card" style="--stat-glow: rgba(79, 70, 229, 0.2);">
                     <div class="stat-icon-wrap" style="background: linear-gradient(135deg, #4f46e5, #06b6d4);">
                         <i class="bi bi-toggle2-on"></i>
@@ -755,7 +1042,7 @@
                 </div>
             </div>
 
-            <div class="col-12 col-sm-6 col-xl-3">
+            <div class="col-6 col-xl-3">
                 <div class="stat-card" style="--stat-glow: rgba(168, 85, 247, 0.2);">
                     <div class="stat-icon-wrap" style="background: linear-gradient(135deg, #8b5cf6, #ec4899);">
                         <i class="bi bi-droplet-half"></i>
