@@ -31,65 +31,6 @@
             padding: 1.25rem 1rem 3rem 1rem;
         }
 
-        /* Sleek Minimal Header */
-        .header-bar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 1rem;
-            gap: 0.75rem;
-        }
-
-        .btn-nav-back {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.45rem;
-            padding: 0.35rem 0.85rem;
-            border-radius: 50px;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            color: var(--text-main);
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            backdrop-filter: blur(10px);
-        }
-
-        .btn-nav-back:hover {
-            color: var(--primary);
-            border-color: var(--primary);
-            background: rgba(14, 165, 233, 0.08);
-            transform: translateX(-2px);
-        }
-
-        .live-tag {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            padding: 0.25rem 0.65rem;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            background: rgba(16, 185, 129, 0.1);
-            color: #059669;
-            border: 1px solid rgba(16, 185, 129, 0.2);
-        }
-
-        .live-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background-color: #10b981;
-            box-shadow: 0 0 6px #10b981;
-            animation: pulse-mini 2s infinite;
-        }
-
-        @keyframes pulse-mini {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(0.85); }
-        }
-
         /* Compact Metrics Ribbon */
         .metrics-ribbon {
             display: grid;
@@ -624,16 +565,6 @@
     @include('partials.navbar')
 
     <div class="riwayat-container">
-        <!-- Sleek Minimal Header -->
-        <div class="header-bar">
-            <a href="{{ route('monitoring.index') }}" class="btn-nav-back" title="Kembali ke Monitoring">
-                <i class="bi bi-arrow-left"></i> Kembali ke Monitoring
-            </a>
-            <div class="live-tag">
-                <span class="live-dot"></span>
-                <span>Realtime Log</span>
-            </div>
-        </div>
 
         <!-- Compact Metrics Ribbon -->
         <div class="metrics-ribbon">
