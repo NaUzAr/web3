@@ -3,968 +3,636 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <title>Riwayat Aktivitas - {{ env('APP_NAME', 'Swaratani') }}</title>
     @include('partials.pwa-head')
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     @include('partials.theme')
 
     <style>
         * {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            box-sizing: border-box;
         }
 
-        /* Glassmorphism Panel Base */
-        .glass-panel {
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.04);
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* Header Hero Section */
-        .hero-banner {
-            padding: 1.75rem 2rem;
-            margin-bottom: 2rem;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%), var(--glass-bg);
-            position: relative;
-        }
-
-        .hero-banner::before {
-            content: '';
-            position: absolute;
-            top: -40px;
-            right: -40px;
-            width: 180px;
-            height: 180px;
-            background: var(--glow-1);
-            filter: blur(50px);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .hero-banner .hero-content {
-            position: relative;
-            z-index: 1;
-        }
-
-        .btn-nav-back {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.45rem 1rem;
-            border-radius: 50px;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
+        body {
             color: var(--text-main);
-            font-size: 0.85rem;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-            backdrop-filter: blur(10px);
+            background-color: var(--bg-body, #f8fafc);
+            -webkit-font-smoothing: antialiased;
         }
 
-        .btn-nav-back:hover {
-            color: var(--primary);
-            border-color: var(--primary);
-            transform: translateX(-3px);
-            background: var(--glass-bg);
+        /* Centered Compact Feed Container */
+        .riwayat-container {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 1.25rem 1rem 3rem 1rem;
         }
 
-        .badge-live-pulse {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.35rem 0.85rem;
-            border-radius: 50px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            letter-spacing: 0.3px;
-            background: rgba(16, 185, 129, 0.12);
-            color: #10b981;
-            border: 1px solid rgba(16, 185, 129, 0.25);
-        }
-
-        .pulse-dot-wrap {
-            position: relative;
-            width: 8px;
-            height: 8px;
-            display: inline-block;
-        }
-
-        .pulse-core {
-            position: absolute;
-            width: 8px;
-            height: 8px;
-            background-color: #10b981;
-            border-radius: 50%;
-        }
-
-        .pulse-ring {
-            position: absolute;
-            width: 16px;
-            height: 16px;
-            top: -4px;
-            left: -4px;
-            background-color: rgba(16, 185, 129, 0.4);
-            border-radius: 50%;
-            animation: pulse-ring-anim 2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
-        }
-
-        @keyframes pulse-ring-anim {
-            0% { transform: scale(0.6); opacity: 0.9; }
-            100% { transform: scale(1.8); opacity: 0; }
-        }
-
-        .page-title {
-            color: var(--text-main);
-            font-weight: 800;
-            font-size: 1.85rem;
-            letter-spacing: -0.5px;
-            margin: 0;
+        /* Sleek Minimal Header */
+        .header-bar {
             display: flex;
             align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
             gap: 0.75rem;
+            flex-wrap: wrap;
         }
 
-        .page-title-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            background: var(--primary-gradient);
-            color: #ffffff;
+        .header-title-wrap {
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-size: 1.35rem;
-            box-shadow: 0 8px 16px var(--glow-1);
-            flex-shrink: 0;
+            gap: 0.65rem;
         }
 
-        .page-subtitle {
-            color: var(--text-secondary);
-            font-size: 0.92rem;
-            margin-top: 0.35rem;
-            margin-bottom: 0;
-            max-width: 600px;
-        }
-
-        /* Stat Highlight Cards */
-        .stat-card {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 18px;
-            padding: 1.25rem 1.4rem;
-            backdrop-filter: blur(20px);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            gap: 1.1rem;
-            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.03);
-        }
-
-        .stat-card:hover {
-            transform: translateY(-3px);
-            border-color: rgba(14, 165, 233, 0.4);
-            box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.08);
-        }
-
-        .stat-card::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 80px;
-            height: 80px;
-            background: radial-gradient(circle, var(--stat-glow, rgba(14, 165, 233, 0.15)) 0%, transparent 70%);
+        .btn-back-circle {
+            width: 34px;
+            height: 34px;
             border-radius: 50%;
-            pointer-events: none;
-        }
-
-        .stat-icon-wrap {
-            width: 52px;
-            height: 52px;
-            border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.4rem;
-            color: #ffffff;
-            flex-shrink: 0;
-            box-shadow: 0 8px 16px -2px rgba(0, 0, 0, 0.15);
-        }
-
-        .stat-number {
-            font-size: 1.6rem;
-            font-weight: 800;
-            color: var(--text-main);
-            line-height: 1.2;
-            letter-spacing: -0.5px;
-        }
-
-        .stat-label {
-            font-size: 0.78rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-            color: var(--text-secondary);
-            margin-top: 2px;
-        }
-
-        /* Filter Toolbar */
-        .filter-toolbar {
-            padding: 1.25rem 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .category-pills-scroll {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            overflow-x: auto;
-            padding-bottom: 0.5rem;
-            scrollbar-width: thin;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .category-pills-scroll::-webkit-scrollbar {
-            height: 4px;
-        }
-
-        .category-pills-scroll::-webkit-scrollbar-thumb {
-            background: var(--glass-border);
-            border-radius: 4px;
-        }
-
-        .btn-filter-pill {
             display: inline-flex;
             align-items: center;
-            gap: 0.45rem;
-            padding: 0.5rem 1rem;
-            border-radius: 50px;
-            font-size: 0.82rem;
-            font-weight: 600;
-            text-decoration: none;
-            white-space: nowrap;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            color: var(--text-secondary);
-            transition: all 0.25s ease;
-            cursor: pointer;
-        }
-
-        .btn-filter-pill:hover {
-            color: var(--primary);
-            border-color: var(--primary);
-            background: rgba(14, 165, 233, 0.06);
-        }
-
-        .btn-filter-pill.active {
-            background: var(--primary-gradient);
-            color: #ffffff !important;
-            border-color: transparent;
-            box-shadow: 0 4px 14px var(--glow-1);
-        }
-
-        .search-input-wrap {
-            position: relative;
-        }
-
-        .search-input-wrap i.bi-search {
-            position: absolute;
-            left: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-            pointer-events: none;
-        }
-
-        .form-control-modern, .form-select-modern {
+            justify-content: center;
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
             color: var(--text-main);
-            border-radius: 12px;
-            padding: 0.6rem 1rem 0.6rem 2.6rem;
-            font-size: 0.88rem;
-            font-weight: 500;
-            transition: all 0.25s ease;
+            font-size: 0.95rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
             backdrop-filter: blur(10px);
+            flex-shrink: 0;
         }
 
-        .form-select-modern {
-            padding-left: 1rem;
-        }
-
-        .form-control-modern:focus, .form-select-modern:focus {
-            background: var(--glass-bg);
+        .btn-back-circle:hover {
+            color: var(--primary);
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px var(--glow-1);
+            background: rgba(14, 165, 233, 0.08);
+            transform: translateX(-2px);
+        }
+
+        .header-heading {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin: 0;
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+        }
+
+        .header-sub {
+            font-size: 0.76rem;
+            color: var(--text-secondary);
+            margin: 0.15rem 0 0 0;
+        }
+
+        .live-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.25rem 0.65rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            background: rgba(16, 185, 129, 0.1);
+            color: #059669;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .live-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: #10b981;
+            box-shadow: 0 0 6px #10b981;
+            animation: pulse-mini 2s infinite;
+        }
+
+        @keyframes pulse-mini {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.85); }
+        }
+
+        /* Compact Metrics Ribbon */
+        .metrics-ribbon {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .metric-cell {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 0.55rem 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            backdrop-filter: blur(12px);
+            transition: border-color 0.2s ease;
+        }
+
+        .metric-cell:hover {
+            border-color: rgba(14, 165, 233, 0.3);
+        }
+
+        .metric-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .metric-content {
+            min-width: 0;
+            line-height: 1.15;
+        }
+
+        .metric-val {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: -0.01em;
+        }
+
+        .metric-lbl {
+            font-size: 0.66rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Category Filter Tabs (Scrollable Segmented) */
+        .category-tabs-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding-bottom: 0.25rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .category-tabs-bar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .category-tab-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.32rem 0.7rem;
+            border-radius: 20px;
+            font-size: 0.74rem;
+            font-weight: 600;
+            white-space: nowrap;
+            text-decoration: none;
+            color: var(--text-secondary);
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            transition: all 0.2s ease;
+            backdrop-filter: blur(8px);
+        }
+
+        .category-tab-btn:hover {
+            color: var(--primary);
+            border-color: rgba(14, 165, 233, 0.3);
+            background: rgba(14, 165, 233, 0.05);
+        }
+
+        .category-tab-btn.active {
+            background: var(--primary-gradient);
+            color: #ffffff;
+            border-color: transparent;
+            box-shadow: 0 2px 8px rgba(14, 165, 233, 0.25);
+        }
+
+        /* Filter & Search Bar */
+        .filter-bar {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 0.6rem 0.75rem;
+            margin-bottom: 1.25rem;
+            backdrop-filter: blur(12px);
+        }
+
+        .search-field-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-field-wrap i.bi-search {
+            position: absolute;
+            left: 0.75rem;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            pointer-events: none;
+        }
+
+        .form-control-compact,
+        .form-select-compact {
+            height: 34px;
+            font-size: 0.78rem;
+            border-radius: 8px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            transition: all 0.2s ease;
+        }
+
+        .form-control-compact {
+            padding-left: 2.1rem;
+            padding-right: 0.75rem;
+        }
+
+        .form-select-compact {
+            padding-left: 0.65rem;
+            padding-right: 1.8rem;
+        }
+
+        .form-control-compact:focus,
+        .form-select-compact:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.15);
+            background: var(--glass-bg);
             color: var(--text-main);
             outline: none;
         }
 
-        .form-control-modern::placeholder {
-            color: var(--text-secondary);
-            opacity: 0.7;
+        .form-select-compact option {
+            background: #ffffff;
+            color: #1e293b;
         }
 
-        .btn-action-filter {
-            padding: 0.6rem 1.25rem;
-            border-radius: 12px;
-            font-size: 0.88rem;
+        .btn-compact-filter {
+            height: 34px;
+            padding: 0 0.85rem;
+            font-size: 0.78rem;
             font-weight: 600;
+            border-radius: 8px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
-            transition: all 0.25s ease;
+            gap: 0.35rem;
+            transition: all 0.2s ease;
             white-space: nowrap;
         }
 
-        .btn-filter-submit {
+        .btn-compact-primary {
             background: var(--primary-gradient);
-            border: none;
             color: #ffffff;
-            box-shadow: 0 4px 12px var(--glow-1);
+            border: none;
         }
 
-        .btn-filter-submit:hover {
-            opacity: 0.95;
-            color: #fff;
+        .btn-compact-primary:hover {
+            opacity: 0.92;
+            color: #ffffff;
             transform: translateY(-1px);
         }
 
-        .btn-filter-reset {
+        .btn-compact-reset {
             background: transparent;
             border: 1px solid var(--glass-border);
             color: var(--text-secondary);
         }
 
-        .btn-filter-reset:hover {
+        .btn-compact-reset:hover {
             color: #ef4444;
             border-color: #ef4444;
             background: rgba(239, 68, 68, 0.05);
         }
 
-        /* Timeline Feed */
-        .timeline-container {
-            position: relative;
+        /* Activity Date Group & List Card */
+        .date-section {
+            margin-bottom: 1.25rem;
         }
 
-        .timeline-date-divider {
+        .date-section-header {
             display: flex;
             align-items: center;
-            gap: 1rem;
-            margin: 2rem 0 1.25rem 0;
+            gap: 0.4rem;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 0.45rem;
+            padding-left: 0.25rem;
         }
 
-        .timeline-date-divider::before,
-        .timeline-date-divider::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--glass-border), transparent);
+        .date-section-header i {
+            font-size: 0.75rem;
+            color: var(--primary);
         }
 
-        .timeline-date-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.4rem 1.1rem;
-            border-radius: 50px;
+        .activity-card {
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
-            color: var(--text-main);
-            font-size: 0.82rem;
-            font-weight: 700;
-            letter-spacing: 0.3px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-            backdrop-filter: blur(15px);
+            border-radius: 14px;
+            overflow: hidden;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
         }
 
-        .timeline-feed {
-            position: relative;
-            padding-left: 1.5rem;
-        }
-
-        .timeline-feed::before {
-            content: '';
-            position: absolute;
-            top: 15px;
-            bottom: 15px;
-            left: 27px;
-            width: 2px;
-            background: linear-gradient(180deg, var(--primary) 0%, rgba(14, 165, 233, 0.2) 100%);
-            border-radius: 2px;
-            z-index: 0;
-        }
-
-        @media (max-width: 767.98px) {
-            .timeline-feed {
-                padding-left: 0;
-            }
-            .timeline-feed::before {
-                display: none;
-            }
-        }
-
-        /* Timeline Log Card */
-        .log-item {
-            position: relative;
-            z-index: 1;
-            margin-bottom: 1rem;
+        /* Activity Row Item */
+        .activity-item {
             display: flex;
             align-items: flex-start;
-            gap: 1.25rem;
+            gap: 0.75rem;
+            padding: 0.75rem 0.9rem;
+            border-bottom: 1px solid var(--glass-border);
+            transition: background 0.18s ease;
+            position: relative;
         }
 
-        .log-avatar {
-            width: 48px;
-            height: 48px;
-            border-radius: 14px;
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-item:hover {
+            background: rgba(14, 165, 233, 0.035);
+        }
+
+        /* Mini Action Icon Box */
+        .action-icon-mini {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.25rem;
-            color: #ffffff;
+            font-size: 0.9rem;
             flex-shrink: 0;
-            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
-            position: relative;
-            transition: all 0.3s ease;
+            margin-top: 2px;
         }
 
-        @media (max-width: 767.98px) {
-            .log-avatar {
-                display: none;
-            }
-        }
-
-        .log-card {
-            flex-grow: 1;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 1.15rem 1.4rem;
-            backdrop-filter: blur(20px);
-            transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.03);
-            position: relative;
-        }
-
-        .log-card:hover {
-            transform: translateY(-2px);
-            border-color: rgba(14, 165, 233, 0.4);
-            box-shadow: 0 10px 28px -4px rgba(14, 165, 233, 0.12);
-        }
-
-        .log-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 1rem;
-            flex-wrap: wrap;
-            margin-bottom: 0.6rem;
-        }
-
-        .log-title {
-            color: var(--text-main);
-            font-weight: 700;
-            font-size: 1rem;
-            line-height: 1.4;
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
-            flex-wrap: wrap;
-        }
-
-        .log-time-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            font-size: 0.78rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-            background: rgba(100, 116, 139, 0.08);
-            border: 1px solid var(--glass-border);
-            padding: 0.25rem 0.65rem;
-            border-radius: 8px;
-            white-space: nowrap;
-        }
-
-        .badges-flow {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 0.5rem;
-            margin-top: 0.6rem;
-        }
-
-        .pill-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-            padding: 0.28rem 0.75rem;
-            border-radius: 8px;
-            font-size: 0.76rem;
-            font-weight: 600;
-            letter-spacing: 0.2px;
-            border: 1px solid transparent;
-            transition: all 0.2s ease;
-        }
-
-        /* Specific Status Chip Colors */
-        .chip-on {
+        /* Action Icon Color Themes */
+        .icon-on {
             background: rgba(16, 185, 129, 0.12);
-            color: #10b981;
-            border-color: rgba(16, 185, 129, 0.25);
+            color: #059669;
         }
 
-        .chip-off {
-            background: rgba(239, 68, 68, 0.12);
-            color: #ef4444;
-            border-color: rgba(239, 68, 68, 0.25);
+        .icon-off {
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
         }
 
-        .chip-target {
-            background: rgba(14, 165, 233, 0.12);
-            color: #0ea5e9;
-            border-color: rgba(14, 165, 233, 0.25);
+        .icon-pump {
+            background: rgba(2, 132, 199, 0.12);
+            color: #0284c7;
         }
 
-        .chip-param {
-            background: rgba(168, 85, 247, 0.12);
-            color: #a855f7;
-            border-color: rgba(168, 85, 247, 0.25);
+        .icon-irrigation {
+            background: rgba(13, 148, 136, 0.12);
+            color: #0d9488;
         }
 
-        .chip-neutral {
-            background: rgba(100, 116, 139, 0.1);
-            color: var(--text-secondary);
-            border-color: var(--glass-border);
+        .icon-dosing {
+            background: rgba(147, 51, 234, 0.12);
+            color: #7c3aed;
         }
 
-        .chip-device {
+        .icon-device {
             background: rgba(245, 158, 11, 0.12);
             color: #d97706;
-            border-color: rgba(245, 158, 11, 0.25);
-            text-decoration: none;
         }
 
-        .chip-device:hover {
-            background: rgba(245, 158, 11, 0.2);
-            color: #b45309;
-            transform: translateY(-1px);
+        .icon-system {
+            background: rgba(99, 102, 241, 0.12);
+            color: #4f46e5;
         }
 
-        /* Action Link */
-        .btn-link-device {
-            display: inline-flex;
+        /* Activity Row Details */
+        .activity-body {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .activity-topline {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 0.5rem;
+            flex-wrap: nowrap;
+        }
+
+        .activity-desc {
+            font-size: 0.83rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin: 0;
+            line-height: 1.35;
+            word-break: break-word;
+        }
+
+        .activity-time-stamp {
+            font-size: 0.68rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        /* Activity Metadata Badges Line */
+        .activity-meta-line {
+            display: flex;
             align-items: center;
             gap: 0.35rem;
-            font-size: 0.78rem;
-            font-weight: 700;
+            flex-wrap: wrap;
+            margin-top: 0.3rem;
+        }
+
+        .micro-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
+            font-size: 0.68rem;
+            font-weight: 600;
+            line-height: 1.2;
+            letter-spacing: 0.01em;
+        }
+
+        .micro-tag-on {
+            background: rgba(16, 185, 129, 0.12);
+            color: #059669;
+        }
+
+        .micro-tag-off {
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+        }
+
+        .micro-tag-target {
+            background: rgba(14, 165, 233, 0.1);
+            color: #0284c7;
+        }
+
+        .micro-tag-param {
+            background: rgba(147, 51, 234, 0.1);
+            color: #7c3aed;
+        }
+
+        .micro-tag-device {
+            background: rgba(245, 158, 11, 0.1);
+            color: #b45309;
+            text-decoration: none;
+            transition: all 0.15s ease;
+        }
+
+        .micro-tag-device:hover {
+            background: rgba(245, 158, 11, 0.18);
+            color: #92400e;
+        }
+
+        .micro-tag-neutral {
+            background: rgba(100, 116, 139, 0.08);
+            color: var(--text-secondary);
+        }
+
+        .btn-mini-goto {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.2rem;
+            font-size: 0.67rem;
+            font-weight: 600;
             color: var(--primary);
             text-decoration: none;
             margin-left: auto;
-            padding: 0.25rem 0.6rem;
-            border-radius: 6px;
-            transition: all 0.2s ease;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            transition: background 0.15s ease;
         }
 
-        .btn-link-device:hover {
-            color: var(--primary);
+        .btn-mini-goto:hover {
             background: rgba(14, 165, 233, 0.08);
-            transform: translateX(2px);
+            color: var(--primary);
         }
 
         /* Empty State */
-        .empty-state-panel {
+        .empty-compact {
             text-align: center;
-            padding: 4.5rem 1.5rem;
-            margin: 2rem 0;
-            border: 2px dashed var(--glass-border);
-            border-radius: 24px;
+            padding: 2.75rem 1rem;
             background: var(--glass-bg);
-            backdrop-filter: blur(20px);
+            border: 1px dashed var(--glass-border);
+            border-radius: 14px;
+            backdrop-filter: blur(12px);
         }
 
-        .empty-icon-box {
-            width: 80px;
-            height: 80px;
-            border-radius: 22px;
-            background: var(--glow-1);
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.5rem;
-            margin: 0 auto 1.5rem auto;
-            box-shadow: 0 10px 25px var(--glow-1);
-            animation: float-soft 3s ease-in-out infinite;
-        }
-
-        @keyframes float-soft {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
-        }
-
-        .empty-title {
-            font-size: 1.25rem;
-            font-weight: 800;
-            color: var(--text-main);
+        .empty-compact i {
+            font-size: 2rem;
+            color: var(--text-secondary);
+            opacity: 0.4;
+            display: block;
             margin-bottom: 0.5rem;
         }
 
-        .empty-desc {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            max-width: 420px;
-            margin: 0 auto 1.5rem auto;
-            line-height: 1.5;
+        .empty-compact-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.25rem;
         }
 
-        /* Pagination Glass */
-        .pagination-wrap {
+        .empty-compact-sub {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            max-width: 320px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Compact Pagination */
+        .pagination-bar {
             display: flex;
             justify-content: center;
-            margin-top: 2.5rem;
+            margin-top: 1.5rem;
         }
 
-        .pagination {
-            gap: 0.35rem;
+        .pagination-bar .pagination {
+            gap: 0.25rem;
             margin: 0;
         }
 
-        .pagination .page-link {
+        .pagination-bar .page-link {
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
             color: var(--text-main);
-            padding: 0.55rem 0.95rem;
-            border-radius: 10px;
+            padding: 0.35rem 0.65rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
             font-weight: 600;
-            font-size: 0.88rem;
-            backdrop-filter: blur(10px);
-            transition: all 0.2s ease;
+            backdrop-filter: blur(6px);
         }
 
-        .pagination .page-link:hover {
+        .pagination-bar .page-link:hover {
             color: var(--primary);
             border-color: var(--primary);
             background: rgba(14, 165, 233, 0.08);
-            transform: translateY(-1px);
         }
 
-        .pagination .page-item.active .page-link {
+        .pagination-bar .page-item.active .page-link {
             background: var(--primary-gradient);
             color: #ffffff;
             border-color: transparent;
-            box-shadow: 0 4px 12px var(--glow-1);
         }
 
-        .pagination .page-item.disabled .page-link {
-            background: rgba(100, 116, 139, 0.05);
-            color: var(--text-secondary);
-            opacity: 0.5;
+        .pagination-bar .page-item.disabled .page-link {
+            opacity: 0.4;
         }
 
-        /* ========================================
-           MOBILE RESPONSIVE OVERRIDES
-           ======================================== */
-        @media (max-width: 767.98px) {
-            .container.py-4 {
-                padding-left: 0.75rem !important;
-                padding-right: 0.75rem !important;
-                padding-top: 1rem !important;
+        /* Mobile specific adjustments */
+        @media (max-width: 640px) {
+            .riwayat-container {
+                padding: 0.75rem 0.65rem 2.5rem 0.65rem;
             }
 
-            /* Hero Banner - compact */
-            .hero-banner {
-                padding: 1rem 1rem;
-                margin-bottom: 1rem;
-                border-radius: 14px;
-            }
-
-            .hero-banner::before {
-                width: 100px;
-                height: 100px;
-                top: -20px;
-                right: -20px;
-            }
-
-            .btn-nav-back {
-                padding: 0.3rem 0.75rem;
-                font-size: 0.78rem;
-            }
-
-            .badge-live-pulse {
-                padding: 0.25rem 0.6rem;
-                font-size: 0.68rem;
-            }
-
-            .page-title-icon {
-                width: 34px;
-                height: 34px;
-                border-radius: 10px;
-                font-size: 1rem;
-            }
-
-            .page-title {
-                font-size: 1.2rem;
-                letter-spacing: -0.3px;
-            }
-
-            .page-subtitle {
-                font-size: 0.78rem;
-                margin-top: 0.2rem;
-            }
-
-            /* Stat Cards - compact 2x2 grid */
-            .stat-card {
-                padding: 0.75rem 0.85rem;
-                border-radius: 12px;
-                gap: 0.7rem;
-            }
-
-            .stat-card::after {
-                width: 50px;
-                height: 50px;
-            }
-
-            .stat-icon-wrap {
-                width: 38px;
-                height: 38px;
-                border-radius: 10px;
-                font-size: 1.05rem;
-            }
-
-            .stat-number {
-                font-size: 1.15rem;
-                letter-spacing: -0.3px;
-            }
-
-            .stat-label {
-                font-size: 0.65rem;
-                letter-spacing: 0.4px;
-            }
-
-            /* Filter Toolbar - compact */
-            .filter-toolbar {
-                padding: 0.85rem 0.85rem;
-                margin-bottom: 1rem;
-                border-radius: 14px;
-            }
-
-            .category-pills-scroll {
-                gap: 0.35rem;
-                padding-bottom: 0.35rem;
-            }
-
-            .btn-filter-pill {
-                padding: 0.35rem 0.7rem;
-                font-size: 0.72rem;
-                gap: 0.3rem;
-            }
-
-            .btn-filter-pill i {
-                font-size: 0.8rem;
-            }
-
-            .form-control-modern, .form-select-modern {
-                padding: 0.45rem 0.75rem 0.45rem 2.2rem;
-                font-size: 0.8rem;
-                border-radius: 10px;
-            }
-
-            .form-select-modern {
-                padding-left: 0.75rem;
-            }
-
-            .search-input-wrap i.bi-search {
-                left: 0.75rem;
-                font-size: 0.82rem;
-            }
-
-            .btn-action-filter {
-                padding: 0.45rem 0.85rem;
-                font-size: 0.8rem;
-                border-radius: 10px;
-            }
-
-            /* Timeline Feed - compact */
-            .timeline-date-divider {
-                margin: 1.25rem 0 0.75rem 0;
-                gap: 0.6rem;
-            }
-
-            .timeline-date-pill {
-                padding: 0.3rem 0.8rem;
-                font-size: 0.72rem;
-                gap: 0.35rem;
-            }
-
-            .timeline-date-pill i {
-                font-size: 0.75rem;
-            }
-
-            .log-item {
-                margin-bottom: 0.6rem;
-            }
-
-            .log-card {
-                padding: 0.8rem 0.9rem;
-                border-radius: 12px;
-            }
-
-            .log-card:hover {
-                transform: none;
-            }
-
-            .log-header {
-                gap: 0.5rem;
-                margin-bottom: 0.35rem;
-            }
-
-            .log-title {
-                font-size: 0.85rem;
-                font-weight: 600;
+            .metrics-ribbon {
+                grid-template-columns: repeat(2, 1fr);
                 gap: 0.4rem;
             }
 
-            .log-time-badge {
-                font-size: 0.68rem;
-                padding: 0.2rem 0.5rem;
+            .metric-cell {
+                padding: 0.45rem 0.6rem;
+            }
+
+            .metric-val {
+                font-size: 0.88rem;
+            }
+
+            .metric-lbl {
+                font-size: 0.62rem;
+            }
+
+            .activity-item {
+                padding: 0.65rem 0.75rem;
+                gap: 0.65rem;
+            }
+
+            .action-icon-mini {
+                width: 28px;
+                height: 28px;
+                font-size: 0.82rem;
                 border-radius: 6px;
             }
 
-            .badges-flow {
-                gap: 0.35rem;
-                margin-top: 0.4rem;
+            .activity-desc {
+                font-size: 0.79rem;
             }
 
-            .pill-chip {
-                padding: 0.2rem 0.55rem;
-                font-size: 0.68rem;
-                border-radius: 6px;
-                gap: 0.25rem;
-            }
-
-            .pill-chip i {
-                font-size: 0.7rem;
-            }
-
-            .btn-link-device {
-                font-size: 0.7rem;
-                padding: 0.2rem 0.45rem;
-            }
-
-            /* Empty State - compact */
-            .empty-state-panel {
-                padding: 2.5rem 1rem;
-                margin: 1rem 0;
-                border-radius: 16px;
-            }
-
-            .empty-icon-box {
-                width: 56px;
-                height: 56px;
-                border-radius: 16px;
-                font-size: 1.75rem;
-                margin-bottom: 1rem;
-            }
-
-            .empty-title {
-                font-size: 1rem;
-            }
-
-            .empty-desc {
-                font-size: 0.8rem;
-            }
-
-            /* Pagination - compact */
-            .pagination-wrap {
-                margin-top: 1.5rem;
-            }
-
-            .pagination {
-                gap: 0.2rem;
-            }
-
-            .pagination .page-link {
-                padding: 0.4rem 0.7rem;
-                font-size: 0.78rem;
-                border-radius: 8px;
-            }
-
-            /* Glass Panel base on mobile */
-            .glass-panel {
-                border-radius: 14px;
-            }
-
-            /* Stat cards -> 2 per row with col-6 */
-            .row.g-3.mb-4 {
-                margin-bottom: 0.75rem !important;
-            }
-
-            .row.g-3.mb-4 > [class*="col-"] {
-                padding: 0.25rem !important;
-            }
-        }
-
-        /* Small phones (< 400px) - extra compact */
-        @media (max-width: 399.98px) {
-            .page-title {
-                font-size: 1.05rem;
-            }
-
-            .page-subtitle {
-                font-size: 0.72rem;
-            }
-
-            .stat-number {
-                font-size: 1rem;
-            }
-
-            .stat-label {
-                font-size: 0.6rem;
-            }
-
-            .stat-icon-wrap {
-                width: 34px;
-                height: 34px;
-                font-size: 0.92rem;
-            }
-
-            .btn-filter-pill {
-                padding: 0.3rem 0.55rem;
-                font-size: 0.68rem;
-            }
-
-            .log-title {
-                font-size: 0.8rem;
-            }
-
-            .log-time-badge {
-                font-size: 0.65rem;
-            }
-
-            .pill-chip {
-                font-size: 0.65rem;
-                padding: 0.18rem 0.45rem;
+            .activity-time-stamp {
+                font-size: 0.64rem;
             }
         }
     </style>
-
 </head>
 
 <body>
@@ -973,171 +641,138 @@
     <!-- Navbar Global -->
     @include('partials.navbar')
 
-    <div class="container py-4">
-        <!-- Hero Header -->
-        <div class="glass-panel hero-banner">
-            <div class="hero-content">
-                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                    <a href="{{ route('monitoring.index') }}" class="btn-nav-back">
-                        <i class="bi bi-arrow-left"></i> Kembali ke Monitoring
-                    </a>
-                    <div class="badge-live-pulse">
-                        <span class="pulse-dot-wrap">
-                            <span class="pulse-ring"></span>
-                            <span class="pulse-core"></span>
-                        </span>
-                        <span>Sinkronisasi Otomatis</span>
-                    </div>
+    <div class="riwayat-container">
+        <!-- Sleek Minimal Header -->
+        <div class="header-bar">
+            <div class="header-title-wrap">
+                <a href="{{ route('monitoring.index') }}" class="btn-back-circle" title="Kembali ke Monitoring">
+                    <i class="bi bi-arrow-left"></i>
+                </a>
+                <div>
+                    <h1 class="header-heading">Riwayat Aktivitas</h1>
+                    <p class="header-sub">Rekam jejak kontrol perangkat & sistem IoT</p>
                 </div>
+            </div>
+            <div class="live-tag">
+                <span class="live-dot"></span>
+                <span>Realtime Log</span>
+            </div>
+        </div>
 
-                <div class="d-flex align-items-center gap-3">
-                    <div class="page-title-icon">
-                        <i class="bi bi-clock-history"></i>
-                    </div>
-                    <div>
-                        <h1 class="page-title">Riwayat Aktivitas</h1>
-                        <p class="page-subtitle">
-                            Rekam jejak komprehensif kontrol saklar, irigasi, pompa nutrisi, dan aktivitas sistem IoT Anda.
-                        </p>
-                    </div>
+        <!-- Compact Metrics Ribbon -->
+        <div class="metrics-ribbon">
+            <div class="metric-cell">
+                <span class="metric-dot" style="background-color: #0284c7;"></span>
+                <div class="metric-content">
+                    <div class="metric-val">{{ number_format($stats['total']) }}</div>
+                    <div class="metric-lbl">Total Log</div>
+                </div>
+            </div>
+            <div class="metric-cell">
+                <span class="metric-dot" style="background-color: #10b981;"></span>
+                <div class="metric-content">
+                    <div class="metric-val">{{ number_format($stats['today']) }}</div>
+                    <div class="metric-lbl">Hari Ini</div>
+                </div>
+            </div>
+            <div class="metric-cell">
+                <span class="metric-dot" style="background-color: #06b6d4;"></span>
+                <div class="metric-content">
+                    <div class="metric-val">{{ number_format($stats['control']) }}</div>
+                    <div class="metric-lbl">Kontrol Output</div>
+                </div>
+            </div>
+            <div class="metric-cell">
+                <span class="metric-dot" style="background-color: #8b5cf6;"></span>
+                <div class="metric-content">
+                    <div class="metric-val">{{ number_format($stats['pump_dosing']) }}</div>
+                    <div class="metric-lbl">Pompa & Dosing</div>
                 </div>
             </div>
         </div>
 
-        <!-- 4 KPI Stat Highlight Cards -->
-        <div class="row g-3 mb-4">
-            <div class="col-6 col-xl-3">
-                <div class="stat-card" style="--stat-glow: rgba(2, 132, 199, 0.2);">
-                    <div class="stat-icon-wrap" style="background: linear-gradient(135deg, #0284c7, #38bdf8);">
-                        <i class="bi bi-activity"></i>
-                    </div>
-                    <div>
-                        <div class="stat-number">{{ number_format($stats['total']) }}</div>
-                        <div class="stat-label">Total Aktivitas</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-6 col-xl-3">
-                <div class="stat-card" style="--stat-glow: rgba(16, 185, 129, 0.2);">
-                    <div class="stat-icon-wrap" style="background: linear-gradient(135deg, #059669, #10b981);">
-                        <i class="bi bi-calendar-check-fill"></i>
-                    </div>
-                    <div>
-                        <div class="stat-number">{{ number_format($stats['today']) }}</div>
-                        <div class="stat-label">Aktivitas Hari Ini</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-6 col-xl-3">
-                <div class="stat-card" style="--stat-glow: rgba(79, 70, 229, 0.2);">
-                    <div class="stat-icon-wrap" style="background: linear-gradient(135deg, #4f46e5, #06b6d4);">
-                        <i class="bi bi-toggle2-on"></i>
-                    </div>
-                    <div>
-                        <div class="stat-number">{{ number_format($stats['control']) }}</div>
-                        <div class="stat-label">Kontrol Output</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-6 col-xl-3">
-                <div class="stat-card" style="--stat-glow: rgba(168, 85, 247, 0.2);">
-                    <div class="stat-icon-wrap" style="background: linear-gradient(135deg, #8b5cf6, #ec4899);">
-                        <i class="bi bi-droplet-half"></i>
-                    </div>
-                    <div>
-                        <div class="stat-number">{{ number_format($stats['pump_dosing']) }}</div>
-                        <div class="stat-label">Pompa & Dosing</div>
-                    </div>
-                </div>
-            </div>
+        <!-- Quick Category Tabs (Horizontal Scrollable) -->
+        @php
+            $activeCat = request('category', 'all');
+            $baseParams = request()->except(['category', 'page']);
+        @endphp
+        <div class="category-tabs-bar">
+            <a href="{{ route('riwayat.index', array_merge($baseParams, ['category' => 'all'])) }}"
+               class="category-tab-btn {{ $activeCat === 'all' ? 'active' : '' }}">
+                <i class="bi bi-grid-fill"></i> Semua
+            </a>
+            <a href="{{ route('riwayat.index', array_merge($baseParams, ['category' => 'control'])) }}"
+               class="category-tab-btn {{ $activeCat === 'control' ? 'active' : '' }}">
+                <i class="bi bi-toggle2-on"></i> Kontrol Output
+            </a>
+            <a href="{{ route('riwayat.index', array_merge($baseParams, ['category' => 'pump'])) }}"
+               class="category-tab-btn {{ $activeCat === 'pump' ? 'active' : '' }}">
+                <i class="bi bi-droplet-fill"></i> Pompa & Irigasi
+            </a>
+            <a href="{{ route('riwayat.index', array_merge($baseParams, ['category' => 'dosing'])) }}"
+               class="category-tab-btn {{ $activeCat === 'dosing' ? 'active' : '' }}">
+                <i class="bi bi-funnel-fill"></i> Dosing
+            </a>
+            <a href="{{ route('riwayat.index', array_merge($baseParams, ['category' => 'device'])) }}"
+               class="category-tab-btn {{ $activeCat === 'device' ? 'active' : '' }}">
+                <i class="bi bi-cpu-fill"></i> Perangkat
+            </a>
+            <a href="{{ route('riwayat.index', array_merge($baseParams, ['category' => 'account'])) }}"
+               class="category-tab-btn {{ $activeCat === 'account' ? 'active' : '' }}">
+                <i class="bi bi-shield-check"></i> Sistem & Akun
+            </a>
         </div>
 
-        <!-- Filter & Search Toolbar -->
-        <div class="glass-panel filter-toolbar">
-            <!-- Category Pills -->
-            <div class="category-pills-scroll mb-3">
-                @php
-                    $activeCat = request('category', 'all');
-                    $baseParams = request()->except(['category', 'page']);
-                @endphp
-                <a href="{{ route('riwayat.index', array_merge($baseParams, ['category' => 'all'])) }}" 
-                   class="btn-filter-pill {{ $activeCat === 'all' ? 'active' : '' }}">
-                    <i class="bi bi-grid-fill"></i> Semua Aktivitas
-                </a>
-                <a href="{{ route('riwayat.index', array_merge($baseParams, ['category' => 'control'])) }}" 
-                   class="btn-filter-pill {{ $activeCat === 'control' ? 'active' : '' }}">
-                    <i class="bi bi-toggle2-on"></i> Kontrol Output
-                </a>
-                <a href="{{ route('riwayat.index', array_merge($baseParams, ['category' => 'pump'])) }}" 
-                   class="btn-filter-pill {{ $activeCat === 'pump' ? 'active' : '' }}">
-                    <i class="bi bi-droplet-fill"></i> Pompa & Irigasi
-                </a>
-                <a href="{{ route('riwayat.index', array_merge($baseParams, ['category' => 'dosing'])) }}" 
-                   class="btn-filter-pill {{ $activeCat === 'dosing' ? 'active' : '' }}">
-                    <i class="bi bi-funnel-fill"></i> Dosing Nutrisi
-                </a>
-                <a href="{{ route('riwayat.index', array_merge($baseParams, ['category' => 'device'])) }}" 
-                   class="btn-filter-pill {{ $activeCat === 'device' ? 'active' : '' }}">
-                    <i class="bi bi-cpu-fill"></i> Kelola Perangkat
-                </a>
-                <a href="{{ route('riwayat.index', array_merge($baseParams, ['category' => 'account'])) }}" 
-                   class="btn-filter-pill {{ $activeCat === 'account' ? 'active' : '' }}">
-                    <i class="bi bi-shield-check"></i> Akun & Sistem
-                </a>
-            </div>
-
-            <!-- Search Form Row -->
+        <!-- Compact Search & Filter Toolbar -->
+        <div class="filter-bar">
             <form action="{{ route('riwayat.index') }}" method="GET">
                 <input type="hidden" name="category" value="{{ request('category', 'all') }}">
-                
+
                 <div class="row g-2 align-items-center">
                     <!-- Search Input -->
                     <div class="col-12 col-md-5">
-                        <div class="search-input-wrap">
+                        <div class="search-field-wrap">
                             <i class="bi bi-search"></i>
-                            <input type="text" name="q" value="{{ request('q') }}" 
-                                   class="form-control form-control-modern" 
-                                   placeholder="Cari nama output, perangkat, atau aksi...">
+                            <input type="text" name="q" value="{{ request('q') }}"
+                                   class="form-control form-control-compact"
+                                   placeholder="Cari aktivitas, nama output, target...">
                         </div>
                     </div>
 
                     <!-- Device Selector -->
-                    <div class="col-12 col-sm-6 col-md-3">
-                        <select name="device_id" class="form-select form-select-modern">
-                            <option value="">Semua Perangkat</option>
+                    <div class="col-6 col-md-3">
+                        <select name="device_id" class="form-select form-select-compact">
+                            <option value="">Semua Alat</option>
                             @foreach($userDevices as $ud)
                                 @php
                                     $dev = $ud->device;
                                     $devName = $ud->custom_name ?: ($dev ? $dev->name : 'Perangkat #'.$ud->device_id);
                                 @endphp
                                 <option value="{{ $ud->device_id }}" {{ request('device_id') == $ud->device_id ? 'selected' : '' }}>
-                                    {{ $devName }}
+                                    {{ Str::limit($devName, 20) }}
                                 </option>
                             @endforeach
                         </select>
                     </div>
 
-                    <!-- Date Range Selector -->
-                    <div class="col-12 col-sm-6 col-md-2">
-                        <select name="date_range" class="form-select form-select-modern">
+                    <!-- Date Range -->
+                    <div class="col-6 col-md-2">
+                        <select name="date_range" class="form-select form-select-compact">
                             <option value="all" {{ request('date_range') == 'all' ? 'selected' : '' }}>Semua Waktu</option>
                             <option value="today" {{ request('date_range') == 'today' ? 'selected' : '' }}>Hari Ini</option>
-                            <option value="7days" {{ request('date_range') == '7days' ? 'selected' : '' }}>7 Hari Terakhir</option>
-                            <option value="30days" {{ request('date_range') == '30days' ? 'selected' : '' }}>30 Hari Terakhir</option>
+                            <option value="7days" {{ request('date_range') == '7days' ? 'selected' : '' }}>7 Hari</option>
+                            <option value="30days" {{ request('date_range') == '30days' ? 'selected' : '' }}>30 Hari</option>
                         </select>
                     </div>
 
-                    <!-- Action Buttons -->
-                    <div class="col-12 col-md-2 d-flex gap-2">
-                        <button type="submit" class="btn btn-action-filter btn-filter-submit flex-grow-1">
-                            <i class="bi bi-funnel"></i> Filter
+                    <!-- Submit & Reset Buttons -->
+                    <div class="col-12 col-md-2 d-flex gap-1">
+                        <button type="submit" class="btn btn-compact-filter btn-compact-primary flex-grow-1">
+                            <i class="bi bi-funnel-fill"></i> Filter
                         </button>
                         @if(request()->hasAny(['q', 'device_id', 'date_range', 'category']))
-                            <a href="{{ route('riwayat.index') }}" class="btn btn-action-filter btn-filter-reset" title="Reset Semua Filter">
-                                <i class="bi bi-arrow-counterclockwise"></i>
+                            <a href="{{ route('riwayat.index') }}" class="btn btn-compact-filter btn-compact-reset" title="Reset filter">
+                                <i class="bi bi-x-lg"></i>
                             </a>
                         @endif
                     </div>
@@ -1145,42 +780,39 @@
             </form>
         </div>
 
-        <!-- Activity Timeline Feed -->
+        <!-- Activity Feed List -->
         @if($logs->count() > 0)
             @php
-                // Kelompokkan log berdasarkan tanggal pembuatan
                 $groupedLogs = $logs->groupBy(function($item) {
                     return $item->created_at->format('Y-m-d');
                 });
             @endphp
 
-            <div class="timeline-container">
-                @foreach($groupedLogs as $dateKey => $dayLogs)
-                    @php
-                        $firstDate = $dayLogs->first()->created_at;
-                        if ($firstDate->isToday()) {
-                            $dateTitle = 'Hari Ini (' . $firstDate->isoFormat('D MMMM Y') . ')';
-                        } elseif ($firstDate->isYesterday()) {
-                            $dateTitle = 'Kemarin (' . $firstDate->isoFormat('D MMMM Y') . ')';
-                        } else {
-                            $dateTitle = $firstDate->isoFormat('dddd, D MMMM Y');
-                        }
-                    @endphp
+            @foreach($groupedLogs as $dateKey => $dayLogs)
+                @php
+                    $firstDate = $dayLogs->first()->created_at;
+                    if ($firstDate->isToday()) {
+                        $dateLabel = 'Hari Ini — ' . $firstDate->isoFormat('D MMMM Y');
+                    } elseif ($firstDate->isYesterday()) {
+                        $dateLabel = 'Kemarin — ' . $firstDate->isoFormat('D MMMM Y');
+                    } else {
+                        $dateLabel = $firstDate->isoFormat('dddd, D MMMM Y');
+                    }
+                @endphp
 
-                    <!-- Date Group Divider -->
-                    <div class="timeline-date-divider">
-                        <span class="timeline-date-pill">
-                            <i class="bi bi-calendar3 text-primary"></i> {{ $dateTitle }}
-                        </span>
+                <div class="date-section">
+                    <div class="date-section-header">
+                        <i class="bi bi-calendar2-week"></i>
+                        <span>{{ $dateLabel }}</span>
                     </div>
 
-                    <div class="timeline-feed">
+                    <div class="activity-card">
                         @foreach($dayLogs as $log)
                             @php
                                 $details = $log->details ?? [];
                                 $action = $log->action;
 
-                                // Deteksi Status ON/OFF
+                                // Deteksi Status ON / OFF
                                 $isTurnOn = false;
                                 $isTurnOff = false;
                                 $statusLabel = null;
@@ -1189,138 +821,132 @@
                                     $val = $details['new_value'];
                                     if ($val == 1 || $val === '1' || $val === true || strtolower((string)$val) === 'on') {
                                         $isTurnOn = true;
-                                        $statusLabel = 'ON (Aktif)';
+                                        $statusLabel = 'ON';
                                     } else {
                                         $isTurnOff = true;
-                                        $statusLabel = 'OFF (Mati)';
+                                        $statusLabel = 'OFF';
                                     }
                                 } elseif (isset($details['action_type'])) {
                                     if ($details['action_type'] === 'on') {
                                         $isTurnOn = true;
-                                        $statusLabel = 'ON (Aktif)';
+                                        $statusLabel = 'ON';
                                     } else {
                                         $isTurnOff = true;
-                                        $statusLabel = 'OFF (Mati)';
+                                        $statusLabel = 'OFF';
                                     }
                                 } elseif (isset($details['turn_on'])) {
                                     if ($details['turn_on']) {
                                         $isTurnOn = true;
-                                        $statusLabel = 'ON (Aktif)';
+                                        $statusLabel = 'ON';
                                     } else {
                                         $isTurnOff = true;
-                                        $statusLabel = 'OFF (Mati)';
+                                        $statusLabel = 'OFF';
                                     }
                                 }
 
-                                // Konfigurasi Visual Ikon & Gradien
-                                $avatarBg = 'linear-gradient(135deg, #0284c7, #38bdf8)';
-                                $avatarIcon = 'bi-sliders';
+                                // Visual Icon Styling
+                                $iconClass = 'icon-system';
+                                $biIcon = 'bi-activity';
 
                                 if ($action === 'device_control') {
                                     if ($isTurnOn) {
-                                        $avatarBg = 'linear-gradient(135deg, #059669, #10b981)';
-                                        $avatarIcon = 'bi-lightning-charge-fill';
+                                        $iconClass = 'icon-on';
+                                        $biIcon = 'bi-power';
                                     } else {
-                                        $avatarBg = 'linear-gradient(135deg, #ef4444, #f87171)';
-                                        $avatarIcon = 'bi-power';
+                                        $iconClass = 'icon-off';
+                                        $biIcon = 'bi-power';
                                     }
                                 } elseif ($action === 'pump_control') {
-                                    $avatarBg = 'linear-gradient(135deg, #0284c7, #06b6d4)';
-                                    $avatarIcon = 'bi-fan';
+                                    $iconClass = 'icon-pump';
+                                    $biIcon = 'bi-fan';
                                 } elseif ($action === 'irrigation_control') {
-                                    $avatarBg = 'linear-gradient(135deg, #0d9488, #14b8a6)';
-                                    $avatarIcon = 'bi-droplet-half';
+                                    $iconClass = 'icon-irrigation';
+                                    $biIcon = 'bi-droplet-half';
                                 } elseif ($action === 'dosing_control') {
-                                    $avatarBg = 'linear-gradient(135deg, #8b5cf6, #ec4899)';
-                                    $avatarIcon = 'bi-funnel-fill';
+                                    $iconClass = 'icon-dosing';
+                                    $biIcon = 'bi-funnel-fill';
                                 } elseif (in_array($action, ['add_device', 'update_device', 'remove_device'])) {
-                                    $avatarBg = 'linear-gradient(135deg, #f59e0b, #d97706)';
-                                    $avatarIcon = 'bi-cpu-fill';
-                                } elseif (in_array($action, ['login', 'logout'])) {
-                                    $avatarBg = 'linear-gradient(135deg, #6366f1, #3b82f6)';
-                                    $avatarIcon = 'bi-shield-check';
+                                    $iconClass = 'icon-device';
+                                    $biIcon = 'bi-cpu';
+                                } elseif (in_array($action, ['login', 'logout', 'profile_update', 'password_change'])) {
+                                    $iconClass = 'icon-system';
+                                    $biIcon = 'bi-shield-check';
                                 }
 
                                 $deviceId = $details['device_id'] ?? null;
                             @endphp
 
-                            <div class="log-item">
-                                <!-- Avatar Ikon Samping (Desktop) -->
-                                <div class="log-avatar" style="background: {{ $avatarBg }};">
-                                    <i class="bi {{ $avatarIcon }}"></i>
+                            <div class="activity-item">
+                                <!-- Mini Icon Indicator -->
+                                <div class="action-icon-mini {{ $iconClass }}">
+                                    <i class="bi {{ $biIcon }}"></i>
                                 </div>
 
-                                <!-- Kartu Log Konten -->
-                                <div class="log-card">
-                                    <div class="log-header">
-                                        <div class="log-title">
-                                            <span>{{ $log->description }}</span>
+                                <!-- Activity Content -->
+                                <div class="activity-body">
+                                    <div class="activity-topline">
+                                        <div class="activity-desc">
+                                            {{ $log->description }}
                                         </div>
-                                        <div class="log-time-badge" title="{{ $log->created_at->format('d M Y, H:i:s') }} WIB">
-                                            <i class="bi bi-clock"></i>
-                                            <span>{{ $log->created_at->diffForHumans() }}</span>
-                                            <span class="d-none d-md-inline opacity-75">({{ $log->created_at->format('H:i') }})</span>
+                                        <div class="activity-time-stamp" title="{{ $log->created_at->format('d M Y, H:i:s') }} WIB">
+                                            {{ $log->created_at->format('H:i') }} • {{ $log->created_at->diffForHumans(null, true) }}
                                         </div>
                                     </div>
 
-                                    <!-- Detail Chips & Parameters -->
-                                    <div class="badges-flow">
-                                        {{-- Chip Status ON/OFF --}}
+                                    <!-- Micro Metadata Badges -->
+                                    <div class="activity-meta-line">
+                                        {{-- Status ON/OFF --}}
                                         @if($statusLabel)
-                                            <span class="pill-chip {{ $isTurnOn ? 'chip-on' : 'chip-off' }}">
+                                            <span class="micro-tag {{ $isTurnOn ? 'micro-tag-on' : 'micro-tag-off' }}">
                                                 <i class="bi {{ $isTurnOn ? 'bi-check-circle-fill' : 'bi-x-circle-fill' }}"></i>
                                                 {{ $statusLabel }}
                                             </span>
                                         @endif
 
-                                        {{-- Chip Target Output --}}
+                                        {{-- Target Output --}}
                                         @if(isset($details['output_name']) || isset($details['target']))
-                                            <span class="pill-chip chip-target">
+                                            <span class="micro-tag micro-tag-target">
                                                 <i class="bi bi-tag-fill"></i>
                                                 {{ strtoupper($details['output_name'] ?? $details['target']) }}
                                             </span>
                                         @endif
 
-                                        {{-- Chip Dosing Volume --}}
+                                        {{-- Dosing Volume --}}
                                         @if(isset($details['volume']))
-                                            <span class="pill-chip chip-param">
-                                                <i class="bi bi-cup-straw"></i>
-                                                {{ $details['volume'] }} mL
+                                            <span class="micro-tag micro-tag-param">
+                                                <i class="bi bi-cup-straw"></i> {{ $details['volume'] }} mL
                                             </span>
                                         @endif
 
-                                        {{-- Chip Pompa Nutrisi Type --}}
+                                        {{-- Pump Type --}}
                                         @if(isset($details['pump_type']))
                                             @php
                                                 $pLabels = ['dosing' => 'Dosing AB', 'ph_up' => 'pH Up', 'ph_down' => 'pH Down'];
                                             @endphp
-                                            <span class="pill-chip chip-param">
-                                                <i class="bi bi-eyedropper"></i>
+                                            <span class="micro-tag micro-tag-param">
                                                 {{ $pLabels[$details['pump_type']] ?? ucfirst($details['pump_type']) }}
                                             </span>
                                         @endif
 
-                                        {{-- Chip Zona Irigasi --}}
+                                        {{-- Irrigation Zone --}}
                                         @if(isset($details['zone']) && $details['zone'])
-                                            <span class="pill-chip chip-neutral">
-                                                <i class="bi bi-geo-alt-fill"></i>
+                                            <span class="micro-tag micro-tag-neutral">
                                                 Zona {{ $details['zone'] }}
                                             </span>
                                         @endif
 
-                                        {{-- Chip Water Type --}}
+                                        {{-- Water Type --}}
                                         @if(isset($details['water_type']) && $details['water_type'])
-                                            <span class="pill-chip chip-neutral">
-                                                <i class="bi bi-water"></i>
-                                                Air: {{ ucfirst($details['water_type']) }}
+                                            <span class="micro-tag micro-tag-neutral">
+                                                Air {{ ucfirst($details['water_type']) }}
                                             </span>
                                         @endif
 
-                                        {{-- Tautan Langsung ke Halaman Device Monitoring --}}
+                                        {{-- Direct Device Link --}}
                                         @if($deviceId)
-                                            <a href="{{ route('monitoring.show', $deviceId) }}" class="btn-link-device">
-                                                <span>Buka Monitoring</span>
-                                                <i class="bi bi-arrow-right"></i>
+                                            <a href="{{ route('monitoring.show', $deviceId) }}" class="btn-mini-goto">
+                                                <span>Monitoring</span>
+                                                <i class="bi bi-chevron-right"></i>
                                             </a>
                                         @endif
                                     </div>
@@ -1328,35 +954,33 @@
                             </div>
                         @endforeach
                     </div>
-                @endforeach
-            </div>
+                </div>
+            @endforeach
 
-            <!-- Glass Pagination -->
-            <div class="pagination-wrap">
+            <!-- Compact Pagination -->
+            <div class="pagination-bar">
                 {{ $logs->links('pagination::bootstrap-5') }}
             </div>
 
         @else
-            <!-- Empty State -->
-            <div class="empty-state-panel">
-                <div class="empty-icon-box">
-                    <i class="bi bi-inbox"></i>
-                </div>
-                <h4 class="empty-title">Tidak Ada Riwayat Ditemukan</h4>
-                <p class="empty-desc">
+            <!-- Elegant Compact Empty State -->
+            <div class="empty-compact">
+                <i class="bi bi-clock-history"></i>
+                <div class="empty-compact-title">Tidak Ada Aktivitas Ditemukan</div>
+                <div class="empty-compact-sub">
                     @if(request()->hasAny(['q', 'device_id', 'date_range', 'category']))
-                        Tidak ada aktivitas yang sesuai dengan filter pencarian Anda. Coba ubah kata kunci atau reset filter.
+                        Filter yang diterapkan tidak menghasilkan data riwayat apapun.
                     @else
-                        Belum ada rekam jejak aktivitas kontrol yang tercatat pada akun Anda.
+                        Belum ada rekaman log aktivitas kontrol yang tersimpan.
                     @endif
-                </p>
+                </div>
                 @if(request()->hasAny(['q', 'device_id', 'date_range', 'category']))
-                    <a href="{{ route('riwayat.index') }}" class="btn btn-action-filter btn-filter-submit">
+                    <a href="{{ route('riwayat.index') }}" class="btn btn-compact-filter btn-compact-primary">
                         <i class="bi bi-arrow-counterclockwise"></i> Reset Semua Filter
                     </a>
                 @else
-                    <a href="{{ route('monitoring.index') }}" class="btn btn-action-filter btn-filter-submit">
-                        <i class="bi bi-speedometer2"></i> Menuju Dashboard Monitoring
+                    <a href="{{ route('monitoring.index') }}" class="btn btn-compact-filter btn-compact-primary">
+                        <i class="bi bi-speedometer2"></i> Menuju Monitoring
                     </a>
                 @endif
             </div>
@@ -1365,4 +989,5 @@
 
     @include('partials.pwa-scripts')
 </body>
+
 </html>
