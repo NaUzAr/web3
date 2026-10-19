@@ -45,11 +45,11 @@ class BotMemberController extends Controller
         $pairUuid = $uuid;
         $pairToken = $token;
 
-        // Cek jika perintah pendaftaran dikirim melalui chat WA (misal: "DAFTAR 40db4d83 9|token..." atau "CONNECT 40db4d83 9|token...")
-        if ($message && preg_match('/(?:daftar|connect|pair|bind|link)?\s*([a-f0-9]{8})\s+(\d+\|[A-Za-z0-9_\-]+)/i', (string)$message, $mPair)) {
+        // Cek jika perintah pendaftaran dikirim melalui chat WA (bisa "DAFTAR 40db4d83 9|token...", multiline, atau kalimat bebas seperti "Min tolong sambungkan akun saya 40db4d83 9|token...")
+        if ($message && preg_match('/\b([a-f0-9]{8})\b/i', (string)$message, $mUuid) && preg_match('/(\d+\|[A-Za-z0-9_\-]+)/', (string)$message, $mTok)) {
             $isPairing = true;
-            $pairUuid = $mPair[1];
-            $pairToken = $mPair[2];
+            $pairUuid = $mUuid[1];
+            $pairToken = $mTok[1];
         } elseif ($uuid && $token) {
             $isPairing = true;
         }
