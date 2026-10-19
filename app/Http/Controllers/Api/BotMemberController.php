@@ -42,8 +42,9 @@ class BotMemberController extends Controller
 
         // 1. Cek berdasarkan nomor WhatsApp (Phone)
         if ($phone) {
-            // Bersihkan nomor dari karakter non-digit dan format WA (@c.us / @s.whatsapp.net)
-            $cleanPhone = preg_replace('/@.*$/', '', (string)$phone);
+            // Bersihkan nomor dari domain WA (@s.whatsapp.net / @c.us) dan Device ID (:85, :1, dll)
+            // Contoh format: "6285155456025:85@s.whatsapp.net" -> "6285155456025"
+            $cleanPhone = preg_replace('/[:@].*$/', '', (string)$phone);
             $digits = preg_replace('/\D/', '', $cleanPhone);
 
             // Dapatkan nomor inti tanpa awalan 62 atau 0
@@ -96,8 +97,9 @@ class BotMemberController extends Controller
 
         // 5. Jika user terverifikasi dan belum punya nomor telepon, otomatis bind nomor WA pengirim
         if ($user && empty($user->phone) && $phone) {
-            $clean = preg_replace('/@.*$/', '', (string)$phone);
-            $user->phone = preg_replace('/\D/', '', $clean);
+            $clean = preg_replace('/[:@].*$/', '', (string)$phone);
+            $rawDigits = preg_replace('/\D/', '', $clean);
+            $user->phone = str_starts_with($rawDigits, '62') ? ('0' . substr($rawDigits, 2)) : $rawDigits;
             $user->saveQuietly();
         }
 
