@@ -100,12 +100,16 @@ class BotMemberController extends Controller
                 $candidate->saveQuietly();
             }
 
+            // Hitung sisa hari masa aktif token
+            $daysRemaining = $tokenModel->expires_at ? max(0, (int) ceil(now()->diffInDays($tokenModel->expires_at, false))) : 30;
+
             return response()->json([
                 'is_member' => true,
                 'action' => 'bind',
                 'phone_bound' => true,
+                'days_remaining' => $daysRemaining,
                 'message' => "Nomor WhatsApp ({$formattedPhone}) berhasil dihubungkan ke akun {$candidate->name} ({$candidate->username})!",
-                'reply_for_user' => "Selamat datang, {$candidate->name}! Nomor WhatsApp Anda ({$formattedPhone}) berhasil dihubungkan ke akun Swaratani. Sekarang Anda dapat menggunakan layanan bot AI IoT.",
+                'reply_for_user' => "Selamat datang, {$candidate->name}! 🌱 Nomor WhatsApp Anda ({$formattedPhone}) berhasil dihubungkan ke akun Swaratani (Masa aktif: {$daysRemaining} hari).\n\nAnda tidak perlu lagi memasukkan token atau UUID selama masa aktif token ini berlaku. Silakan langsung kirim pertanyaan atau konsultasi Anda! 🌾",
                 'user' => [
                     'id' => $candidate->id,
                     'uuid' => $candidate->uuid,
@@ -186,7 +190,37 @@ class BotMemberController extends Controller
             ], 200);
         }
 
-        // Jika MEMBER terdaftar, ambil ringkasan device dan sensor terkini miliknya
+        // 4. Periksa masa aktif token pengguna
+        $activeToken = $user->thirdPartyToken() ?: $user->tokens()->latest()->first();
+        $isTokenExpired = false;
+        $daysRemaining = null;
+
+        if ($activeToken) {
+            if ($activeToken->expires_at && $activeToken->expires_at->isPast()) {
+                $isTokenExpired = true;
+            } elseif ($activeToken->expires_at) {
+                $daysRemaining = max(0, (int) ceil(now()->diffInDays($activeToken->expires_at, false)));
+            }
+        }
+
+        // Jika token sudah kadaluarsa: tolak akses member dan minta perbarui token
+        if ($isTokenExpired) {
+            return response()->json([
+                'is_member' => false,
+                'phone_bound' => false,
+                'token_expired' => true,
+                'message' => "Masa aktif akses bot WhatsApp untuk akun {$user->name} telah kadaluarsa.",
+                'suggestion' => 'Silakan generate token baru di menu Profil website Swaratani untuk memperpanjang akses.',
+                'reply_for_user' => "Halo Kak {$user->name}! ⚠️ Masa aktif akses bot WhatsApp Anda telah habis (kadaluarsa).\n\nSilakan masuk ke menu Profil di website https://swaratani.id untuk membuat Token baru, lalu kirimkan ke chat ini:\nDAFTAR {$user->uuid} <TOKEN_BARU>",
+                'user' => [
+                    'id' => $user->id,
+                    'uuid' => $user->uuid,
+                    'name' => $user->name,
+                ]
+            ], 200);
+        }
+
+        // Jika MEMBER terdaftar dan token aktif, ambil ringkasan device dan sensor terkini miliknya
         $userDevices = UserDevice::with('device')->where('user_id', $user->id)->get();
         $devicesSummary = [];
 
@@ -217,6 +251,8 @@ class BotMemberController extends Controller
         return response()->json([
             'is_member' => true,
             'message' => 'Member terverifikasi.',
+            'token_active' => true,
+            'days_remaining' => $daysRemaining,
             'user' => [
                 'id' => $user->id,
                 'uuid' => $user->uuid,
