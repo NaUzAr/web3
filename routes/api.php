@@ -68,4 +68,5 @@ Route::middleware('throttle:120,1')->group(function () {
 
 // ==================== BOT & AI INTEGRATION (n8n & WAHA) ====================
 Route::match(['get', 'post'], '/bot/check-member', [\App\Http\Controllers\Api\BotMemberController::class, 'checkMember'])->middleware('throttle:60,1');
+Route::post('/bot/bind-member', [\App\Http\Controllers\Api\BotMemberController::class, 'checkMember'])->middleware('throttle:60,1');
 

@@ -37,7 +37,90 @@ class BotMemberController extends Controller
         $phone = $request->input('phone');
         $uuid = $request->input('uuid');
         $token = $request->bearerToken() ?: $request->input('token');
+        $message = $request->input('message');
+        $action = $request->input('action');
 
+        // Deteksi apakah ini upaya Pairing / Pendaftaran UUID + Token
+        $isPairing = ($action === 'bind' || $action === 'register');
+        $pairUuid = $uuid;
+        $pairToken = $token;
+
+        // Cek jika perintah pendaftaran dikirim melalui chat WA (misal: "DAFTAR 40db4d83 9|token..." atau "CONNECT 40db4d83 9|token...")
+        if ($message && preg_match('/(?:daftar|connect|pair|bind|link)?\s*([a-f0-9]{8})\s+(\d+\|[A-Za-z0-9_\-]+)/i', (string)$message, $mPair)) {
+            $isPairing = true;
+            $pairUuid = $mPair[1];
+            $pairToken = $mPair[2];
+        } elseif ($uuid && $token) {
+            $isPairing = true;
+        }
+
+        // ==========================================
+        // ALUR A: Upaya Pairing / Pendaftaran Nomor WA
+        // ==========================================
+        if ($isPairing) {
+            if (!$pairUuid || !$pairToken) {
+                return response()->json([
+                    'is_member' => false,
+                    'action' => 'bind',
+                    'phone_bound' => false,
+                    'message' => 'Parameter tidak lengkap: UUID dan API Token wajib disertakan.',
+                    'reply_for_user' => 'Pendaftaran gagal: Mohon sertakan UUID dan Token dengan format: DAFTAR <UUID> <TOKEN>',
+                ], 400);
+            }
+
+            $candidate = User::where('uuid', strtolower(trim($pairUuid)))->first();
+            if (!$candidate) {
+                return response()->json([
+                    'is_member' => false,
+                    'action' => 'bind',
+                    'phone_bound' => false,
+                    'message' => 'Gagal menghubungkan: UUID tidak ditemukan di sistem Swaratani.',
+                    'reply_for_user' => 'Pendaftaran gagal: UUID tidak ditemukan. Silakan cek UUID akun Anda di menu Profil website Swaratani.',
+                ], 200);
+            }
+
+            $tokenModel = PersonalAccessToken::findToken($pairToken);
+            if (!$tokenModel || $tokenModel->tokenable_id !== $candidate->id || ($tokenModel->expires_at && $tokenModel->expires_at->isPast())) {
+                return response()->json([
+                    'is_member' => false,
+                    'action' => 'bind',
+                    'phone_bound' => false,
+                    'message' => 'Gagal menghubungkan: API Token salah atau sudah kadaluarsa.',
+                    'reply_for_user' => 'Pendaftaran gagal: API Token tidak valid atau sudah kadaluarsa. Silakan generate token baru di menu Profil website Swaratani.',
+                ], 200);
+            }
+
+            // Validasi sukses! Simpan nomor telepon WhatsApp pengirim ke profil user
+            $formattedPhone = null;
+            if ($phone) {
+                $clean = preg_replace('/[:@].*$/', '', (string)$phone);
+                $rawDigits = preg_replace('/\D/', '', $clean);
+                $formattedPhone = str_starts_with($rawDigits, '62') ? ('0' . substr($rawDigits, 2)) : $rawDigits;
+                $candidate->phone = $formattedPhone;
+                $candidate->saveQuietly();
+            }
+
+            return response()->json([
+                'is_member' => true,
+                'action' => 'bind',
+                'phone_bound' => true,
+                'message' => "Nomor WhatsApp ({$formattedPhone}) berhasil dihubungkan ke akun {$candidate->name} ({$candidate->username})!",
+                'reply_for_user' => "Selamat datang, {$candidate->name}! Nomor WhatsApp Anda ({$formattedPhone}) berhasil dihubungkan ke akun Swaratani. Sekarang Anda dapat menggunakan layanan bot AI IoT.",
+                'user' => [
+                    'id' => $candidate->id,
+                    'uuid' => $candidate->uuid,
+                    'name' => $candidate->name,
+                    'username' => $candidate->username,
+                    'phone' => $candidate->phone,
+                    'role' => $candidate->role,
+                    'is_admin' => $candidate->is_admin,
+                ]
+            ], 200);
+        }
+
+        // ==========================================
+        // ALUR B: Pengecekan Member Rutin (Chat / Query)
+        // ==========================================
         $user = null;
 
         // 1. Cek berdasarkan nomor WhatsApp (Phone)
@@ -92,36 +175,14 @@ class BotMemberController extends Controller
             }
         }
 
-        // 4. Cek apakah pesan berisi format pairing (misal: "CONNECT 40db4d83 2|token...")
-        $message = $request->input('message');
-        if (!$user && $message) {
-            if (preg_match('/\b([a-f0-9]{8})\b/i', (string)$message, $mUuid)) {
-                $candidate = User::where('uuid', strtolower($mUuid[1]))->first();
-                if ($candidate) {
-                    if (preg_match('/(\d+\|[A-Za-z0-9_-]{20,})/', (string)$message, $mTok)) {
-                        $tokenModel = PersonalAccessToken::findToken($mTok[1]);
-                        if ($tokenModel && $tokenModel->tokenable_id === $candidate->id && (!$tokenModel->expires_at || !$tokenModel->expires_at->isPast())) {
-                            $user = $candidate;
-                        }
-                    }
-                }
-            }
-        }
-
-        // 5. Jika user terverifikasi dan belum punya nomor telepon, otomatis bind nomor WA pengirim
-        if ($user && empty($user->phone) && $phone) {
-            $clean = preg_replace('/[:@].*$/', '', (string)$phone);
-            $rawDigits = preg_replace('/\D/', '', $clean);
-            $user->phone = str_starts_with($rawDigits, '62') ? ('0' . substr($rawDigits, 2)) : $rawDigits;
-            $user->saveQuietly();
-        }
-
         // Jika BUKAN member
         if (!$user) {
             return response()->json([
                 'is_member' => false,
+                'phone_bound' => false,
                 'message' => 'Nomor WhatsApp belum terdaftar sebagai member Swaratani IoT.',
-                'suggestion' => 'Silakan lakukan pendaftaran akun dan simpan nomor WhatsApp Anda di menu Profil website Swaratani IoT.',
+                'suggestion' => 'Ketik: DAFTAR <UUID> <TOKEN> untuk menghubungkan akun Anda, atau atur nomor WhatsApp di menu Profil web.',
+                'reply_for_user' => 'Halo! Nomor WhatsApp Anda belum terdaftar di Swaratani IoT. Silakan daftarkan nomor Anda dengan mengirim pesan: DAFTAR <UUID> <TOKEN> (Dapatkan UUID & Token di menu Profil website Swaratani).',
             ], 200);
         }
 
