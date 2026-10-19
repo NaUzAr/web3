@@ -55,20 +55,30 @@ class BotMemberController extends Controller
         }
 
         // Deteksi apakah ini permintaan Disconnect / Unbind nomor WA
-        $isUnbind = ($action === 'unbind' || $action === 'disconnect');
+        // 1. Lewat parameter eksplisit (dipanggil oleh AI Tool di n8n atau API)
+        $isUnbind = in_array(strtolower((string)$action), ['unbind', 'disconnect', 'logout', 'cabut']);
+
+        // 2. Lewat pesan chat murni (hanya jika pesan berupa satu kata perintah spesifik, bukan di tengah kalimat pertanian/konteks lain)
         if (!$isUnbind && $message) {
             $msgLower = trim(strtolower((string)$message));
+            $cleanedMsg = trim($msgLower, " \t\n\r\0\x0B.!?,");
 
-            // Periksa apakah pesan ini adalah pertanyaan (misal: "gimana cara disconnect?"), bukan permintaan langsung
-            $isQuestion = preg_match('/\b(gimana|bagaimana|cara|apakah|bisa\s*gak|bisa\s*ngga|tutorial|panduan)\b/i', $msgLower);
+            $strictCommands = [
+                'putuskan',
+                'disconnect',
+                'unbind',
+                'unconnect',
+                'unkonect',
+                'putus sambungan',
+                'keluar akun',
+                'hapus wa',
+                'hapus nomor wa',
+                'logout wa',
+                'cabut akun',
+            ];
 
-            if (!$isQuestion) {
-                if (
-                    preg_match('/^(putuskan|disconnect|unbind|unconnect|unkonect|hapus\s*wa|putus\s*sambungan|keluar\s*akun|logout\s*wa)(\s+.*)?$/i', $msgLower) ||
-                    preg_match('/\b(tolong\s+putuskan|mau\s+disconnect|putusin\s+akun|putuskan\s+akun|cabut\s+akun|unconnect\s+akun|unbind\s+akun|hapus\s+nomor\s+wa)\b/i', $msgLower)
-                ) {
-                    $isUnbind = true;
-                }
+            if (in_array($cleanedMsg, $strictCommands, true)) {
+                $isUnbind = true;
             }
         }
 
@@ -354,4 +364,14 @@ class BotMemberController extends Controller
             'devices' => $devicesSummary,
         ], 200);
     }
+
+    /**
+     * Endpoint khusus untuk Unbind / Disconnect Nomor WhatsApp (Ideal untuk AI Tool di n8n)
+     */
+    public function unbindMember(Request $request)
+    {
+        $request->merge(['action' => 'unbind']);
+        return $this->checkMember($request);
+    }
 }
+
