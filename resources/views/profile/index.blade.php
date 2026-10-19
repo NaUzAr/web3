@@ -190,6 +190,10 @@
                 <div class="text-muted small d-flex flex-wrap align-items-center gap-3">
                     <span><i class="bi bi-at me-1"></i>{{ $user->username }}</span>
                     <span><i class="bi bi-envelope me-1"></i>{{ $user->email }}</span>
+                    <span>
+                        <i class="bi bi-telephone me-1 text-success"></i>
+                        <span class="fw-semibold text-dark">{{ $user->phone ?: 'No HP belum diatur' }}</span>
+                    </span>
                     <span><i class="bi bi-calendar-check me-1"></i>Bergabung {{ $user->created_at ? $user->created_at->format('d M Y') : '-' }}</span>
                     <span class="badge bg-light text-dark border px-2 py-1 rounded-3">
                         <i class="bi bi-fingerprint text-primary me-1"></i>UUID: <code class="fw-bold text-primary">{{ $user->uuid }}</code>
@@ -241,6 +245,7 @@
                                 <span class="input-group-text bg-light border-end-0" style="border-radius: 12px 0 0 12px;"><i class="bi bi-telephone"></i></span>
                                 <input type="tel" name="phone" id="phone" class="form-control border-start-0 @error('phone') is-invalid @enderror" style="border-radius: 0 12px 12px 0;" placeholder="08xxxxxxxxxx" value="{{ old('phone', $user->phone ?? '') }}">
                             </div>
+                            <small class="text-muted mt-1 d-block">Nomor ini dipakai bot WhatsApp untuk memvalidasi akses member.</small>
                             @error('phone')
                                 <div class="text-danger small mt-1">{{ $message }}</div>
                             @enderror

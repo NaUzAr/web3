@@ -84,11 +84,7 @@ class ProfileController extends Controller
 
         $user->name = $request->name;
         $user->email = $request->email;
-
-        // Cek jika kolom phone ada di database
-        if (Schema::hasColumn('users', 'phone')) {
-            $user->phone = $request->phone;
-        }
+        $user->phone = $request->filled('phone') ? trim($request->phone) : null;
 
         $user->save();
 
