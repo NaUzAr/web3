@@ -240,12 +240,26 @@
                         </div>
 
                         <div class="mb-4">
-                            <label for="phone" class="form-label">Nomor WhatsApp / HP</label>
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label for="phone" class="form-label mb-0">Nomor WhatsApp / HP</label>
+                                @if(!empty($user->phone))
+                                    <button type="submit" form="unbindPhoneForm" class="btn btn-sm btn-link text-danger p-0 text-decoration-none fw-semibold small" onclick="return confirm('Apakah Anda yakin ingin memutuskan sambungan WhatsApp dari akun ini? Bot WA tidak lagi mengenali nomor ini sebagai member.')">
+                                        <i class="bi bi-x-circle me-1"></i> Putuskan Hubungan WhatsApp
+                                    </button>
+                                @endif
+                            </div>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0" style="border-radius: 12px 0 0 12px;"><i class="bi bi-telephone"></i></span>
                                 <input type="tel" name="phone" id="phone" class="form-control border-start-0 @error('phone') is-invalid @enderror" style="border-radius: 0 12px 12px 0;" placeholder="08xxxxxxxxxx" value="{{ old('phone', $user->phone ?? '') }}">
                             </div>
-                            <small class="text-muted mt-1 d-block">Nomor ini dipakai bot WhatsApp untuk memvalidasi akses member.</small>
+                            <div class="d-flex justify-content-between align-items-center mt-1 flex-wrap gap-1">
+                                <small class="text-muted">Nomor ini dipakai bot WhatsApp untuk memvalidasi akses member.</small>
+                                @if(!empty($user->phone))
+                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1 rounded-pill small">
+                                        <i class="bi bi-whatsapp me-1"></i> Terhubung
+                                    </span>
+                                @endif
+                            </div>
                             @error('phone')
                                 <div class="text-danger small mt-1">{{ $message }}</div>
                             @enderror
@@ -255,6 +269,13 @@
                             <i class="bi bi-save"></i> Simpan Perubahan
                         </button>
                     </form>
+
+                    @if(!empty($user->phone))
+                        <form id="unbindPhoneForm" action="{{ route('profile.phone.unbind') }}" method="POST" style="display: none;">
+                            @csrf
+                            @method('DELETE')
+                        </form>
+                    @endif
                 </div>
             </div>
 

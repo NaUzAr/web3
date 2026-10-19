@@ -155,6 +155,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/profile/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('profile.password.update');
     Route::post('/profile/token/regenerate', [\App\Http\Controllers\ProfileController::class, 'regenerateToken'])->name('profile.token.regenerate');
     Route::delete('/profile/token/revoke', [\App\Http\Controllers\ProfileController::class, 'revokeToken'])->name('profile.token.revoke');
+    Route::delete('/profile/phone/unbind', [\App\Http\Controllers\ProfileController::class, 'unbindPhone'])->name('profile.phone.unbind');
 
 });
 

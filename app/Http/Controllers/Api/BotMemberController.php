@@ -54,6 +54,85 @@ class BotMemberController extends Controller
             $isPairing = true;
         }
 
+        // Deteksi apakah ini permintaan Disconnect / Unbind nomor WA
+        $isUnbind = ($action === 'unbind' || $action === 'disconnect');
+        if (!$isUnbind && $message) {
+            $msgLower = trim(strtolower((string)$message));
+            if (preg_match('/^(putuskan|disconnect|unbind|unconnect|unkonect|hapus\s*wa|putus\s*sambungan|keluar\s*akun|logout\s*wa)(\s+.*)?$/i', $msgLower)) {
+                $isUnbind = true;
+            }
+        }
+
+        // ==========================================
+        // ALUR KHUSUS: Putuskan Sambungan (Unbind)
+        // ==========================================
+        if ($isUnbind) {
+            $userToUnbind = null;
+            if ($phone) {
+                $cleanPhone = preg_replace('/[:@].*$/', '', (string)$phone);
+                $digits = preg_replace('/\D/', '', $cleanPhone);
+                $core = $digits;
+                if (str_starts_with($digits, '62')) {
+                    $core = substr($digits, 2);
+                } elseif (str_starts_with($digits, '0')) {
+                    $core = substr($digits, 1);
+                }
+
+                if (!empty($core)) {
+                    $userToUnbind = User::where(function ($query) use ($digits, $core) {
+                        $query->where('phone', $digits)
+                              ->orWhere('phone', '0' . $core)
+                              ->orWhere('phone', '62' . $core)
+                              ->orWhere('phone', '+62' . $core)
+                              ->orWhere('phone', 'like', '%' . $core . '%');
+
+                        if (DB::getDriverName() === 'pgsql') {
+                            $query->orWhereRaw("REGEXP_REPLACE(COALESCE(phone, ''), '[^0-9]', '', 'g') IN (?, ?)", [
+                                '0' . $core,
+                                '62' . $core
+                            ]);
+                        } else {
+                            $query->orWhereRaw("REPLACE(REPLACE(REPLACE(COALESCE(phone, ''), ' ', ''), '-', ''), '+', '') IN (?, ?)", [
+                                '0' . $core,
+                                '62' . $core
+                            ]);
+                        }
+                    })->first();
+                }
+            }
+
+            if (!$userToUnbind && $uuid) {
+                $userToUnbind = User::where('uuid', strtolower(trim($uuid)))->first();
+            }
+
+            if (!$userToUnbind) {
+                return response()->json([
+                    'is_member' => false,
+                    'action' => 'unbind',
+                    'phone_unbound' => false,
+                    'message' => 'Nomor WhatsApp ini tidak terhubung ke akun Swaratani mana pun.',
+                    'reply_for_user' => 'Nomor WhatsApp Anda belum terhubung ke akun Swaratani mana pun, sehingga tidak ada akun yang perlu diputuskan.',
+                ], 200);
+            }
+
+            $userName = $userToUnbind->name;
+            $userToUnbind->phone = null;
+            $userToUnbind->saveQuietly();
+
+            return response()->json([
+                'is_member' => false,
+                'action' => 'unbind',
+                'phone_unbound' => true,
+                'message' => "Nomor WhatsApp berhasil diputuskan dari akun {$userName}.",
+                'reply_for_user' => "Nomor WhatsApp Anda berhasil diputuskan dari akun Swaratani ({$userName}).\n\nSekarang nomor ini kembali menjadi non-member. Jika ingin menghubungkan kembali akun Anda di kemudian hari, cukup kirimkan pesan:\nDAFTAR {$userToUnbind->uuid} <TOKEN>",
+                'user' => [
+                    'id' => $userToUnbind->id,
+                    'uuid' => $userToUnbind->uuid,
+                    'name' => $userName,
+                ]
+            ], 200);
+        }
+
         // ==========================================
         // ALUR A: Upaya Pairing / Pendaftaran Nomor WA
         // ==========================================

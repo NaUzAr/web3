@@ -178,4 +178,20 @@ class ProfileController extends Controller
         return redirect()->route('profile.index')
             ->with('token_success', 'Akses token pihak ketiga berhasil dicabut.');
     }
+
+    /**
+     * Putuskan sambungan nomor WhatsApp dari akun
+     */
+    public function unbindPhone(Request $request)
+    {
+        $user = Auth::user();
+        $user->phone = null;
+        $user->saveQuietly();
+
+        ActivityLog::log('phone_unbound', "User {$user->name} memutuskan sambungan WhatsApp dari akun");
+
+        return redirect()->route('profile.index')
+            ->with('success', 'Nomor WhatsApp berhasil diputuskan dari akun Anda.');
+    }
 }
+
