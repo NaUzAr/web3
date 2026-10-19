@@ -61,7 +61,20 @@ class BotMemberController extends Controller
                           ->orWhere('phone', '0' . $core)
                           ->orWhere('phone', '62' . $core)
                           ->orWhere('phone', '+62' . $core)
-                          ->orWhere('phone', 'like', '%' . $core);
+                          ->orWhere('phone', 'like', '%' . $core . '%');
+
+                    // Bersihkan spasi, strip, atau tanda plus yang mungkin ada di kolom phone database
+                    if (DB::getDriverName() === 'pgsql') {
+                        $query->orWhereRaw("REGEXP_REPLACE(COALESCE(phone, ''), '[^0-9]', '', 'g') IN (?, ?)", [
+                            '0' . $core,
+                            '62' . $core
+                        ]);
+                    } else {
+                        $query->orWhereRaw("REPLACE(REPLACE(REPLACE(COALESCE(phone, ''), ' ', ''), '-', ''), '+', '') IN (?, ?)", [
+                            '0' . $core,
+                            '62' . $core
+                        ]);
+                    }
                 })->first();
             }
         }
