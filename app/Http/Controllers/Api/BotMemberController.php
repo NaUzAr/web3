@@ -58,8 +58,17 @@ class BotMemberController extends Controller
         $isUnbind = ($action === 'unbind' || $action === 'disconnect');
         if (!$isUnbind && $message) {
             $msgLower = trim(strtolower((string)$message));
-            if (preg_match('/^(putuskan|disconnect|unbind|unconnect|unkonect|hapus\s*wa|putus\s*sambungan|keluar\s*akun|logout\s*wa)(\s+.*)?$/i', $msgLower)) {
-                $isUnbind = true;
+
+            // Periksa apakah pesan ini adalah pertanyaan (misal: "gimana cara disconnect?"), bukan permintaan langsung
+            $isQuestion = preg_match('/\b(gimana|bagaimana|cara|apakah|bisa\s*gak|bisa\s*ngga|tutorial|panduan)\b/i', $msgLower);
+
+            if (!$isQuestion) {
+                if (
+                    preg_match('/^(putuskan|disconnect|unbind|unconnect|unkonect|hapus\s*wa|putus\s*sambungan|keluar\s*akun|logout\s*wa)(\s+.*)?$/i', $msgLower) ||
+                    preg_match('/\b(tolong\s+putuskan|mau\s+disconnect|putusin\s+akun|putuskan\s+akun|cabut\s+akun|unconnect\s+akun|unbind\s+akun|hapus\s+nomor\s+wa)\b/i', $msgLower)
+                ) {
+                    $isUnbind = true;
+                }
             }
         }
 
