@@ -153,6 +153,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'index'])->name('profile.index');
     Route::put('/profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('profile.password.update');
+    Route::post('/profile/token/regenerate', [\App\Http\Controllers\ProfileController::class, 'regenerateToken'])->name('profile.token.regenerate');
+    Route::delete('/profile/token/revoke', [\App\Http\Controllers\ProfileController::class, 'revokeToken'])->name('profile.token.revoke');
 
 });
 

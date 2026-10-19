@@ -47,6 +47,7 @@
     {{-- 5. Scripts (WebSocket, Real-time status, Output Controls) --}}
     @include('monitoring.scripts.index')
 
+    @include('partials.chatbot')
     @include('partials.pwa-scripts')
 </body>
 

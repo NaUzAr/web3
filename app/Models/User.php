@@ -19,6 +19,8 @@ class User extends Authenticatable implements MustVerifyEmail
      * @var list<string>
      */
     protected $fillable = [
+        'uuid',
+        'api_token',
         'name',
         'username',
         'email',
@@ -46,6 +48,7 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $hidden = [
         'password',
         'remember_token',
+        'api_token',
     ];
 
     /**
@@ -108,5 +111,55 @@ class User extends Authenticatable implements MustVerifyEmail
         }
 
         return $this->last_active_at->diffForHumans();
+    }
+
+    /**
+     * Model booted event
+     */
+    protected static function booted(): void
+    {
+        static::creating(function ($user) {
+            if (empty($user->uuid)) {
+                $user->uuid = self::generateShortUuid();
+            }
+        });
+    }
+
+    /**
+     * Generate unique 8-character hex UUID (e.g. 8f3b1a2c)
+     */
+    public static function generateShortUuid(): string
+    {
+        do {
+            $hex = bin2hex(random_bytes(4)); // 4 bytes = 8 hex chars
+        } while (static::where('uuid', $hex)->exists());
+
+        return $hex;
+    }
+
+    /**
+     * Accessor for uuid (ensure always present)
+     */
+    public function getUuidAttribute($value): string
+    {
+        if (empty($value)) {
+            $value = self::generateShortUuid();
+            $this->attributes['uuid'] = $value;
+            if ($this->exists) {
+                $this->saveQuietly();
+            }
+        }
+        return $value;
+    }
+
+    /**
+     * Helper: Get current third-party personal access token
+     */
+    public function thirdPartyToken()
+    {
+        return $this->tokens()
+            ->where('name', 'third_party_access')
+            ->latest()
+            ->first();
     }
 }
