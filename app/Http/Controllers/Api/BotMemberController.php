@@ -457,27 +457,36 @@ class BotMemberController extends Controller
         // A. Filter Kata Kunci Rentang Waktu (1h, 6h, 24h, today, yesterday, 7d, 30d)
         $range = strtolower(trim((string)$request->input('range', '')));
         $hasTimeFilter = false;
+        $rangeLabel = '';
+
         if ($range === '1h') {
             $query->where('recorded_at', '>=', now()->subHour());
             $hasTimeFilter = true;
+            $rangeLabel = '1 jam terakhir';
         } elseif ($range === '6h') {
             $query->where('recorded_at', '>=', now()->subHours(6));
             $hasTimeFilter = true;
+            $rangeLabel = '6 jam terakhir';
         } elseif ($range === '24h' || $range === '1d') {
             $query->where('recorded_at', '>=', now()->subDay());
             $hasTimeFilter = true;
+            $rangeLabel = '24 jam terakhir';
         } elseif ($range === 'today' || $range === 'hari_ini') {
             $query->whereDate('recorded_at', now()->today());
             $hasTimeFilter = true;
+            $rangeLabel = 'hari ini (' . now()->format('d M Y') . ')';
         } elseif ($range === 'yesterday' || $range === 'kemarin') {
             $query->whereDate('recorded_at', now()->yesterday());
             $hasTimeFilter = true;
+            $rangeLabel = 'kemarin (' . now()->yesterday()->format('d M Y') . ')';
         } elseif ($range === '7d' || $range === '1w' || $range === 'seminggu') {
             $query->where('recorded_at', '>=', now()->subDays(7));
             $hasTimeFilter = true;
+            $rangeLabel = '7 hari terakhir';
         } elseif ($range === '30d' || $range === '1m' || $range === 'sebulan') {
             $query->where('recorded_at', '>=', now()->subDays(30));
             $hasTimeFilter = true;
+            $rangeLabel = '30 hari terakhir';
         }
 
         // B. Filter Rentang Tanggal Spesifik (start_date & end_date)
@@ -489,31 +498,39 @@ class BotMemberController extends Controller
                 $startDate . ' 00:00:00',
                 $endDate . ' 23:59:59'
             ]);
+            $rangeLabel = ($startDate === $endDate) ? "tanggal {$startDate}" : "{$startDate} s/d {$endDate}";
         }
 
-        // C. Filter Limit (Maksimal hingga 500 baris)
+        // C. Logika Pengambilan Data:
+        // - Jika ada filter waktu (misal hari ini, kemarin, 24h, tanggal):
+        //   Backend me-load seluruh rekaman pada rentang tersebut (hingga 5000 baris) untuk menghitung rata-rata, min, max secara menyeluruh.
+        // - Jika tanpa filter waktu: ambil data terbaru sesuai limit (default 10).
         $isExplicitLimit = $request->filled('limit');
-        if ($isExplicitLimit) {
-            $limit = (int) $request->input('limit');
-            if ($limit < 1) $limit = 10;
-            if ($limit > 500) $limit = 500;
-        } elseif ($hasTimeFilter) {
-            // Jika ada filter waktu (misal 24 jam / 7 hari) dan tidak minta limit khusus,
-            // ambil hingga 500 data agar perhitungan statistik (rata-rata, min, max) akurat
-            $limit = 500;
-        } else {
-            // Default jika tanpa filter waktu dan tanpa limit: 10 data terbaru
-            $limit = 10;
+        $explicitLimit = $isExplicitLimit ? (int) $request->input('limit') : null;
+        if ($explicitLimit !== null) {
+            if ($explicitLimit < 1) $explicitLimit = 10;
+            if ($explicitLimit > 500) $explicitLimit = 500;
         }
 
-        $rawRows = $query->orderBy('recorded_at', 'desc')->limit($limit)->get();
+        if ($hasTimeFilter) {
+            $rawRows = $query->orderBy('recorded_at', 'desc')->limit(5000)->get();
+        } else {
+            $limit = $explicitLimit ?: 10;
+            $rawRows = $query->orderBy('recorded_at', 'desc')->limit($limit)->get();
+            $rangeLabel = "{$limit} data terakhir";
+        }
 
         if ($rawRows->isEmpty()) {
+            $latestRecord = DB::table($tableName)->orderBy('recorded_at', 'desc')->first();
+            $lastActive = $latestRecord ? \Carbon\Carbon::parse($latestRecord->recorded_at)->format('d M Y H:i') : null;
+
             return response()->json([
                 'success' => true,
                 'device_name' => $targetUserDevice->custom_name ?: $device->name,
-                'count' => 0,
+                'total_rekaman' => 0,
+                'rentang' => $rangeLabel,
                 'message' => 'Belum ada data sensor yang terekam pada rentang waktu tersebut.',
+                'terakhir_aktif' => $lastActive ? "Data sensor terakhir terekam pada {$lastActive}" : null,
                 'summary' => null,
                 'logs' => [],
             ], 200);
@@ -527,6 +544,15 @@ class BotMemberController extends Controller
             'ph' => ['ni_PH', 'ph'],
             'ec' => ['ni_EC', 'ec'],
             'lux' => ['ni_LUX', 'lux'],
+        ];
+
+        $sensorUnits = [
+            'suhu' => '°C',
+            'kelembaban' => '%',
+            'tds' => 'ppm',
+            'ph' => 'pH',
+            'ec' => 'mS/cm',
+            'lux' => 'lux',
         ];
 
         // Format data baris log agar ringkas dan hemat token untuk AI
@@ -544,7 +570,7 @@ class BotMemberController extends Controller
             $formattedLogs[] = $item;
         }
 
-        // 6. Hitung Statistik Otomatis (Min, Max, Rata-rata, Terkini)
+        // 6. Hitung Statistik Otomatis Menyeluruh (Rata-rata, Min, Max, Terkini)
         $summary = [];
         foreach ($sensorCols as $key => $possibleNames) {
             $values = collect($formattedLogs)->pluck($key)->filter(fn($v) => is_numeric($v));
@@ -554,24 +580,31 @@ class BotMemberController extends Controller
                     'rata_rata' => round($values->avg(), 1),
                     'min' => round($values->min(), 1),
                     'max' => round($values->max(), 1),
+                    'satuan' => $sensorUnits[$key] ?? '',
                 ];
             }
         }
 
-        // Jika user secara eksplisit meminta limit (misal limit: 30 atau 50), kembalikan semua baris tersebut
-        // Jika rentang waktu mengambil banyak data (misal 500 data) tanpa limit eksplisit, kirimkan 25 sampel log terbaru
-        $returnedLogs = $isExplicitLimit
-            ? $formattedLogs
-            : array_slice($formattedLogs, 0, min(25, count($formattedLogs)));
+        // 7. Pengiriman Sampel Baris Log (Hemat Token & Ringkas di Chat WhatsApp)
+        // Jika user secara spesifik meminta 'limit' (misal: "tampilkan 20 data"), kirimkan sesuai limit.
+        // Jika user bertanya kondisi rentang waktu (misal "hari ini"), kirim 10 baris sampel terbaru saja
+        // agar respon AI cepat, ringkas, dan tidak menghabiskan token.
+        $sampleLimit = $isExplicitLimit ? $explicitLimit : 10;
+        $returnedLogs = array_slice($formattedLogs, 0, min($sampleLimit, count($formattedLogs)));
 
         return response()->json([
             'success' => true,
             'device_name' => $targetUserDevice->custom_name ?: $device->name,
             'device_type' => $device->type,
-            'total_ambil' => count($formattedLogs),
-            'rentang' => $range ?: ($request->filled('start_date') ? "{$request->start_date} s/d {$request->end_date}" : "{$limit} data terakhir"),
+            'rentang' => $rangeLabel,
+            'total_rekaman' => count($formattedLogs),
+            'total_ambil' => count($returnedLogs),
             'summary' => $summary,
             'logs' => $returnedLogs,
+            'logs_count' => count($returnedLogs),
+            'catatan' => count($formattedLogs) > count($returnedLogs)
+                ? "Statistik (summary) dihitung dari seluruh " . count($formattedLogs) . " rekaman sensor pada rentang tersebut. Menampilkan " . count($returnedLogs) . " data sampel terbaru."
+                : null,
         ], 200);
     }
 
