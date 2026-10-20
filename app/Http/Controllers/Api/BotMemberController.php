@@ -446,26 +446,35 @@ class BotMemberController extends Controller
         // 4. Query Data Sensor & Terapkan Filter Rentang Waktu
         $query = DB::table($tableName);
 
-        // A. Filter Kata Kunci Rentang Waktu (1h, 6h, 24h, today, yesterday, 7d)
+        // A. Filter Kata Kunci Rentang Waktu (1h, 6h, 24h, today, yesterday, 7d, 30d)
         $range = strtolower(trim((string)$request->input('range', '')));
+        $hasTimeFilter = false;
         if ($range === '1h') {
             $query->where('recorded_at', '>=', now()->subHour());
+            $hasTimeFilter = true;
         } elseif ($range === '6h') {
             $query->where('recorded_at', '>=', now()->subHours(6));
+            $hasTimeFilter = true;
         } elseif ($range === '24h' || $range === '1d') {
             $query->where('recorded_at', '>=', now()->subDay());
+            $hasTimeFilter = true;
         } elseif ($range === 'today' || $range === 'hari_ini') {
             $query->whereDate('recorded_at', now()->today());
+            $hasTimeFilter = true;
         } elseif ($range === 'yesterday' || $range === 'kemarin') {
             $query->whereDate('recorded_at', now()->yesterday());
+            $hasTimeFilter = true;
         } elseif ($range === '7d' || $range === '1w' || $range === 'seminggu') {
             $query->where('recorded_at', '>=', now()->subDays(7));
+            $hasTimeFilter = true;
         } elseif ($range === '30d' || $range === '1m' || $range === 'sebulan') {
             $query->where('recorded_at', '>=', now()->subDays(30));
+            $hasTimeFilter = true;
         }
 
         // B. Filter Rentang Tanggal Spesifik (start_date & end_date)
         if ($request->filled('start_date')) {
+            $hasTimeFilter = true;
             $startDate = $request->input('start_date');
             $endDate = $request->input('end_date', $startDate);
             $query->whereBetween('recorded_at', [
@@ -474,10 +483,20 @@ class BotMemberController extends Controller
             ]);
         }
 
-        // C. Filter Limit (default 10 baris, max 100)
-        $limit = (int) $request->input('limit', 10);
-        if ($limit < 1) $limit = 10;
-        if ($limit > 100) $limit = 100;
+        // C. Filter Limit (Maksimal hingga 500 baris)
+        $isExplicitLimit = $request->filled('limit');
+        if ($isExplicitLimit) {
+            $limit = (int) $request->input('limit');
+            if ($limit < 1) $limit = 10;
+            if ($limit > 500) $limit = 500;
+        } elseif ($hasTimeFilter) {
+            // Jika ada filter waktu (misal 24 jam / 7 hari) dan tidak minta limit khusus,
+            // ambil hingga 500 data agar perhitungan statistik (rata-rata, min, max) akurat
+            $limit = 500;
+        } else {
+            // Default jika tanpa filter waktu dan tanpa limit: 10 data terbaru
+            $limit = 10;
+        }
 
         $rawRows = $query->orderBy('recorded_at', 'desc')->limit($limit)->get();
 
@@ -531,6 +550,12 @@ class BotMemberController extends Controller
             }
         }
 
+        // Jika user secara eksplisit meminta limit (misal limit: 30 atau 50), kembalikan semua baris tersebut
+        // Jika rentang waktu mengambil banyak data (misal 500 data) tanpa limit eksplisit, kirimkan 25 sampel log terbaru
+        $returnedLogs = $isExplicitLimit
+            ? $formattedLogs
+            : array_slice($formattedLogs, 0, min(25, count($formattedLogs)));
+
         return response()->json([
             'success' => true,
             'device_name' => $targetUserDevice->custom_name ?: $device->name,
@@ -538,7 +563,7 @@ class BotMemberController extends Controller
             'total_ambil' => count($formattedLogs),
             'rentang' => $range ?: ($request->filled('start_date') ? "{$request->start_date} s/d {$request->end_date}" : "{$limit} data terakhir"),
             'summary' => $summary,
-            'logs' => array_slice($formattedLogs, 0, 15), // Maksimal 15 sampel baris agar WhatsApp tidak kepanjangan
+            'logs' => $returnedLogs,
         ], 200);
     }
 
