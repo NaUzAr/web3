@@ -82,6 +82,8 @@ class BotMemberController extends Controller
             }
         }
 
+        
+
         // ==========================================
         // ALUR KHUSUS: Putuskan Sambungan (Unbind)
         // ==========================================
@@ -364,6 +366,182 @@ class BotMemberController extends Controller
             'devices' => $devicesSummary,
         ], 200);
     }
+
+        /**
+     * Endpoint untuk mengambil log riwayat data sensor IoT berdasarkan user_id / uuid / phone
+     * Mendukung filter: limit (jumlah), range (rentang waktu), start_date, end_date, dan sensor
+     */
+    public function getSensorLogs(Request $request)
+    {
+        // 1. Verifikasi Keamanan Secret Key
+        $secret = $request->header('X-Bot-Secret', $request->input('secret'));
+        $validSecret = config('services.bot.secret', env('BOT_SECRET_KEY', 'swa_bot_sec_8f93a1c27e4b5d6e'));
+        if ($secret !== $validSecret) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized: Invalid Bot Secret'], 401);
+        }
+
+        // 2. Identifikasi Pengguna (bisa dari user_id, uuid, atau phone)
+        $userId = $request->input('user_id');
+        $uuid = $request->input('uuid');
+        $phone = $request->input('phone');
+
+        $user = null;
+        if ($userId) {
+            $user = User::find($userId);
+        } elseif ($uuid) {
+            $user = User::where('uuid', strtolower(trim($uuid)))->first();
+        } elseif ($phone) {
+            $cleanPhone = preg_replace('/[:@].*$/', '', (string)$phone);
+            $digits = preg_replace('/\D/', '', $cleanPhone);
+            $core = str_starts_with($digits, '62') ? substr($digits, 2) : (str_starts_with($digits, '0') ? substr($digits, 1) : $digits);
+            $user = User::where('phone', 'like', '%' . $core . '%')->first();
+        }
+
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Pengguna tidak ditemukan.'], 404);
+        }
+
+        // 3. Tentukan Perangkat IoT Milik Pengguna
+        $userDevices = $user->userDevices()->with('device.sensors')->get();
+        if ($userDevices->isEmpty()) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Belum ada perangkat IoT yang terhubung ke akun Anda.'
+            ], 404);
+        }
+
+        $targetUserDevice = null;
+        $deviceIdReq = $request->input('device_id');
+        $deviceNameReq = strtolower(trim((string)$request->input('device_name', '')));
+
+        if ($deviceIdReq) {
+            $targetUserDevice = $userDevices->firstWhere('device_id', $deviceIdReq);
+        } elseif ($deviceNameReq) {
+            $targetUserDevice = $userDevices->first(function ($ud) use ($deviceNameReq) {
+                return str_contains(strtolower($ud->custom_name), $deviceNameReq) ||
+                       str_contains(strtolower($ud->device->name), $deviceNameReq);
+            });
+        }
+
+        // Fallback: ambil perangkat yang memiliki tabel data dan berisi rekaman data
+        if (!$targetUserDevice) {
+            $targetUserDevice = $userDevices->first(function ($ud) {
+                return $ud->device 
+                    && $ud->device->table_name 
+                    && \Schema::hasTable($ud->device->table_name)
+                    && \DB::table($ud->device->table_name)->exists();
+            }) ?: $userDevices->first();
+        }
+
+        $device = $targetUserDevice->device;
+        $tableName = $device->table_name;
+
+        if (!$tableName || !\Schema::hasTable($tableName)) {
+            return response()->json([
+                'success' => false,
+                'message' => "Tabel data sensor untuk perangkat '{$targetUserDevice->custom_name}' belum tersedia.",
+            ], 404);
+        }
+
+        // 4. Query Data Sensor & Terapkan Filter Rentang Waktu
+        $query = DB::table($tableName);
+
+        // A. Filter Kata Kunci Rentang Waktu (1h, 6h, 24h, today, yesterday, 7d)
+        $range = strtolower(trim((string)$request->input('range', '')));
+        if ($range === '1h') {
+            $query->where('recorded_at', '>=', now()->subHour());
+        } elseif ($range === '6h') {
+            $query->where('recorded_at', '>=', now()->subHours(6));
+        } elseif ($range === '24h' || $range === '1d') {
+            $query->where('recorded_at', '>=', now()->subDay());
+        } elseif ($range === 'today' || $range === 'hari_ini') {
+            $query->whereDate('recorded_at', now()->today());
+        } elseif ($range === 'yesterday' || $range === 'kemarin') {
+            $query->whereDate('recorded_at', now()->yesterday());
+        } elseif ($range === '7d' || $range === '1w' || $range === 'seminggu') {
+            $query->where('recorded_at', '>=', now()->subDays(7));
+        } elseif ($range === '30d' || $range === '1m' || $range === 'sebulan') {
+            $query->where('recorded_at', '>=', now()->subDays(30));
+        }
+
+        // B. Filter Rentang Tanggal Spesifik (start_date & end_date)
+        if ($request->filled('start_date')) {
+            $startDate = $request->input('start_date');
+            $endDate = $request->input('end_date', $startDate);
+            $query->whereBetween('recorded_at', [
+                $startDate . ' 00:00:00',
+                $endDate . ' 23:59:59'
+            ]);
+        }
+
+        // C. Filter Limit (default 10 baris, max 100)
+        $limit = (int) $request->input('limit', 10);
+        if ($limit < 1) $limit = 10;
+        if ($limit > 100) $limit = 100;
+
+        $rawRows = $query->orderBy('recorded_at', 'desc')->limit($limit)->get();
+
+        if ($rawRows->isEmpty()) {
+            return response()->json([
+                'success' => true,
+                'device_name' => $targetUserDevice->custom_name ?: $device->name,
+                'count' => 0,
+                'message' => 'Belum ada data sensor yang terekam pada rentang waktu tersebut.',
+                'summary' => null,
+                'logs' => [],
+            ], 200);
+        }
+
+        // 5. Pemetaan Kolom Sensor & Normalisasi Nama
+        $sensorCols = [
+            'suhu' => ['ni_SUHU', 'suhu', 'temperature'],
+            'kelembaban' => ['ni_KELEM', 'kelembaban', 'humidity'],
+            'tds' => ['ni_TDS', 'tds'],
+            'ph' => ['ni_PH', 'ph'],
+            'ec' => ['ni_EC', 'ec'],
+            'lux' => ['ni_LUX', 'lux'],
+        ];
+
+        // Format data baris log agar ringkas dan hemat token untuk AI
+        $formattedLogs = [];
+        foreach ($rawRows as $row) {
+            $item = ['waktu' => \Carbon\Carbon::parse($row->recorded_at)->format('d M H:i')];
+            foreach ($sensorCols as $key => $possibleNames) {
+                foreach ($possibleNames as $col) {
+                    if (property_exists($row, $col) && $row->$col !== null) {
+                        $item[$key] = is_numeric($row->$col) ? (float) $row->$col : $row->$col;
+                        break;
+                    }
+                }
+            }
+            $formattedLogs[] = $item;
+        }
+
+        // 6. Hitung Statistik Otomatis (Min, Max, Rata-rata, Terkini)
+        $summary = [];
+        foreach ($sensorCols as $key => $possibleNames) {
+            $values = collect($formattedLogs)->pluck($key)->filter(fn($v) => is_numeric($v));
+            if ($values->isNotEmpty()) {
+                $summary[$key] = [
+                    'terkini' => $values->first(),
+                    'rata_rata' => round($values->avg(), 1),
+                    'min' => round($values->min(), 1),
+                    'max' => round($values->max(), 1),
+                ];
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'device_name' => $targetUserDevice->custom_name ?: $device->name,
+            'device_type' => $device->type,
+            'total_ambil' => count($formattedLogs),
+            'rentang' => $range ?: ($request->filled('start_date') ? "{$request->start_date} s/d {$request->end_date}" : "{$limit} data terakhir"),
+            'summary' => $summary,
+            'logs' => array_slice($formattedLogs, 0, 15), // Maksimal 15 sampel baris agar WhatsApp tidak kepanjangan
+        ], 200);
+    }
+
 
     /**
      * Endpoint khusus untuk Unbind / Disconnect Nomor WhatsApp (Ideal untuk AI Tool di n8n)
