@@ -380,10 +380,10 @@ class BotMemberController extends Controller
             return response()->json(['success' => false, 'message' => 'Unauthorized: Invalid Bot Secret'], 401);
         }
 
-        // 2. Identifikasi Pengguna (bisa dari user_id, uuid, atau phone)
+        // 2. Identifikasi Pengguna (bisa dari user_id, uuid, phone_number, phone, atau sender)
         $userId = $request->input('user_id');
         $uuid = $request->input('uuid');
-        $phone = $request->input('phone');
+        $phone = $request->input('phone') ?: $request->input('phone_number') ?: $request->input('sender');
 
         $user = null;
         if ($userId) {
@@ -394,7 +394,15 @@ class BotMemberController extends Controller
             $cleanPhone = preg_replace('/[:@].*$/', '', (string)$phone);
             $digits = preg_replace('/\D/', '', $cleanPhone);
             $core = str_starts_with($digits, '62') ? substr($digits, 2) : (str_starts_with($digits, '0') ? substr($digits, 1) : $digits);
-            $user = User::where('phone', 'like', '%' . $core . '%')->first();
+            if (!empty($core)) {
+                $user = User::where(function ($q) use ($digits, $core) {
+                    $q->where('phone', $digits)
+                      ->orWhere('phone', '0' . $core)
+                      ->orWhere('phone', '62' . $core)
+                      ->orWhere('phone', '+62' . $core)
+                      ->orWhere('phone', 'like', '%' . $core . '%');
+                })->first();
+            }
         }
 
         if (!$user) {
