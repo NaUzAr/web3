@@ -454,12 +454,74 @@ class BotMemberController extends Controller
         // 4. Query Data Sensor & Terapkan Filter Rentang Waktu
         $query = DB::table($tableName);
 
-        // A. Filter Kata Kunci Rentang Waktu (1h, 6h, 24h, today, yesterday, 7d, 30d)
-        $range = strtolower(trim((string)$request->input('range', '')));
+        // Helper untuk membersihkan nilai placeholder dari n8n (seperti "{range}", "{start_date}")
+        $cleanParam = function ($val) {
+            if ($val === null) return null;
+            $str = trim((string)$val);
+            if ($str === '' || (str_starts_with($str, '{') && str_ends_with($str, '}'))) {
+                return null;
+            }
+            return $str;
+        };
+
+        $range = strtolower((string)$cleanParam($request->input('range')));
+        $startDate = $cleanParam($request->input('start_date'));
+        $endDate = $cleanParam($request->input('end_date')) ?: $startDate;
+        $queryText = $cleanParam($request->input('query') ?: $request->input('message'));
+
+        // Fallback Deteksi Tanggal / Rentang dari Bahasa Alami (misal: "berapa data di hari 10 oktober")
+        if (!$startDate && empty($range) && !empty($queryText)) {
+            $months = [
+                'januari' => '01', 'jan' => '01',
+                'februari' => '02', 'feb' => '02',
+                'maret' => '03', 'mar' => '03',
+                'april' => '04', 'apr' => '04',
+                'mei' => '05',
+                'juni' => '06', 'jun' => '06',
+                'juli' => '07', 'jul' => '07',
+                'agustus' => '08', 'agu' => '08', 'agt' => '08',
+                'september' => '09', 'sep' => '09',
+                'oktober' => '10', 'okt' => '10',
+                'november' => '11', 'nov' => '11',
+                'desember' => '12', 'des' => '12',
+            ];
+            $monthRegex = implode('|', array_keys($months));
+
+            // Format tanggal bahasa Indonesia: "10 oktober", "tanggal 10 oktober 2026", "10 okt"
+            if (preg_match('/\b(\d{1,2})\s+(' . $monthRegex . ')(?:\s+(\d{4}))?\b/i', $queryText, $m)) {
+                $day = str_pad($m[1], 2, '0', STR_PAD_LEFT);
+                $month = $months[strtolower($m[2])];
+                $year = !empty($m[3]) ? $m[3] : now()->format('Y');
+                $startDate = "{$year}-{$month}-{$day}";
+                $endDate = $startDate;
+            } elseif (preg_match('/\b(\d{4}-\d{2}-\d{2})\b/', $queryText, $m)) {
+                $startDate = $m[1];
+                $endDate = $startDate;
+            } elseif (preg_match('/\b(hari\s*ini|today)\b/i', $queryText)) {
+                $range = 'today';
+            } elseif (preg_match('/\b(kemarin|yesterday)\b/i', $queryText)) {
+                $range = 'yesterday';
+            } elseif (preg_match('/\b(24\s*jam|1\s*hari)\b/i', $queryText)) {
+                $range = '24h';
+            } elseif (preg_match('/\b(seminggu|7\s*hari|1\s*minggu)\b/i', $queryText)) {
+                $range = '7d';
+            } elseif (preg_match('/\b(sebulan|30\s*hari|1\s*bulan)\b/i', $queryText)) {
+                $range = '30d';
+            }
+        }
+
         $hasTimeFilter = false;
         $rangeLabel = '';
 
-        if ($range === '1h') {
+        // A. Filter Rentang Tanggal Spesifik (start_date & end_date)
+        if ($startDate) {
+            $hasTimeFilter = true;
+            $query->whereBetween('recorded_at', [
+                $startDate . ' 00:00:00',
+                $endDate . ' 23:59:59'
+            ]);
+            $rangeLabel = ($startDate === $endDate) ? "tanggal {$startDate}" : "{$startDate} s/d {$endDate}";
+        } elseif ($range === '1h') {
             $query->where('recorded_at', '>=', now()->subHour());
             $hasTimeFilter = true;
             $rangeLabel = '1 jam terakhir';
@@ -489,23 +551,11 @@ class BotMemberController extends Controller
             $rangeLabel = '30 hari terakhir';
         }
 
-        // B. Filter Rentang Tanggal Spesifik (start_date & end_date)
-        if ($request->filled('start_date')) {
-            $hasTimeFilter = true;
-            $startDate = $request->input('start_date');
-            $endDate = $request->input('end_date', $startDate);
-            $query->whereBetween('recorded_at', [
-                $startDate . ' 00:00:00',
-                $endDate . ' 23:59:59'
-            ]);
-            $rangeLabel = ($startDate === $endDate) ? "tanggal {$startDate}" : "{$startDate} s/d {$endDate}";
-        }
-
-        // C. Logika Pengambilan Data:
+        // B. Logika Pengambilan Data:
         // - Jika ada filter waktu (misal hari ini, kemarin, 24h, tanggal):
         //   Backend me-load seluruh rekaman pada rentang tersebut (hingga 5000 baris) untuk menghitung rata-rata, min, max secara menyeluruh.
         // - Jika tanpa filter waktu: ambil data terbaru sesuai limit (default 10).
-        $isExplicitLimit = $request->filled('limit');
+        $isExplicitLimit = $request->filled('limit') && is_numeric($request->input('limit'));
         $explicitLimit = $isExplicitLimit ? (int) $request->input('limit') : null;
         if ($explicitLimit !== null) {
             if ($explicitLimit < 1) $explicitLimit = 10;
@@ -570,16 +620,49 @@ class BotMemberController extends Controller
             $formattedLogs[] = $item;
         }
 
+        // Filter validasi nilai sensor fisik realistis (mengabaikan kode error hardware seperti 404, -127, 999)
+        $isValidSensorValue = function ($key, $val) {
+            if (!is_numeric($val)) return false;
+            $num = (float)$val;
+            if ($num == 404 || $num == -127 || $num == 999) return false;
+
+            switch ($key) {
+                case 'suhu':
+                    return ($num >= -40 && $num <= 85);
+                case 'kelembaban':
+                    return ($num >= 0 && $num <= 100);
+                case 'ph':
+                    return ($num > 0 && $num <= 14);
+                case 'tds':
+                    return ($num >= 0 && $num <= 50000);
+                case 'ec':
+                    return ($num >= 0 && $num <= 50000);
+                case 'lux':
+                    return ($num >= 0);
+                default:
+                    return true;
+            }
+        };
+
         // 6. Hitung Statistik Otomatis Menyeluruh (Rata-rata, Min, Max, Terkini)
         $summary = [];
         foreach ($sensorCols as $key => $possibleNames) {
-            $values = collect($formattedLogs)->pluck($key)->filter(fn($v) => is_numeric($v));
-            if ($values->isNotEmpty()) {
+            $rawVals = collect($formattedLogs)->pluck($key);
+            $validVals = $rawVals->filter(fn($v) => $isValidSensorValue($key, $v));
+
+            if ($validVals->isNotEmpty()) {
                 $summary[$key] = [
-                    'terkini' => $values->first(),
-                    'rata_rata' => round($values->avg(), 1),
-                    'min' => round($values->min(), 1),
-                    'max' => round($values->max(), 1),
+                    'terkini' => $validVals->first(),
+                    'rata_rata' => round($validVals->avg(), 1),
+                    'min' => round($validVals->min(), 1),
+                    'max' => round($validVals->max(), 1),
+                    'satuan' => $sensorUnits[$key] ?? '',
+                ];
+            } else {
+                $hasErrors = $rawVals->filter(fn($v) => (float)$v == 404 || (float)$v == -127)->isNotEmpty();
+                $summary[$key] = [
+                    'status' => $hasErrors ? 'sensor_error' : 'tidak_tersedia',
+                    'keterangan' => $hasErrors ? 'Sensor mengalami kendala pembacaan (error hardware 404)' : 'Tidak ada data valid',
                     'satuan' => $sensorUnits[$key] ?? '',
                 ];
             }
