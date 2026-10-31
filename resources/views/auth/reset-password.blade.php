@@ -297,6 +297,23 @@
             overflow: hidden;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
+        .tanikaya-brand-heading {
+            font-family: 'Arial Black', Impact, 'Inter', sans-serif;
+            font-weight: 900;
+            font-style: italic;
+            font-size: 38px;
+            letter-spacing: -1.5px;
+            color: #111827;
+            text-transform: uppercase;
+            line-height: 1.1;
+            margin-bottom: 6px;
+        }
+        @media (max-width: 576px) {
+            .tanikaya-brand-heading {
+                font-size: 30px;
+                letter-spacing: -1px;
+            }
+        }
     </style>
 </head>
 
@@ -311,11 +328,15 @@
     <div class="auth-card">
         <!-- Brand Header -->
         <div class="text-center mb-3">
-            <div class="brand-logo-box {{ config('app.theme') === 'tani' ? 'brand-logo-box-tani' : '' }}">
-                <img src="{{ asset(config('app.logo', 'images/logo.png')) }}" alt="{{ env('APP_NAME', 'Swaratani') }}">
-            </div>
             @if(config('app.theme') !== 'tani')
-            <div class="brand-name">{{ config('app.name', 'Swaratani') }}</div>
+                <div class="brand-logo-box">
+                    <img src="{{ asset(config('app.logo', 'images/logo.png')) }}" alt="{{ config('app.name', 'Swaratani') }}">
+                </div>
+                <div class="brand-name">{{ config('app.name', 'Swaratani') }}</div>
+            @else
+                <div class="tanikaya-brand-heading">
+                    {{ strtoupper(config('app.name', 'TANIKAYA')) }}
+                </div>
             @endif
             <div class="brand-subtitle">Smart IoT Farming Platform</div>
         </div>
