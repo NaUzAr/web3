@@ -1,6 +1,6 @@
 @php
     // === GANTI TEMA DI SINI (Atau gunakan .env) ===
-    $theme = env('APP_THEME', 'maheswara');  // Pilihan: 'green', 'red', 'blue', 'purple', 'maheswara'
+    $theme = env('APP_THEME', 'maheswara');  // Pilihan: 'green', 'red', 'blue', 'purple', 'maheswara', 'tani', 'tanikaya'
     // ===========================
 
     $themes = [
@@ -87,6 +87,27 @@
             'text_secondary' => '#334155', // Dark slate for secondary text
             'card_bg' => 'rgba(255, 255, 255, 0.95)', // White cards to pop against yellow bg
             'navbar_text' => '#000000',
+        ],
+        'tanikaya' => [
+            'primary' => '#15803d', // Rich Agriculture Green
+            'primary_dark' => '#166534',
+            'primary_light' => '#86efac',
+            'secondary' => '#ca8a04', // Harvest Gold
+            'secondary_light' => '#fef08a',
+            'secondary_dark' => '#a16207',
+            'gradient_primary' => 'linear-gradient(135deg, #15803d 0%, #16a34a 50%, #ca8a04 100%)',
+            'gradient_secondary' => 'linear-gradient(135deg, #fef08a 0%, #ca8a04 100%)',
+            'gradient_bg' => '#f8fafc',
+            'navbar_bg' => 'rgba(255, 255, 255, 0.98)',
+            'navbar_bg_light' => 'rgba(255, 255, 255, 0.95)',
+            'glow_1' => 'rgba(21, 128, 61, 0.15)',
+            'glow_2' => 'rgba(202, 138, 4, 0.15)',
+            'glow_3' => 'rgba(134, 239, 172, 0.2)',
+            'mobile_nav_dark' => 'rgba(255, 255, 255, 0.98)',
+            'text_main' => '#0f172a',
+            'text_secondary' => '#475569',
+            'card_bg' => 'rgba(255, 255, 255, 0.9)',
+            'navbar_text' => '#0f172a',
         ],
         'blue' => [
             'primary' => '#3b82f6',
@@ -206,7 +227,7 @@
             {{ $t['card_bg'] ?? 'rgba(255, 255, 255, 0.1)' }}
         ;
         --glass-border:
-            {{ in_array($theme, ['maheswara', 'tani']) ? 'rgba(14, 95, 138, 0.15)' : 'rgba(255, 255, 255, 0.2)' }}
+            {{ in_array($theme, ['maheswara', 'tani', 'tanikaya']) ? 'rgba(14, 95, 138, 0.15)' : 'rgba(255, 255, 255, 0.2)' }}
         ;
     }
 
