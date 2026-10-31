@@ -25,6 +25,21 @@
         text-decoration: none;
     }
 
+    .navbar-main .navbar-brand span.tanikaya-brand-text {
+        font-family: 'Arial Black', Impact, 'Inter', sans-serif;
+        font-weight: 900;
+        font-style: italic;
+        font-size: 1.45rem;
+        letter-spacing: -1.2px;
+        color: #111827;
+        text-transform: uppercase;
+        display: inline-block;
+        line-height: 1;
+        transition: color 0.2s ease;
+    }
+    .navbar-main .navbar-brand:hover span.tanikaya-brand-text {
+        color: #ca8a04;
+    }
     .navbar-main .navbar-brand.navbar-brand-logo-only img {
         height: 40px;
         border-radius: 6px;
@@ -281,6 +296,11 @@
         .navbar-main .navbar-brand span {
             display: none;
         }
+        .navbar-main .navbar-brand span.tanikaya-brand-text {
+            display: inline-block !important;
+            font-size: 1.25rem;
+            letter-spacing: -0.8px;
+        }
         .navbar-main .navbar-brand img {
             height: 32px;
         }
@@ -326,10 +346,12 @@
 
 <nav class="navbar-main">
     <div class="container d-flex align-items-center justify-content-between flex-nowrap">
-        <a class="navbar-brand {{ config('app.theme') === 'tani' ? 'navbar-brand-logo-only' : '' }}" href="{{ $isPwa ? route('monitoring.index') : route('home') }}">
-            <img src="{{ asset(config('app.logo', 'images/logo.png')) }}" alt="{{ config('app.name', 'Swaratani') }}">
+        <a class="navbar-brand {{ config('app.theme') === 'tani' ? 'navbar-brand-text-only' : '' }}" href="{{ $isPwa ? route('monitoring.index') : route('home') }}">
             @if(config('app.theme') !== 'tani')
+                <img src="{{ asset(config('app.logo', 'images/logo.png')) }}" alt="{{ config('app.name', 'Swaratani') }}">
                 <span>{{ config('app.name', 'Swaratani') }}</span>
+            @else
+                <span class="tanikaya-brand-text">{{ strtoupper(config('app.name', 'TANIKAYA')) }}</span>
             @endif
         </a>
 
