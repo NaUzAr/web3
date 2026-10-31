@@ -289,6 +289,14 @@
                 padding: 10px;
             }
         }
+            .brand-logo-box-tani {
+            background: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+            border-radius: 16px !important;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 
@@ -303,10 +311,12 @@
     <div class="auth-card">
         <!-- Brand Header -->
         <div class="text-center mb-3">
-            <div class="brand-logo-box">
+            <div class="brand-logo-box {{ config('app.theme') === 'tani' ? 'brand-logo-box-tani' : '' }}">
                 <img src="{{ asset(config('app.logo', 'images/logo.png')) }}" alt="{{ env('APP_NAME', 'Swaratani') }}">
             </div>
-            <div class="brand-name">{{ env('APP_NAME', 'Swaratani') }}</div>
+            @if(config('app.theme') !== 'tani')
+            <div class="brand-name">{{ config('app.name', 'Swaratani') }}</div>
+            @endif
             <div class="brand-subtitle">Smart IoT Farming Platform</div>
         </div>
 

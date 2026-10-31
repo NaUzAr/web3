@@ -25,6 +25,10 @@
         text-decoration: none;
     }
 
+    .navbar-main .navbar-brand.navbar-brand-logo-only img {
+        height: 40px;
+        border-radius: 6px;
+    }
     .navbar-main .navbar-brand img {
         height: 36px;
         width: auto;
@@ -322,9 +326,11 @@
 
 <nav class="navbar-main">
     <div class="container d-flex align-items-center justify-content-between flex-nowrap">
-        <a class="navbar-brand" href="{{ $isPwa ? route('monitoring.index') : route('home') }}">
-            <img src="{{ asset(config('app.logo', 'images/logo.png')) }}" alt="{{ env('APP_NAME', 'Swaratani') }}">
-            <span>{{ env('APP_NAME', 'Swaratani') }}</span>
+        <a class="navbar-brand {{ config('app.theme') === 'tani' ? 'navbar-brand-logo-only' : '' }}" href="{{ $isPwa ? route('monitoring.index') : route('home') }}">
+            <img src="{{ asset(config('app.logo', 'images/logo.png')) }}" alt="{{ config('app.name', 'Swaratani') }}">
+            @if(config('app.theme') !== 'tani')
+                <span>{{ config('app.name', 'Swaratani') }}</span>
+            @endif
         </a>
 
         <div class="nav-links-wrap ms-auto">
