@@ -674,7 +674,7 @@
                         <!-- Header gradient band -->
                         <div class="qris-header">
                             <div class="qris-logo-row">
-                                <img src="{{ asset(env('APP_LOGO', 'images/logo.png')) }}" alt="Logo" class="qris-header-logo">
+                                <img src="{{ asset(config('app.logo', 'images/logo.png')) }}" alt="Logo" class="qris-header-logo">
                                 <div class="qris-header-text">
                                     <div class="qris-brand">{{ strtoupper(env('APP_NAME', 'Swaratani')) }}</div>
                                     <div class="qris-sub">Smart Agriculture</div>
@@ -795,7 +795,7 @@
         let currentDeviceName = '';
         const logoImg = new Image();
         logoImg.crossOrigin = 'anonymous';
-        logoImg.src = '{{ asset(env('APP_LOGO', 'images/logo.png')) }}';
+        logoImg.src = '{{ asset(config('app.logo', 'images/logo.png')) }}';
 
         function showQrModal(token, deviceName) {
             currentDeviceName = deviceName;

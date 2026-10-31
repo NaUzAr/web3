@@ -323,7 +323,7 @@
 <nav class="navbar-main">
     <div class="container d-flex align-items-center justify-content-between flex-nowrap">
         <a class="navbar-brand" href="{{ $isPwa ? route('monitoring.index') : route('home') }}">
-            <img src="{{ asset(env('APP_LOGO', 'images/logo.png')) }}" alt="{{ env('APP_NAME', 'Swaratani') }}">
+            <img src="{{ asset(config('app.logo', 'images/logo.png')) }}" alt="{{ env('APP_NAME', 'Swaratani') }}">
             <span>{{ env('APP_NAME', 'Swaratani') }}</span>
         </a>
 

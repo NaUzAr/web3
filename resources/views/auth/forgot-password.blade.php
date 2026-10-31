@@ -295,7 +295,7 @@
         <!-- Brand Header -->
         <div class="text-center mb-3">
             <div class="brand-logo-box">
-                <img src="{{ asset(env('APP_LOGO', 'images/logo.png')) }}" alt="{{ env('APP_NAME', 'Swaratani') }}">
+                <img src="{{ asset(config('app.logo', 'images/logo.png')) }}" alt="{{ env('APP_NAME', 'Swaratani') }}">
             </div>
             <div class="brand-name">{{ env('APP_NAME', 'Swaratani') }}</div>
             <div class="brand-subtitle">Smart IoT Farming Platform</div>

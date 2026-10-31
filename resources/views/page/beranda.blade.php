@@ -10,9 +10,9 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="{{ env('APP_NAME', 'Swaratani') }}">
-    <link rel="icon" href="{{ asset(env('APP_LOGO', 'images/logo.png')) }}">
+    <link rel="icon" href="{{ asset(config('app.logo', 'images/logo.png')) }}">
     <link rel="manifest" href="/manifest.json">
-    <link rel="apple-touch-icon" href="{{ asset(env('APP_LOGO', 'images/logo.png')) }}">
+    <link rel="apple-touch-icon" href="{{ asset(config('app.logo', 'images/logo.png')) }}">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">

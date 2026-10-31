@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#dc2626">
     <meta name="description" content="Kebijakan Privasi Swaratani">
-    <link rel="icon" href="{{ asset(env('APP_LOGO', 'images/logo.png')) }}">
+    <link rel="icon" href="{{ asset(config('app.logo', 'images/logo.png')) }}">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
