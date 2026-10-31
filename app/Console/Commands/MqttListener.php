@@ -930,8 +930,15 @@ class MqttListener extends Command
             // Simpan cache outputs (24 jam)
             \Cache::put("device_outputs_{$device->id}", $cachedOutputs, now()->addHours(24));
 
-            // Simpan status Smart Farm tambahan di cache
-            $deviceTz = \Cache::get("device_timezone_{$device->id}", 'WIB');
+            // Deteksi zona waktu alat (Cache -> Jam RTC vs UTC -> Longitude -> Location -> WIB)
+            $deviceTz = \App\Services\MqttSmartFarmService::resolveTimezone($device, $rawJam);
+
+            // AUTO-SYNC RTC: Koreksi otomatis jika jam RTC alat geser >= 2 menit dari jam server
+            $autoSyncedJam = $this->checkAndAutoSyncRtc($device, $rawJam, $deviceTz, $siram, $totalSisaSeconds);
+            if ($autoSyncedJam) {
+                $rawJam = $autoSyncedJam;
+            }
+
             $sfStatusData = [
                 'siram'          => $siram,
                 'blok'           => $blok,
@@ -1335,6 +1342,92 @@ class MqttListener extends Command
             }
             $sfStatusData['sisa'] = 0;
             $sfStatusData['sisa_formatted'] = '00:00';
+        }
+    }
+
+    /**
+     * Cek apakah waktu RTC perangkat bergeser (drift) dan lakukan auto-sync waktu jika diperlukan.
+     * 
+     * Syarat eksekusi:
+     * 1. Ada data jam dari perangkat (format HHMM).
+     * 2. Perangkat sedang TIDAK menyiram (pompa mati & sisa countdown = 0).
+     * 3. Selisih jam alat vs jam server >= 2 menit.
+     * 4. Cooldown 5 menit antar pengiriman auto-sync.
+     * 
+     * @return string|null Mengembalikan format HHMM baru jika disinkronkan, atau null jika tidak.
+     */
+    private function checkAndAutoSyncRtc(Device $device, ?string $rawJam, string $deviceTz, int $siram, int $totalSisaSeconds): ?string
+    {
+        if (empty($rawJam) || strlen($rawJam) < 4) {
+            return null;
+        }
+
+        // Jangan sync jika sesi siram sedang berjalan (hindari glitch hitung mundur STM32)
+        if ($siram === 1 || $totalSisaSeconds > 0) {
+            return null;
+        }
+
+        $deviceHour = (int) substr($rawJam, 0, 2);
+        $deviceMinute = (int) substr($rawJam, 2, 2);
+
+        if ($deviceHour < 0 || $deviceHour > 23 || $deviceMinute < 0 || $deviceMinute > 59) {
+            return null;
+        }
+
+        $tzMap = [
+            'WIB'  => 'Asia/Jakarta',
+            'WITA' => 'Asia/Makassar',
+            'WIT'  => 'Asia/Jayapura',
+        ];
+
+        $targetTz = $tzMap[$deviceTz] ?? 'Asia/Jakarta';
+        $targetTime = now()->setTimezone($targetTz);
+
+        $deviceMinutes = $deviceHour * 60 + $deviceMinute;
+        $serverMinutes = $targetTime->hour * 60 + $targetTime->minute;
+
+        $diffMinutes = abs($deviceMinutes - $serverMinutes);
+        if ($diffMinutes > 720) {
+            $diffMinutes = 1440 - $diffMinutes; // Midnight rollover (misal 23:59 vs 00:01)
+        }
+
+        // Jika selisih < 2 menit, waktu dianggap masih presisi
+        if ($diffMinutes < 2) {
+            return null;
+        }
+
+        // Cek cooldown 5 menit agar tidak membanjiri broker/alat
+        $cooldownKey = "device_rtc_autosync_cooldown_{$device->id}";
+        if (\Illuminate\Support\Facades\Cache::has($cooldownKey)) {
+            $this->line("           ⏳ Auto-Sync RTC [{$device->name}]: Drift {$diffMinutes}m terdeteksi, menunggu cooldown.");
+            return null;
+        }
+
+        $topic = $device->mqtt_topic_schedule ?: $device->mqtt_topic;
+        $smartFarmService = app(\App\Services\MqttSmartFarmService::class);
+
+        $this->warn("           ⏰ RTC Drift terdeteksi [{$device->name}]! Device: {$rawJam} ({$deviceTz}), Server: {$targetTime->format('Hi')} ({$deviceTz}), Selisih: {$diffMinutes}m. Mengirim auto-sync...");
+
+        $success = $smartFarmService->sendSetRtc(
+            $topic,
+            (int) $targetTime->year,
+            (int) $targetTime->month,
+            (int) $targetTime->day,
+            (int) $targetTime->hour,
+            (int) $targetTime->minute
+        );
+
+        // Set cooldown 5 menit
+        \Illuminate\Support\Facades\Cache::put($cooldownKey, now()->toIso8601String(), now()->addMinutes(5));
+
+        if ($success) {
+            $newJam = $targetTime->format('Hi');
+            $this->info("           ✅ Auto-Sync RTC berhasil dikirim: {$targetTime->format('H:i')} {$deviceTz} ke topik {$topic}");
+            Log::info("Auto-Sync RTC [{$device->name}]: Drift {$diffMinutes}m berhasil dikoreksi ke {$targetTime->format('Y-m-d H:i')} {$deviceTz}");
+            return $newJam;
+        } else {
+            $this->error("           ❌ Gagal mengirim Auto-Sync RTC ke topik {$topic}");
+            return null;
         }
     }
 }

@@ -928,19 +928,21 @@
                     <div class="form-section">
                         <div class="form-section-title">📅 Pilih Hari Aktif</div>
                         <div class="day-picker-grid">
-                            @foreach(['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'] as $key => $day)
-                                @php 
-                                    $val = ($day == 'Min') ? 7 : ($key);
-                                    if($day == 'Sen') $val = 1;
-                                    if($day == 'Sel') $val = 2;
-                                    if($day == 'Rab') $val = 3;
-                                    if($day == 'Kam') $val = 4;
-                                    if($day == 'Jum') $val = 5;
-                                    if($day == 'Sab') $val = 6;
-                                @endphp
+                            @php
+                                $dayOptions = [
+                                    ['label' => 'Min', 'val' => 7],
+                                    ['label' => 'Sen', 'val' => 1],
+                                    ['label' => 'Sel', 'val' => 2],
+                                    ['label' => 'Rab', 'val' => 3],
+                                    ['label' => 'Kam', 'val' => 4],
+                                    ['label' => 'Jum', 'val' => 5],
+                                    ['label' => 'Sab', 'val' => 6],
+                                ];
+                            @endphp
+                            @foreach($dayOptions as $key => $d)
                                 <div>
-                                    <input type="checkbox" id="day_{{ $key }}" class="schedule-day-check" value="{{ $key + 1 }}">
-                                    <label for="day_{{ $key }}" class="schedule-day-label">{{ $day }}</label>
+                                    <input type="checkbox" id="day_{{ $key }}" class="schedule-day-check" value="{{ $d['val'] }}">
+                                    <label for="day_{{ $key }}" class="schedule-day-label">{{ $d['label'] }}</label>
                                 </div>
                             @endforeach
                         </div>

@@ -5,6 +5,8 @@ namespace App\Services;
 use PhpMqtt\Client\MqttClient;
 use PhpMqtt\Client\ConnectionSettings;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
+use App\Models\Device;
 
 /**
  * MqttSmartFarmService
@@ -370,6 +372,152 @@ class MqttSmartFarmService
             }
         }
         return $result;
+    }
+
+    /**
+     * Deteksi zona waktu (WIB, WITA, WIT) dari perbandingan jam RTC alat terhadap UTC server saat ini.
+     * 
+     * WIB  = UTC + 7
+     * WITA = UTC + 8
+     * WIT  = UTC + 9
+     * 
+     * @param string $rawJam Format HHMM (misal: "0624", "1130")
+     * @return string|null 'WIB'|'WITA'|'WIT' atau null jika drift terlalu besar (> 35 menit)
+     */
+    public static function detectTimezoneFromRtcJam(string $rawJam): ?string
+    {
+        $rawJam = str_pad($rawJam, 4, '0', STR_PAD_LEFT);
+        $deviceHour = (int) substr($rawJam, 0, 2);
+        $deviceMinute = (int) substr($rawJam, 2, 2);
+
+        if ($deviceHour < 0 || $deviceHour > 23 || $deviceMinute < 0 || $deviceMinute > 59) {
+            return null;
+        }
+
+        $deviceMinutes = $deviceHour * 60 + $deviceMinute;
+
+        $candidateTimezones = [
+            'WIB'  => 'Asia/Jakarta',
+            'WITA' => 'Asia/Makassar',
+            'WIT'  => 'Asia/Jayapura',
+        ];
+
+        $closestTz = null;
+        $minDiff = 9999;
+
+        foreach ($candidateTimezones as $tzCode => $tzIdentifier) {
+            $candidateNow = now()->setTimezone($tzIdentifier);
+            $candidateMinutes = $candidateNow->hour * 60 + $candidateNow->minute;
+
+            $diff = abs($deviceMinutes - $candidateMinutes);
+            if ($diff > 720) {
+                $diff = 1440 - $diff; // Handle midnight crossover (e.g. 23:58 vs 00:02)
+            }
+
+            if ($diff < $minDiff) {
+                $minDiff = $diff;
+                $closestTz = $tzCode;
+            }
+        }
+
+        // Jika selisih terkecil masih dalam rentang 35 menit, kita anggap itu zona waktunya
+        // (karena perbedaan antar zona waktu adalah 60 menit)
+        if ($minDiff <= 35) {
+            return $closestTz;
+        }
+
+        return null;
+    }
+
+    /**
+     * Mendeteksi atau mengambil zona waktu (WIB, WITA, WIT) untuk perangkat Smart Farm.
+     * 
+     * Prioritas deteksi:
+     * 1. Pengaturan manual yang tersimpan di Cache (device_timezone_{id})
+     * 2. Jam sebelumnya dari RTC alat terhadap waktu UTC (Offset ~7h = WIB, ~8h = WITA, ~9h = WIT)
+     * 3. Koordinat Bujur (Longitude) perangkat di tabel devices
+     * 4. Analisis teks kolom 'location' perangkat
+     * 5. Default fallback: WIB
+     */
+    public static function resolveTimezone(Device $device, ?string $rawJam = null): string
+    {
+        // 1. Cek cache preferensi user jika sudah pernah disetel manual
+        if ($device->id) {
+            try {
+                $cachedTz = Cache::get("device_timezone_{$device->id}");
+                if ($cachedTz && in_array(strtoupper($cachedTz), ['WIB', 'WITA', 'WIT'])) {
+                    return strtoupper($cachedTz);
+                }
+            } catch (\Throwable $e) {
+                // Abaikan jika cache store sedang down
+            }
+        }
+
+        // 2. Deteksi dari jam RTC alat sebelumnya (offset terhadap UTC)
+        if ($rawJam && strlen($rawJam) >= 4) {
+            $detectedFromRtc = self::detectTimezoneFromRtcJam($rawJam);
+            if ($detectedFromRtc) {
+                if ($device->id) {
+                    try {
+                        Cache::put("device_timezone_{$device->id}", $detectedFromRtc, now()->addDays(30));
+                    } catch (\Throwable $e) {}
+                }
+                return $detectedFromRtc;
+            }
+        }
+
+        // 3. Deteksi dari Longitude
+        if (!is_null($device->longitude) && is_numeric($device->longitude)) {
+            $lon = (float) $device->longitude;
+            // Wilayah bujur Indonesia: ~95°BT s/d 142°BT
+            if ($lon >= 95.0 && $lon <= 142.0) {
+                $tz = ($lon < 114.5) ? 'WIB' : (($lon <= 126.5) ? 'WITA' : 'WIT');
+                if ($device->id) {
+                    try {
+                        Cache::put("device_timezone_{$device->id}", $tz, now()->addDays(30));
+                    } catch (\Throwable $e) {}
+                }
+                return $tz;
+            }
+        }
+
+        // 4. Deteksi dari teks kolom location
+        if (!empty($device->location)) {
+            $loc = strtolower($device->location);
+            // WIT keywords
+            if (preg_match('/\b(papua|maluku|ambon|jayapura|merauke|sorong|manokwari|biak|ternate|tidore)\b/i', $loc)) {
+                $tz = 'WIT';
+                if ($device->id) {
+                    try {
+                        Cache::put("device_timezone_{$device->id}", $tz, now()->addDays(30));
+                    } catch (\Throwable $e) {}
+                }
+                return $tz;
+            }
+            // WITA keywords
+            if (preg_match('/\b(bali|denpasar|lombok|mataram|ntb|ntt|kupang|flores|sumbawa|makassar|sulawesi|manado|palu|kalsel|banjarmasin|kaltim|samarinda|balikpapan|kaltara|tarakan|gorontalo|kendari)\b/i', $loc)) {
+                $tz = 'WITA';
+                if ($device->id) {
+                    try {
+                        Cache::put("device_timezone_{$device->id}", $tz, now()->addDays(30));
+                    } catch (\Throwable $e) {}
+                }
+                return $tz;
+            }
+            // WIB keywords
+            if (preg_match('/\b(jakarta|bogor|depok|tangerang|bekasi|bandung|jabar|jateng|jatim|semarang|surabaya|yogyakarta|jogja|banten|sumatera|medan|palembang|padang|riau|aceh|lampung|kalbar|pontianak|kalteng|palangkaraya)\b/i', $loc)) {
+                $tz = 'WIB';
+                if ($device->id) {
+                    try {
+                        Cache::put("device_timezone_{$device->id}", $tz, now()->addDays(30));
+                    } catch (\Throwable $e) {}
+                }
+                return $tz;
+            }
+        }
+
+        // 5. Default fallback
+        return 'WIB';
     }
 
     /**

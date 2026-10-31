@@ -154,7 +154,7 @@ class MonitoringController extends Controller
         $sfTimezone = 'WIB';
         if ($device->type === 'smart_farm') {
             $sfStatus = \Cache::get("device_sf_status_{$device->id}");
-            $sfTimezone = \Cache::get("device_timezone_{$device->id}", 'WIB');
+            $sfTimezone = \App\Services\MqttSmartFarmService::resolveTimezone($device, $sfStatus['jam'] ?? null);
         }
 
         return view('monitoring.show', compact('userDevice', 'device', 'sensors', 'outputs', 'latestData', 'scheduleConfig', 'hasAutomation', 'isOnline', 'lastSeen', 'sfStatus', 'sfTimezone'));

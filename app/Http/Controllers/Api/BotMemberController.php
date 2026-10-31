@@ -45,11 +45,17 @@ class BotMemberController extends Controller
         $pairUuid = $uuid;
         $pairToken = $token;
 
-        // Cek jika perintah pendaftaran dikirim melalui chat WA (bisa "DAFTAR 40db4d83 9|token...", multiline, atau kalimat bebas seperti "Min tolong sambungkan akun saya 40db4d83 9|token...")
-        if ($message && preg_match('/\b([a-f0-9]{8})\b/i', (string)$message, $mUuid) && preg_match('/(\d+\|[A-Za-z0-9_\-]+)/', (string)$message, $mTok)) {
-            $isPairing = true;
-            $pairUuid = $mUuid[1];
-            $pairToken = $mTok[1];
+        // Cek jika perintah pendaftaran dikirim melalui chat WA (bisa "DAFTAR 40db4d83 9|token...", multiline, atau tanpa tanda "|" seperti "DAFTAR 40db4d83 86token...")
+        if ($message && preg_match('/\b([a-f0-9]{8})\b/i', (string)$message, $mUuid)) {
+            if (preg_match('/(\d+)\s*\|\s*([A-Za-z0-9_\-]+)/', (string)$message, $mTok)) {
+                $isPairing = true;
+                $pairUuid = $mUuid[1];
+                $pairToken = $mTok[1] . '|' . $mTok[2];
+            } elseif (preg_match('/(\d{1,4})([A-Za-z0-9_\-]{30,80})/', (string)$message, $mTok)) {
+                $isPairing = true;
+                $pairUuid = $mUuid[1];
+                $pairToken = $mTok[1] . '|' . $mTok[2];
+            }
         } elseif ($uuid && $token) {
             $isPairing = true;
         }
@@ -65,16 +71,26 @@ class BotMemberController extends Controller
 
             $strictCommands = [
                 'putuskan',
+                'putuskan akun',
+                'putus akun',
+                'putuskan sambungan',
+                'putuskan sambungan akun',
+                'putuskan akun wa',
+                'putuskan wa',
+                'putus wa',
                 'disconnect',
+                'disconnect akun',
                 'unbind',
+                'unbind akun',
                 'unconnect',
                 'unkonect',
-                'putus sambungan',
                 'keluar akun',
                 'hapus wa',
                 'hapus nomor wa',
+                'hapus akun',
                 'logout wa',
                 'cabut akun',
+                'cabut akun saya',
             ];
 
             if (in_array($cleanedMsg, $strictCommands, true)) {
@@ -198,6 +214,20 @@ class BotMemberController extends Controller
                 $formattedPhone = str_starts_with($rawDigits, '62') ? ('0' . substr($rawDigits, 2)) : $rawDigits;
                 $candidate->phone = $formattedPhone;
                 $candidate->saveQuietly();
+            } else {
+                // Jika parameter phone kosong dari n8n, gunakan nomor yang sudah ada di akun jika ada
+                $formattedPhone = $candidate->phone;
+            }
+
+            // Jika nomor telepon sama sekali tidak terdeteksi, cegah klaim sukses kosong
+            if (empty($formattedPhone)) {
+                return response()->json([
+                    'is_member' => false,
+                    'action' => 'bind',
+                    'phone_bound' => false,
+                    'message' => 'Pendaftaran gagal: Nomor WhatsApp tidak terdeteksi oleh sistem.',
+                    'reply_for_user' => 'Pendaftaran gagal: Nomor WhatsApp pengirim tidak terdeteksi oleh bot. Mohon hubungi admin atau isi nomor WhatsApp di menu Profil web https://swaratani.id.',
+                ], 200);
             }
 
             // Hitung sisa hari masa aktif token
@@ -367,7 +397,7 @@ class BotMemberController extends Controller
         ], 200);
     }
 
-        /**
+    /**
      * Endpoint untuk mengambil log riwayat data sensor IoT berdasarkan user_id / uuid / phone
      * Mendukung filter: limit (jumlah), range (rentang waktu), start_date, end_date, dan sensor
      */
@@ -699,6 +729,147 @@ class BotMemberController extends Controller
     {
         $request->merge(['action' => 'unbind']);
         return $this->checkMember($request);
+    }
+
+    /**
+     * Endpoint untuk mengambil daftar jadwal penyiraman & pemupukan aktif milik pengguna (AI Tool n8n)
+     */
+    public function getDeviceSchedules(Request $request)
+    {
+        // 1. Verifikasi Keamanan Secret Key
+        $secret = $request->header('X-Bot-Secret', $request->input('secret'));
+        $validSecret = config('services.bot.secret', env('BOT_SECRET_KEY', 'swa_bot_sec_8f93a1c27e4b5d6e'));
+        if ($secret !== $validSecret) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized: Invalid Bot Secret'], 401);
+        }
+
+        // 2. Identifikasi Pengguna berdasarkan phone / uuid / user_id
+        $userId = $request->input('user_id');
+        $uuid = $request->input('uuid');
+        $phone = $request->input('phone') ?: $request->input('phone_number') ?: $request->input('sender');
+        $deviceNameReq = trim((string)$request->input('device_name', ''));
+
+        $user = null;
+        if ($userId) {
+            $user = User::find($userId);
+        } elseif ($uuid) {
+            $user = User::where('uuid', strtolower(trim($uuid)))->first();
+        } elseif ($phone) {
+            $cleanPhone = preg_replace('/[:@].*$/', '', (string)$phone);
+            $digits = preg_replace('/\D/', '', $cleanPhone);
+            $core = str_starts_with($digits, '62') ? substr($digits, 2) : (str_starts_with($digits, '0') ? substr($digits, 1) : $digits);
+            if (!empty($core)) {
+                $user = User::where(function ($q) use ($digits, $core) {
+                    $q->where('phone', $digits)
+                      ->orWhere('phone', '0' . $core)
+                      ->orWhere('phone', '62' . $core)
+                      ->orWhere('phone', '+62' . $core)
+                      ->orWhere('phone', 'like', '%' . $core . '%');
+                })->first();
+            }
+        }
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pengguna tidak ditemukan atau nomor WhatsApp belum terhubung ke akun Swaratani.'
+            ], 404);
+        }
+
+        // 3. Ambil Perangkat IoT Milik Pengguna
+        $userDevices = UserDevice::with('device')->where('user_id', $user->id)->get();
+        if ($userDevices->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'user_name' => $user->name,
+                'message' => 'Belum ada perangkat IoT yang terhubung ke akun Anda.',
+                'devices' => [],
+            ], 200);
+        }
+
+        // Filter jika pengguna menyebut nama perangkat tertentu
+        if (!empty($deviceNameReq)) {
+            $filtered = $userDevices->filter(function ($ud) use ($deviceNameReq) {
+                $dev = $ud->device;
+                return str_contains(strtolower($ud->custom_name ?: ''), strtolower($deviceNameReq))
+                    || str_contains(strtolower($dev->name ?? ''), strtolower($deviceNameReq));
+            });
+            if ($filtered->isNotEmpty()) {
+                $userDevices = $filtered;
+            }
+        }
+
+        $results = [];
+
+        foreach ($userDevices as $ud) {
+            $dev = $ud->device;
+            if (!$dev) continue;
+
+            $activeSchedules = [];
+
+            // A. Ambil dari Cache (device_schedules_{id})
+            $cached = \Cache::get("device_schedules_{$dev->id}", []);
+            if (!empty($cached) && is_array($cached)) {
+                foreach ($cached as $k => $c) {
+                    if (!empty($c['is_active'])) {
+                        $days = !empty($c['days'])
+                            ? (is_array($c['days']) ? implode(', ', $c['days']) : $c['days'])
+                            : 'Setiap hari';
+
+                        $activeSchedules[] = [
+                            'slot' => $k,
+                            'nama' => $c['name'] ?? 'Penyiraman',
+                            'waktu_mulai' => substr($c['on_time'] ?? '', 0, 5) ?: '-',
+                            'durasi' => ($c['duration'] ?? 0) . ' menit',
+                            'target_blok' => 'Blok ' . ($c['blok'] ?? $c['sector'] ?? 1),
+                            'pupuk' => !empty($c['liter_pupuk']) ? ($c['liter_pupuk'] . ' Liter') : null,
+                            'hari' => $days,
+                            'status' => 'Aktif',
+                        ];
+                    }
+                }
+            }
+
+            // B. Jika cache kosong atau belum ada, ambil dari database DeviceScheduleData
+            if (empty($activeSchedules)) {
+                $dbScheds = \App\Models\DeviceScheduleData::where('device_id', $dev->id)
+                    ->where('is_active', true)
+                    ->get();
+
+                foreach ($dbScheds as $s) {
+                    $activeSchedules[] = [
+                        'slot' => $s->slot_key,
+                        'nama' => $s->name ?: 'Penyiraman',
+                        'waktu_mulai' => $s->display_time ?: '-',
+                        'durasi' => $s->duration . ' menit',
+                        'target_blok' => 'Blok ' . ($s->sector ?: 1),
+                        'pupuk' => null,
+                        'hari' => $s->display_days ?: 'Setiap hari',
+                        'status' => 'Aktif',
+                    ];
+                }
+            }
+
+            $devName = $ud->custom_name ?: $dev->name;
+            $results[] = [
+                'device_id' => $dev->id,
+                'device_name' => $devName,
+                'device_type' => $dev->type ?? 'general',
+                'is_online' => $dev->isOnline(),
+                'jumlah_jadwal_aktif' => count($activeSchedules),
+                'jadwal' => $activeSchedules,
+                'keterangan' => count($activeSchedules) === 0
+                    ? "Belum ada jadwal penyiraman otomatis yang aktif pada alat {$devName}."
+                    : "Ditemukan " . count($activeSchedules) . " jadwal penyiraman aktif pada alat {$devName}."
+            ];
+        }
+
+        return response()->json([
+            'success' => true,
+            'user_name' => $user->name,
+            'total_devices' => count($results),
+            'devices' => $results,
+        ], 200);
     }
 }
 
