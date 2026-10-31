@@ -13,52 +13,46 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         * {
-            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Inter', sans-serif;
         }
 
         .glass-card {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 1.5rem 1.75rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
         }
 
         .page-header {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 1.25rem 1.75rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
         }
 
         .btn-glass {
-            background: #ffffff;
-            border: 1px solid #d1d5db;
-            color: #374151;
-            padding: 0.55rem 1.2rem;
-            border-radius: 8px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            padding: 0.6rem 1.25rem;
+            border-radius: 50px;
             text-decoration: none;
-            font-weight: 600;
-            font-size: 0.88rem;
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
-            transition: all 0.15s ease;
         }
 
         .btn-glass:hover {
-            background: #f8fafc;
-            border-color: #94a3b8;
-            color: #0f172a;
+            background: var(--glass-bg);
+            border-color: var(--primary);
+            color: var(--primary);
         }
 
         .btn-primary {
-            background: var(--primary);
-            border: 1px solid transparent;
+            background: var(--primary-gradient);
+            border: none;
             color: #fff;
-            border-radius: 8px;
-            font-weight: 600;
         }
 
         .table-glass {
@@ -244,32 +238,26 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 42px;
-            height: 42px;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-            background: #f8fafc;
-            color: #475569;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            border: 1px solid #d1d5db;
+            background: #ffffff;
+            color: #6b7280;
             cursor: pointer;
             font-size: 0.85rem;
             font-weight: 600;
             user-select: none;
-            transition: all 0.15s ease;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-        }
-
-        .schedule-day-label:hover {
-            border-color: #cbd5e1;
-            background: #ffffff;
-            color: #0f172a;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
         }
 
         .schedule-day-check:checked + .schedule-day-label {
-            background: #0e5f8a;
-            border-color: #0e5f8a;
-            color: #ffffff;
-            transform: none;
-            box-shadow: 0 2px 4px rgba(14, 95, 138, 0.25);
+            background: linear-gradient(135deg, #0e5f8a, #0d9488);
+            border-color: transparent;
+            color: #fff;
+            transform: scale(1.08);
+            box-shadow: 0 4px 14px rgba(14, 95, 138, 0.35);
         }
 
         /* Footer action bar */
@@ -282,47 +270,38 @@
         }
 
         .btn-save-schedule {
-            background: #0e5f8a;
+            background: linear-gradient(135deg, #0e5f8a, #0d9488);
             color: #fff;
             border: none;
-            border-radius: 8px;
-            padding: 0.7rem;
-            font-size: 0.95rem;
-            font-weight: 600;
+            border-radius: 12px;
+            padding: 0.75rem;
+            font-size: 1rem;
+            font-weight: 700;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
             width: 100%;
-            transition: background 0.15s, box-shadow 0.15s;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: transform 0.15s, box-shadow 0.15s;
+            box-shadow: 0 4px 14px rgba(13, 148, 136, 0.3);
         }
 
         .btn-save-schedule:hover {
-            background: #0c4a6e;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 25px rgba(14, 95, 138, 0.4);
             color: #fff;
         }
 
         .btn-save-schedule:active {
-            transform: none;
+            transform: scale(0.98);
         }
 
         .btn-cancel-schedule {
-            background: #f1f5f9;
-            color: #475569;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 0.65rem;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: background 0.15s;
-        }
-
-        .btn-cancel-schedule:hover {
-            background: #e2e8f0;
-            color: #0f172a;
-        }
+            background: #f3f4f6;
+            color: #6b7280;
+            border: none;
+            border-radius: 12px;
+            padding: 0.75rem;
             font-size: 1rem;
             font-weight: 600;
             width: 100%;
@@ -886,7 +865,7 @@
 
                     <!-- Section: Waktu -->
                     <div class="form-section">
-                        <div class="form-section-title"><i class="bi bi-clock me-1 text-primary"></i> Pengaturan Waktu</div>
+                        <div class="form-section-title">⏰ Pengaturan Waktu</div>
                         <div class="row g-3">
                             <div class="col-6">
                                 <label class="form-label fw-bold text-center d-block" style="color: #374151; font-size: 0.9rem;">Waktu Mulai</label>
@@ -914,13 +893,13 @@
                     @if($isSector || $isType || $isSmartFarm)
                     <!-- Section: Sumber & Output -->
                     <div class="form-section">
-                        <div class="form-section-title"><i class="bi bi-droplet me-1 text-primary"></i> {{ $isSmartFarm ? 'Pengaturan Irigasi' : 'Sumber & Output' }}</div>
+                        <div class="form-section-title">💧 {{ $isSmartFarm ? 'Pengaturan Irigasi' : 'Sumber & Output' }}</div>
                         @if($isSector)
                         <div class="mb-3">
                             <label class="form-label fw-bold" style="color: #374151; font-size: 0.9rem;">{{ $isSmartFarm ? 'Pilih Blok Irigasi' : 'Zona Tujuan' }}</label>
                             <select id="sector" class="form-select form-select-dark">
                                 @for($s = 1; $s <= $maxSectors; $s++)
-                                    <option value="{{ $s }}">{{ $isSmartFarm ? 'Blok ' . $s : 'Zona ' . $s }}</option>
+                                    <option value="{{ $s }}">📍 {{ $isSmartFarm ? 'Blok ' . $s : 'Zona ' . $s }}</option>
                                 @endfor
                             </select>
                         </div>
@@ -947,7 +926,7 @@
                     @if($isDays)
                     <!-- Section: Hari -->
                     <div class="form-section">
-                        <div class="form-section-title"><i class="bi bi-calendar3 me-1 text-primary"></i> Pilih Hari Aktif</div>
+                        <div class="form-section-title">📅 Pilih Hari Aktif</div>
                         <div class="day-picker-grid">
                             @php
                                 $dayOptions = [
