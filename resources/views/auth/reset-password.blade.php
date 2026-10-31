@@ -306,7 +306,7 @@
             <div class="brand-logo-box">
                 <img src="{{ asset(env('APP_LOGO', 'images/logo.png')) }}" alt="{{ env('APP_NAME', 'Swaratani') }}">
             </div>
-            <div class="brand-name">Swaratani</div>
+            <div class="brand-name">{{ env('APP_NAME', 'Swaratani') }}</div>
             <div class="brand-subtitle">Smart IoT Farming Platform</div>
         </div>
 
