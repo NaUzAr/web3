@@ -356,20 +356,20 @@ class MqttSmartFarmService
             4 => 'Kam',
             5 => 'Jum',
             6 => 'Sab',
+            7 => 'Min',
         ];
         $result = [];
 
-        // Cek Minggu jika bit 7 atau bit 0 aktif
-        $hasMinggu = ($bitmask & (1 << 7)) || ($bitmask & (1 << 0));
-        if ($hasMinggu) {
-            $result[] = 'Min';
-        }
-
-        // Cek Senin s/d Sabtu (bit 1..6)
-        for ($i = 1; $i <= 6; $i++) {
+        // Cek bit 1 s/d 7 (1=Senin ... 6=Sabtu, 7=Minggu)
+        for ($i = 1; $i <= 7; $i++) {
             if ($bitmask & (1 << $i)) {
                 $result[] = $dayNames[$i];
             }
+        }
+
+        // Fallback jika ada firmware lama yang mengirim Minggu sebagai bit 0
+        if (($bitmask & (1 << 0)) && !in_array('Min', $result)) {
+            $result[] = 'Min';
         }
 
         return $result;
