@@ -135,6 +135,10 @@
     $t = $themes[$theme] ?? $themes['green'];
 @endphp
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
 <style>
     :root {
         /* Primary Colors */
@@ -211,34 +215,27 @@
     }
 
     * {
-        font-family: 'Inter', sans-serif;
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
     }
 
     body {
-        background: var(--nature-gradient);
+        background: #f8fafc !important;
         min-height: 100vh;
         color: var(--text-main);
     }
 
-    /* Background Animation */
+    /* Background Animation: Dinonaktifkan untuk gaya bersih & tegas */
     .bg-animation {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: -1;
-        background: radial-gradient(circle at 20% 80%, var(--glow-1) 0%, transparent 50%),
-            radial-gradient(circle at 80% 20%, var(--glow-2) 0%, transparent 50%);
+        display: none !important;
     }
 
-    /* Navbar Glass */
+    /* Navbar Modern Minimalis */
     .navbar-glass {
-        background: var(--navbar-bg) !important;
-        backdrop-filter: blur(20px);
-        border-bottom: 1px solid var(--glass-border);
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        /* Added shadow for light mode visibility */
+        background: #ffffff !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04) !important;
     }
 
     .navbar-brand {
@@ -251,9 +248,9 @@
     }
 
     .nav-link {
-        color: var(--navbar-text) !important;
-        font-weight: 500;
-        transition: all 0.3s ease;
+        color: #475569 !important;
+        font-weight: 600;
+        transition: all 0.2s ease;
     }
 
     .nav-link:hover {
@@ -264,23 +261,23 @@
         color: var(--primary) !important;
     }
 
-    /* Glass Cards */
+    /* Modern Solid Cards (Bukan Glassmorphism AI) */
     .glass-card {
-        background: var(--glass-bg);
-        backdrop-filter: blur(20px);
-        border: 1px solid var(--glass-border);
-        border-radius: 20px;
-        padding: 2rem;
-        transition: all 0.4s ease;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-        /* Softer shadow */
-        color: var(--text-main);
+        background: #ffffff !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 12px !important;
+        padding: 1.5rem !important;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05) !important;
+        color: #0f172a !important;
     }
 
     .glass-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1);
-        border-color: var(--primary);
+        transform: none !important;
+        border-color: #cbd5e1 !important;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.07) !important;
     }
 
     h1,
@@ -289,75 +286,83 @@
     h4,
     h5,
     h6 {
-        color: var(--text-main);
+        color: #0f172a !important;
+        letter-spacing: -0.02em;
     }
 
     p,
     small {
-        color: var(--text-secondary);
+        color: #64748b;
     }
 
-    /* Buttons */
+    /* Modern Solid Buttons (Sudut tegas, bukan kapsul 50px) */
     .btn-gradient {
-        background: var(--primary-gradient);
-        border: none;
-        color: #fff;
-        padding: 0.8rem 2rem;
-        border-radius: 50px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        background: var(--primary) !important;
+        border: 1px solid transparent !important;
+        color: #fff !important;
+        padding: 0.6rem 1.4rem !important;
+        border-radius: 8px !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.2px !important;
+        transition: background-color 0.15s ease, box-shadow 0.15s ease !important;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
     }
 
     .btn-gradient:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
-        color: #fff;
+        transform: none !important;
+        background: var(--primary-dark) !important;
+        box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1) !important;
+        color: #fff !important;
     }
 
     .btn-glass {
-        background: var(--glass-bg);
-        backdrop-filter: blur(10px);
-        border: 1px solid var(--glass-border);
-        color: var(--text-main);
-        padding: 0.8rem 2rem;
-        border-radius: 50px;
-        font-weight: 600;
-        transition: all 0.3s ease;
+        background: #ffffff !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        border: 1px solid #d1d5db !important;
+        color: #374151 !important;
+        padding: 0.6rem 1.3rem !important;
+        border-radius: 8px !important;
+        font-weight: 600 !important;
+        transition: all 0.15s ease !important;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04) !important;
     }
 
     .btn-glass:hover {
-        background: rgba(var(--primary), 0.1);
-        color: var(--primary);
-        transform: translateY(-3px);
+        background: #f8fafc !important;
+        border-color: #94a3b8 !important;
+        color: #0f172a !important;
+        transform: none !important;
     }
 
     /* Form Controls */
     .form-control,
     .form-select {
-        background: var(--glass-bg);
-        border: 1px solid var(--glass-border);
-        color: var(--text-main);
-        border-radius: 12px;
-        padding: 0.75rem 1rem;
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #0f172a !important;
+        border-radius: 8px !important;
+        padding: 0.6rem 0.85rem !important;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03) !important;
+        font-size: 0.92rem !important;
     }
 
     .form-control:focus,
     .form-select:focus {
-        background: var(--glass-bg);
-        border-color: var(--primary);
-        color: var(--text-main);
-        box-shadow: 0 0 0 3px rgba(14, 95, 138, 0.2);
-        /* Fixed opacity color */
+        background: #ffffff !important;
+        border-color: var(--primary) !important;
+        color: #0f172a !important;
+        box-shadow: 0 0 0 3px rgba(14, 95, 138, 0.15) !important;
     }
 
     .form-control::placeholder {
-        color: var(--text-secondary);
+        color: #94a3b8 !important;
     }
 
     .form-label {
-        color: var(--text-main);
-        font-weight: 600;
+        color: #334155 !important;
+        font-weight: 600 !important;
+        font-size: 0.88rem !important;
     }
 
     /* Live Indicator */
@@ -398,37 +403,56 @@
 
     /* Tables */
     .table-glass {
-        color: var(--text-main);
+        color: #0f172a !important;
+        border-collapse: separate;
+        border-spacing: 0;
+        width: 100%;
     }
 
     .table-glass thead th {
-        background: rgba(var(--primary), 0.05);
-        color: var(--primary);
+        background: #f8fafc !important;
+        color: #475569 !important;
         font-weight: 600;
-        border-bottom: 2px solid var(--glass-border);
+        font-size: 0.8rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        border-bottom: 1px solid #e2e8f0 !important;
+        padding: 0.75rem 1rem !important;
     }
 
     .table-glass tbody td {
-        border-bottom: 1px solid var(--glass-border);
-        color: var(--text-main);
+        border-bottom: 1px solid #f1f5f9 !important;
+        color: #1e293b !important;
+        padding: 0.85rem 1rem !important;
+        font-size: 0.92rem;
+    }
+
+    .table-glass tbody tr:hover td {
+        background-color: #f8fafc !important;
     }
 
     /* Dropdown */
     .dropdown-menu {
-        background: var(--navbar-bg);
-        backdrop-filter: blur(20px);
-        border: 1px solid var(--glass-border);
-        border-radius: 12px;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        background: #ffffff !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 8px !important;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04) !important;
+        padding: 0.4rem !important;
     }
 
     .dropdown-item {
-        color: var(--text-main);
+        color: #334155 !important;
+        border-radius: 6px !important;
+        padding: 0.45rem 0.75rem !important;
+        font-size: 0.88rem !important;
+        font-weight: 500 !important;
     }
 
     .dropdown-item:hover {
-        background: var(--primary-light);
-        color: #fff;
+        background: #f1f5f9 !important;
+        color: #0f172a !important;
     }
 
     /* Footer */
