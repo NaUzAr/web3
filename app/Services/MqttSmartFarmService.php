@@ -273,43 +273,47 @@ class MqttSmartFarmService
     }
 
     /**
-     * Konversi array hari (e.g. [0,1,2,3,4,5,6] atau ['Min','Sen',...]) ke bitmask
-     * bit0=Minggu, bit1=Senin, ..., bit6=Sabtu
+     * Konversi array hari (e.g. [1,2,3,4,5,6,7] atau ['Min','Sen',...]) ke bitmask
+     * 1=Senin (bit 1) .. 6=Sabtu (bit 6), 7/0=Minggu (bit 7 & bit 0)
      * 
-     * @param array $days Array of day indices (0=Minggu..6=Sabtu) atau day names
-     * @return int Bitmask (0-127)
+     * @param array|string|int $days Array of day indices atau day names
+     * @return int Bitmask
      */
     public static function daysToBitmask($days): int
     {
         if (empty($days)) {
-            return 127; // Default: setiap hari
+            return 255; // Default: setiap hari
         }
 
-        if (is_numeric($days) && (int)$days <= 127 && (int)$days >= 0 && strlen((string)$days) <= 3 && !preg_match('/^[1-7]{2,}$/', (string)$days)) {
+        if (is_numeric($days) && (int)$days <= 255 && (int)$days >= 0 && strlen((string)$days) <= 3 && !preg_match('/^[1-7]{2,}$/', (string)$days)) {
             return (int) $days;
         }
 
         if (is_string($days)) {
             // Format angka berurutan seperti "1234567" (1=Senin..7=Minggu)
-            if (preg_match('/^[1-7]+$/', $days)) {
+            if (preg_match('/^[0-7]+$/', $days)) {
                 $days = str_split($days);
                 $bitmask = 0;
                 foreach ($days as $d) {
                     $val = (int)$d;
-                    $bit = ($val === 7) ? 0 : $val; // 7=Minggu (bit 0), 1=Senin (bit 1)
-                    $bitmask |= (1 << $bit);
+                    if ($val === 7 || $val === 0) {
+                        // Set bit 7 dan bit 0 agar kompatibel ganda (firmware 1-7 maupun 0-6)
+                        $bitmask |= (1 << 7) | (1 << 0);
+                    } else {
+                        $bitmask |= (1 << $val);
+                    }
                 }
-                return $bitmask ?: 127;
+                return $bitmask ?: 255;
             }
             $days = explode(',', $days);
         }
 
         if (!is_array($days)) {
-            return 127;
+            return 255;
         }
 
         $dayMap = [
-            'min' => 0, 'minggu' => 0, 'sun' => 0, 'sunday' => 0,
+            'min' => 7, 'minggu' => 7, 'sun' => 7, 'sunday' => 7,
             'sen' => 1, 'senin' => 1, 'mon' => 1, 'monday' => 1,
             'sel' => 2, 'selasa' => 2, 'tue' => 2, 'tuesday' => 2,
             'rab' => 3, 'rabu' => 3, 'wed' => 3, 'wednesday' => 3,
@@ -322,32 +326,52 @@ class MqttSmartFarmService
         foreach ($days as $day) {
             if (is_numeric($day)) {
                 $val = (int) $day;
-                $bit = ($val === 7) ? 0 : $val;
             } else {
-                $bit = $dayMap[strtolower(trim($day))] ?? null;
+                $val = $dayMap[strtolower(trim($day))] ?? null;
             }
-            if ($bit !== null && $bit >= 0 && $bit <= 6) {
-                $bitmask |= (1 << $bit);
+            if ($val !== null && $val >= 0 && $val <= 7) {
+                if ($val === 7 || $val === 0) {
+                    $bitmask |= (1 << 7) | (1 << 0);
+                } else {
+                    $bitmask |= (1 << $val);
+                }
             }
         }
-        return $bitmask ?: 127;
+        return $bitmask ?: 255;
     }
 
     /**
      * Konversi bitmask ke array nama hari (Indonesia)
+     * Mendukung pembacaan bit 7 maupun bit 0 sebagai Minggu.
      * 
      * @param int $bitmask
      * @return array
      */
     public static function bitmaskToDays(int $bitmask): array
     {
-        $dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+        $dayNames = [
+            1 => 'Sen',
+            2 => 'Sel',
+            3 => 'Rab',
+            4 => 'Kam',
+            5 => 'Jum',
+            6 => 'Sab',
+        ];
         $result = [];
-        for ($i = 0; $i <= 6; $i++) {
+
+        // Cek Minggu jika bit 7 atau bit 0 aktif
+        $hasMinggu = ($bitmask & (1 << 7)) || ($bitmask & (1 << 0));
+        if ($hasMinggu) {
+            $result[] = 'Min';
+        }
+
+        // Cek Senin s/d Sabtu (bit 1..6)
+        for ($i = 1; $i <= 6; $i++) {
             if ($bitmask & (1 << $i)) {
                 $result[] = $dayNames[$i];
             }
         }
+
         return $result;
     }
 
