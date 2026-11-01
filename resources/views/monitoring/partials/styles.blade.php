@@ -1383,6 +1383,14 @@
                 font-size: 1.1rem !important;
             }
 
+            /* Global box-sizing & zero overflow */
+            html, body {
+                overflow-x: hidden !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+            }
+
             .navbar-main .container {
                 position: static !important;
                 width: 100% !important;
@@ -1394,26 +1402,36 @@
                 display: flex !important;
                 align-items: center !important;
                 justify-content: space-between !important;
+                box-sizing: border-box !important;
             }
 
             /* Independent Scroll Body */
             .monitoring-main-container {
                 position: fixed !important;
-                top: 44px !important;
-                bottom: calc(52px + env(safe-area-inset-bottom, 0px)) !important;
+                top: 46px !important;
+                bottom: calc(54px + env(safe-area-inset-bottom, 0px)) !important;
                 left: 0 !important;
                 right: 0 !important;
                 width: 100% !important;
                 max-width: 100% !important;
                 overflow-y: auto !important;
+                overflow-x: hidden !important;
                 overscroll-behavior-y: contain !important;
                 -webkit-overflow-scrolling: touch !important;
-                padding: 6px 8px 18px 8px !important;
+                padding: 6px 10px 24px 10px !important;
                 margin: 0 !important;
                 scrollbar-width: none !important;
+                box-sizing: border-box !important;
             }
             .monitoring-main-container::-webkit-scrollbar {
                 display: none !important;
+            }
+
+            /* Status Card Vertical Stack on Mobile */
+            #sf-status-card > div {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 8px !important;
             }
 
             /* Prevent auto-zoom in iOS Safari */
@@ -1613,23 +1631,32 @@
 
             .pipeline-scroll-wrapper {
                 padding: 0 !important;
-                overflow-x: auto !important;
+                overflow-x: hidden !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
             }
 
             .pipeline-track {
                 min-width: 0 !important;
                 width: 100% !important;
-                gap: 2px !important;
+                max-width: 100% !important;
+                gap: 0 !important;
                 padding: 2px 0 !important;
+                display: flex !important;
+                align-items: flex-start !important;
                 justify-content: space-between !important;
+                box-sizing: border-box !important;
             }
 
             .pipeline-node {
-                padding: 2px !important;
-                flex: 1 !important;
+                padding: 0 !important;
+                flex: 0 0 auto !important;
+                width: 44px !important;
+                max-width: 46px !important;
                 display: flex !important;
                 flex-direction: column !important;
                 align-items: center !important;
+                box-sizing: border-box !important;
             }
 
             .pipeline-node-icon {
@@ -1753,6 +1780,32 @@
             }
 
             /* Indikator Blok: Modern 3-Column Micro Grid */
+            .sf-blok-indicators-grid {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr 1fr !important;
+                gap: 4px !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+
+            .sf-zone-simple {
+                min-width: 0 !important;
+                overflow: hidden !important;
+                padding: 4px 4px !important;
+                border-radius: 6px !important;
+                box-sizing: border-box !important;
+            }
+
+            .sf-zone-simple .fw-bold {
+                font-size: 0.72rem !important;
+            }
+
+            .sf-zone-simple .output-status,
+            .sf-zone-simple .badge {
+                font-size: 0.55rem !important;
+                padding: 1px 3px !important;
+            }
+
             .sf-hub-card:has(.sf-zone-simple) {
                 padding: 6px 8px !important;
             }
