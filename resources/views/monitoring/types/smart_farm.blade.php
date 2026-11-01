@@ -306,31 +306,29 @@
             <div class="sf-zone-simple {{ $isFlowing ? 'active-flow' : '' }}" 
                  id="output-card-{{ $blk?->id }}"
                  style="--zone-color: {{ $b['color'] }};">
-                <div class="d-flex align-items-center justify-content-between w-100">
-                    <div class="d-flex align-items-center gap-1.5 min-w-0">
+                <div class="d-flex align-items-center justify-content-between mb-1">
+                    <div class="d-flex align-items-center gap-1 min-w-0">
                         <div class="sf-zone-avatar-sm" style="border-color: {{ $b['color'] }}; color: {{ $b['color'] }};">
                             {{ $b['num'] }}
                         </div>
-                        <div class="min-w-0">
-                            <div class="fw-bold text-dark text-truncate" style="font-size: 0.76rem; line-height: 1.1;">{{ $b['name'] }}</div>
-                            <div class="d-flex align-items-center gap-1 text-muted" style="font-size: 0.6rem;">
-                                <i class="bi {{ $isBlkOn ? 'bi-unlock-fill text-success' : 'bi-lock-fill text-muted' }}" id="sf-valve-icon-blok{{ $b['num'] }}"></i>
-                                <span class="output-status {{ $isBlkOn ? 'on' : 'off' }}" 
-                                      id="output-status-{{ $blk?->id }}"
-                                      data-on-text="BUKA"
-                                      data-off-text="TUTUP">
-                                    {{ $isBlkOn ? 'BUKA' : 'TUTUP' }}
-                                </span>
-                            </div>
-                        </div>
+                        <span class="fw-bold text-dark text-truncate sf-zone-label">{{ $b['name'] }}</span>
                     </div>
-                    <div class="d-flex align-items-center gap-1 flex-shrink-0">
-                        <span class="badge {{ $isFlowing ? 'bg-success text-white' : 'bg-light text-muted border' }}"
-                              id="sf-flow-badge-blok{{ $b['num'] }}"
-                              style="font-size: 0.6rem; padding: 2px 4px; font-weight: 700;">
-                            {{ $isFlowing ? 'ALIR' : 'DIAM' }}
-                        </span>
-                    </div>
+                    <span class="badge {{ $isFlowing ? 'bg-success text-white' : 'bg-light text-muted border' }}"
+                          id="sf-flow-badge-blok{{ $b['num'] }}">
+                        {{ $isFlowing ? 'ALIR' : 'DIAM' }}
+                    </span>
+                </div>
+                <div class="d-flex align-items-center justify-content-between sf-zone-valve-row">
+                    <span class="text-muted d-flex align-items-center gap-0.5 sf-zone-valve-label">
+                        <i class="bi {{ $isBlkOn ? 'bi-unlock-fill text-success' : 'bi-lock-fill text-muted' }}" id="sf-valve-icon-blok{{ $b['num'] }}"></i>
+                        <span>Katup:</span>
+                    </span>
+                    <span class="output-status {{ $isBlkOn ? 'on' : 'off' }}" 
+                          id="output-status-{{ $blk?->id }}"
+                          data-on-text="BUKA"
+                          data-off-text="TUTUP">
+                        {{ $isBlkOn ? 'BUKA' : 'TUTUP' }}
+                    </span>
                 </div>
             </div>
         @endforeach

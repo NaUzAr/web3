@@ -1651,12 +1651,42 @@
             .pipeline-node {
                 padding: 0 !important;
                 flex: 0 0 auto !important;
-                width: 44px !important;
-                max-width: 46px !important;
+                width: 38px !important;
+                max-width: 40px !important;
                 display: flex !important;
                 flex-direction: column !important;
                 align-items: center !important;
                 box-sizing: border-box !important;
+            }
+
+            .pipeline-node-icon {
+                width: 22px !important;
+                height: 22px !important;
+                font-size: 0.7rem !important;
+            }
+
+            .pipeline-node-icon svg {
+                width: 12px !important;
+                height: 12px !important;
+            }
+
+            .pipeline-node-label {
+                font-size: 0.54rem !important;
+                letter-spacing: -0.2px !important;
+                margin-top: 1px !important;
+            }
+
+            .pipeline-node-status {
+                font-size: 0.5rem !important;
+                padding: 0 2px !important;
+                letter-spacing: -0.2px !important;
+            }
+
+            .pipeline-connector {
+                flex: 1 1 4px !important;
+                min-width: 4px !important;
+                height: 1.5px !important;
+                margin-top: 10px !important;
             }
 
             .pipeline-node-icon {
@@ -1796,14 +1826,35 @@
                 box-sizing: border-box !important;
             }
 
-            .sf-zone-simple .fw-bold {
-                font-size: 0.72rem !important;
+            .sf-zone-simple {
+                padding: 5px 6px !important;
             }
 
-            .sf-zone-simple .output-status,
-            .sf-zone-simple .badge {
+            .sf-zone-simple .sf-zone-label {
+                font-size: 0.7rem !important;
+                line-height: 1.1 !important;
+            }
+
+            .sf-zone-simple .sf-zone-avatar-sm {
+                width: 18px !important;
+                height: 18px !important;
+                font-size: 0.65rem !important;
+            }
+
+            .sf-zone-simple .sf-zone-valve-label {
+                font-size: 0.58rem !important;
+            }
+
+            .sf-zone-simple .output-status {
                 font-size: 0.55rem !important;
+                padding: 1px 4px !important;
+                font-weight: 800 !important;
+            }
+
+            .sf-zone-simple .badge {
+                font-size: 0.52rem !important;
                 padding: 1px 3px !important;
+                font-weight: 700 !important;
             }
 
             .sf-hub-card:has(.sf-zone-simple) {
