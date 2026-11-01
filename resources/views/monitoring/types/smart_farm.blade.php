@@ -141,7 +141,10 @@
                 <div class="pipeline-node-icon">
                     <i class="bi bi-water"></i>
                 </div>
-                <div class="pipeline-node-label">Pompa Utama</div>
+                <div class="pipeline-node-label">
+                    <span class="d-none d-sm-inline">Pompa Utama</span>
+                    <span class="d-sm-none">Pompa</span>
+                </div>
                 <div class="pipeline-node-status" id="pipe-status-pompa">{{ $isPompaActive ? 'MEMOMPA' : 'OFF' }}</div>
             </div>
 
@@ -158,7 +161,10 @@
                         <circle cx="12" cy="11.5" r="1" fill="currentColor"></circle>
                     </svg>
                 </div>
-                <div class="pipeline-node-label">Injeksi Pupuk</div>
+                <div class="pipeline-node-label">
+                    <span class="d-none d-sm-inline">Injeksi Pupuk</span>
+                    <span class="d-sm-none">Pupuk</span>
+                </div>
                 <div class="pipeline-node-status" id="pipe-status-pupuk">{{ $isPupukActive ? 'INJEKSI' : 'STANDBY' }}</div>
             </div>
 

@@ -1874,13 +1874,16 @@
             }
 
             .sf-zone-simple {
-                padding: 4px 6px !important;
+                padding: 5px 6px !important;
                 border-radius: 6px !important;
                 border: 1px solid #e2e8f0 !important;
                 background: #ffffff !important;
-                height: 38px !important;
+                height: auto !important;
+                min-height: 44px !important;
                 display: flex !important;
-                align-items: center !important;
+                flex-direction: column !important;
+                justify-content: center !important;
+                gap: 3px !important;
             }
 
             .sf-zone-simple .d-flex.align-items-center.justify-content-between {
