@@ -945,6 +945,8 @@
             const pStatusPompa = document.getElementById('pipe-status-pompa');
             const pConn1 = document.getElementById('pipe-conn-1');
             const pConn2 = document.getElementById('pipe-conn-2');
+            const pConn3 = document.getElementById('pipe-conn-3');
+            const pConn4 = document.getElementById('pipe-conn-4');
             const pNodePupuk = document.getElementById('pipe-node-pupuk');
             const pStatusPupuk = document.getElementById('pipe-status-pupuk');
 
@@ -1022,6 +1024,14 @@
                 if (pStatusPompa) pStatusPompa.innerText = 'MEMOMPA';
                 if (pConn1) pConn1.classList.add('active');
                 if (pConn2) pConn2.classList.add('active');
+                if (pConn3) {
+                    if (displayBlok >= 2) pConn3.classList.add('active');
+                    else pConn3.classList.remove('active');
+                }
+                if (pConn4) {
+                    if (displayBlok >= 3) pConn4.classList.add('active');
+                    else pConn4.classList.remove('active');
+                }
 
                 if (pNodePupuk) {
                     if (isPupuk) pNodePupuk.classList.add('active');
@@ -1201,6 +1211,8 @@
                 if (pStatusPompa) pStatusPompa.innerText = 'OFF';
                 if (pConn1) pConn1.classList.remove('active');
                 if (pConn2) pConn2.classList.remove('active');
+                if (pConn3) pConn3.classList.remove('active');
+                if (pConn4) pConn4.classList.remove('active');
                 if (pNodePupuk) pNodePupuk.classList.remove('active');
                 if (pStatusPupuk) pStatusPupuk.innerText = 'STANDBY';
 

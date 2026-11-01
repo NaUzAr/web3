@@ -285,49 +285,50 @@
         color: #dc2626 !important;
     }
 
-    @media (max-width: 576px) {
+    @media (max-width: 768px) {
         .navbar-main {
-            padding: 0.45rem 0;
+            padding: 0.35rem 0;
+            height: 46px;
+            display: flex;
+            align-items: center;
         }
         .navbar-main .navbar-brand {
-            gap: 0;
+            gap: 0.45rem;
             flex-shrink: 0;
         }
         .navbar-main .navbar-brand span {
-            display: none;
+            display: inline-block !important;
+            font-size: 1.05rem;
+            font-weight: 800;
+            letter-spacing: -0.3px;
         }
         .navbar-main .navbar-brand span.tanikaya-brand-text {
             display: inline-block !important;
-            font-size: 1.25rem;
+            font-size: 1.15rem;
             letter-spacing: -0.8px;
         }
         .navbar-main .navbar-brand img {
-            height: 32px;
+            height: 26px;
+            width: auto;
         }
-        .nav-links-wrap a span.nav-text {
-            display: none;
-        }
+        /* Hide desktop links completely on mobile/tablet — all navigation is in bottom bar */
         .nav-links-wrap {
-            gap: 0.1rem;
-            flex-shrink: 1;
-        }
-        .nav-links-wrap a {
-            padding: 0.32rem 0.42rem;
-            font-size: 1.05rem;
+            display: none !important;
         }
         .nav-user-dropdown {
-            margin-left: 0.2rem;
+            margin-left: auto;
         }
         .nav-user-name {
             display: none;
         }
         .nav-user-btn {
-            padding: 0.2rem;
+            padding: 0.15rem;
             border-radius: 50%;
+            background: #ffffff;
         }
         .nav-user-avatar, .nav-user-avatar-wrap {
-            width: 28px;
-            height: 28px;
+            width: 30px;
+            height: 30px;
             font-size: 0.75rem;
         }
         .nav-user-chevron {
@@ -335,9 +336,9 @@
         }
         .nav-user-menu {
             position: fixed !important;
-            top: 52px !important;
-            right: 12px !important;
-            left: 12px !important;
+            top: 50px !important;
+            right: 10px !important;
+            left: 10px !important;
             max-width: none !important;
             width: auto !important;
         }

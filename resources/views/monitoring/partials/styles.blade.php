@@ -324,6 +324,39 @@
             text-decoration: none;
         }
 
+        
+        /* High Density 3-Column Blok Grid */
+        .sf-blok-indicators-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            width: 100%;
+        }
+        .sf-zone-simple {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 8px 10px;
+            transition: all 0.2s ease;
+        }
+        .sf-zone-simple.active-flow {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.04);
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
+        }
+        .sf-zone-avatar-sm {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1.5px solid currentColor;
+            flex-shrink: 0;
+        }
+
         /* Segmented Control for Outputs */
         .segmented-control {
             background: rgba(0, 0, 0, 0.05);
@@ -360,14 +393,28 @@
         }
 
         .segmented-btn.active-off {
-            background: #EF4444;
-            color: white;
-            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
+            background: #ffffff;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
         }
 
-        .segmented-btn.active-on:hover, .segmented-btn.active-off:hover {
-            transform: translateY(-2px);
+        .segmented-btn.active-off:hover {
+            background: #f8fafc;
+            color: #1e293b;
+        }
+
+        .segmented-btn.active-on:hover {
+            transform: translateY(-1px);
             color: white;
+        }
+
+        
+        /* Dosing Pupuk Amber accent */
+        .sf-hub-card:has(.icon-pupuk) .segmented-btn.active-on,
+        #output-card-sf_pupuk .segmented-btn.active-on {
+            background: #f59e0b !important;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.25) !important;
         }
 
         /* Smart Farm Blok Selection Cards */
@@ -680,10 +727,11 @@
         }
 
         .sf-actuator-card .output-status.off,
-        .sf-zone-card .output-status.off {
-            background: rgba(239, 68, 68, 0.08) !important;
-            color: #dc2626 !important;
-            border: 1px solid rgba(239, 68, 68, 0.2) !important;
+        .sf-zone-card .output-status.off,
+        .sf-hub-card .output-status.off {
+            background: #f1f5f9 !important;
+            color: #64748b !important;
+            border: 1px solid #e2e8f0 !important;
         }
 
         /* Zone Card - Modern Agricultural Grid */
@@ -1289,6 +1337,11 @@
 
         /* ========= Ultra-Modern High-Density Mobile View (Clean, Minimalist, Flutter/Linear Aesthetic) ========= */
         @media (max-width: 768px) {
+            /* Hide floating chatbot on mobile IoT monitoring to prevent blocking UI */
+            #chatbot-widget, #chatbot-bubble {
+                display: none !important;
+            }
+
             /* 1. App Shell Architecture */
             html, body {
                 height: 100dvh !important;
@@ -1330,8 +1383,21 @@
                 font-size: 1.1rem !important;
             }
 
+            .navbar-main .container {
+                position: static !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                height: 100% !important;
+                padding: 0 10px !important;
+                margin: 0 !important;
+                overflow: visible !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+            }
+
             /* Independent Scroll Body */
-            .container {
+            .monitoring-main-container {
                 position: fixed !important;
                 top: 44px !important;
                 bottom: calc(52px + env(safe-area-inset-bottom, 0px)) !important;
@@ -1346,7 +1412,7 @@
                 margin: 0 !important;
                 scrollbar-width: none !important;
             }
-            .container::-webkit-scrollbar {
+            .monitoring-main-container::-webkit-scrollbar {
                 display: none !important;
             }
 
@@ -1466,13 +1532,25 @@
                 color: #059669 !important;
             }
 
-            /* Action Buttons: Crisp 6px Modern Rectangles (NO 50px BULBOUS PILLS!) */
+            /* Action Buttons: 2-Row Native Mobile Grid (Never Cut Off!) */
             #sf-status-card .sf-actions-group {
                 display: grid !important;
-                grid-template-columns: 1.4fr 1.1fr 0.9fr !important;
+                grid-template-columns: 1fr 1fr !important;
                 width: 100% !important;
                 gap: 5px !important;
-                margin-top: 2px !important;
+                margin-top: 6px !important;
+            }
+
+            #sf-status-card .sf-actions-group #sf-btn-start,
+            #sf-status-card .sf-actions-group #sf-btn-stop,
+            #sf-status-card .sf-actions-group .btn-op-primary,
+            #sf-status-card .sf-actions-group .btn-op-danger {
+                grid-column: 1 / -1 !important;
+                height: 38px !important;
+                min-height: 38px !important;
+                font-size: 0.82rem !important;
+                font-weight: 700 !important;
+                border-radius: 8px !important;
             }
 
             #sf-status-card .sf-actions-group .btn-op,
@@ -1588,10 +1666,12 @@
             }
 
             .pipeline-connector {
-                height: 1.5px !important;
-                min-width: 6px !important;
+                height: 2px !important;
+                min-width: 8px !important;
+                flex: 1 !important;
                 margin: 0 !important;
-                align-self: center !important;
+                margin-top: 11px !important;
+                align-self: flex-start !important;
             }
 
             /* 5. Actuators & Relay Hub (Apple HomeKit High-Density Rows) */
