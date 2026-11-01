@@ -342,6 +342,68 @@
             width: auto !important;
         }
     }
+
+    /* Mobile App-Shell Bottom Navigation Dock (Native Flutter Style) */
+    .mobile-bottom-bar {
+        display: none;
+    }
+    @media (max-width: 768px) {
+        .mobile-bottom-bar {
+            display: flex !important;
+            position: fixed !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            height: calc(54px + env(safe-area-inset-bottom, 0px)) !important;
+            padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+            background: rgba(255, 255, 255, 0.98) !important;
+            backdrop-filter: blur(16px) !important;
+            border-top: 1px solid #e2e8f0 !important;
+            z-index: 1045 !important;
+            justify-content: space-around !important;
+            align-items: center !important;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.04) !important;
+        }
+        .mobile-nav-item {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            flex: 1 !important;
+            height: 100% !important;
+            text-decoration: none !important;
+            color: #94a3b8 !important;
+            transition: all 0.15s ease !important;
+            position: relative !important;
+            -webkit-tap-highlight-color: transparent !important;
+        }
+        .mobile-nav-item:active {
+            transform: scale(0.92) !important;
+        }
+        .mobile-nav-item.active {
+            color: var(--primary, #0e5f8a) !important;
+        }
+        .mobile-nav-icon {
+            font-size: 1.15rem !important;
+            line-height: 1 !important;
+        }
+        .mobile-nav-label {
+            font-size: 0.64rem !important;
+            font-weight: 700 !important;
+            margin-top: 2px !important;
+            letter-spacing: -0.2px !important;
+        }
+        .mobile-nav-dot {
+            width: 4px !important;
+            height: 4px !important;
+            border-radius: 50% !important;
+            background: transparent !important;
+            margin-top: 1px !important;
+        }
+        .mobile-nav-item.active .mobile-nav-dot {
+            background: var(--primary, #0e5f8a) !important;
+        }
+    }
 </style>
 
 <nav class="navbar-main">
@@ -464,6 +526,8 @@
         </div>
     </div>
 </nav>
+
+@include('partials.mobile_bottom_nav')
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {

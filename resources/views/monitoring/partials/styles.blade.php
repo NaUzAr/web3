@@ -1202,92 +1202,66 @@
 
 
 
-        /* ========= Mobile Responsive ========= */
+        /* ========= Mobile App-Shell Responsive (Strict High-Density Flutter Architecture) ========= */
         @media (max-width: 768px) {
+            /* 1. App Shell Viewport */
+            html, body {
+                height: 100dvh !important;
+                max-height: 100dvh !important;
+                overflow: hidden !important;
+                overscroll-behavior-y: none !important;
+                background-color: #f8fafc !important;
+                -webkit-tap-highlight-color: transparent !important;
+            }
+
+            .bg-animation {
+                display: none !important;
+            }
+
+            /* Fixed Top Header (h-12 / 48px) */
+            .navbar-main {
+                height: 48px !important;
+                min-height: 48px !important;
+                max-height: 48px !important;
+                padding: 0 12px !important;
+                border-bottom: 1px solid #e2e8f0 !important;
+                background: rgba(255, 255, 255, 0.96) !important;
+                backdrop-filter: blur(12px) !important;
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                width: 100% !important;
+                z-index: 1040 !important;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+            }
+
+            .navbar-main .navbar-brand img {
+                height: 24px !important;
+            }
+
+            .navbar-main .navbar-brand span.tanikaya-brand-text {
+                font-size: 1.15rem !important;
+            }
+
+            /* Independent Scroll Body */
             .container {
-                padding-left: 0.75rem !important;
-                padding-right: 0.75rem !important;
+                position: fixed !important;
+                top: 48px !important;
+                bottom: calc(54px + env(safe-area-inset-bottom, 0px)) !important;
+                left: 0 !important;
+                right: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                overflow-y: auto !important;
+                overscroll-behavior-y: contain !important;
+                -webkit-overflow-scrolling: touch !important;
+                padding: 8px 10px 24px 10px !important;
+                margin: 0 !important;
+                scrollbar-width: none !important;
             }
-
-            /* Page Header compact */
-            .page-header {
-                padding: 1.15rem 1rem !important;
-                border-radius: 18px !important;
-                margin-bottom: 1.25rem !important;
-                gap: 0.85rem !important;
-            }
-
-            .device-title {
-                font-size: 1.25rem;
-            }
-
-            .device-type-badge {
-                font-size: 0.75rem;
-                padding: 0.25rem 0.75rem;
-            }
-
-            /* Header Action Buttons on Mobile */
-            .header-actions-group {
-                width: 100%;
-                display: flex !important;
-                gap: 0.4rem !important;
-            }
-
-            .header-actions-group .btn-action-custom {
-                flex: 1;
-                justify-content: center;
-                padding: 0.65rem 0.35rem !important;
-                font-size: 0.82rem !important;
-                font-weight: 600;
-                border-radius: 12px !important;
-                text-align: center;
-                white-space: nowrap;
-                min-height: 42px;
-            }
-
-            .header-actions-group .btn-action-custom span {
-                display: inline !important;
-            }
-
-            /* Smart Farm Status Card on Mobile */
-            #sf-status-card {
-                padding: 1.15rem 1rem !important;
-                border-radius: 18px !important;
-                margin-bottom: 1.25rem !important;
-            }
-
-            #sf-status-card .d-flex.flex-wrap.align-items-center.justify-content-between {
-                flex-direction: column;
-                align-items: stretch !important;
-                gap: 0.85rem !important;
-            }
-
-            #sf-status-card .sf-actions-group {
-                display: grid !important;
-                grid-template-columns: 1fr 1fr;
-                width: 100%;
-                gap: 0.5rem;
-            }
-
-            #sf-status-card .sf-actions-group #sf-btn-start,
-            #sf-status-card .sf-actions-group #sf-btn-stop {
-                grid-column: span 2;
-                font-size: 0.92rem !important;
-                min-height: 44px;
-            }
-
-            #sf-status-card .sf-actions-group .btn {
-                justify-content: center;
-                padding: 0.6rem 0.45rem !important;
-                font-size: 0.82rem !important;
-                font-weight: 600;
-                border-radius: 12px !important;
-                min-height: 40px;
-            }
-
-            .sf-hub-card {
-                padding: 1.1rem !important;
-                border-radius: 18px !important;
+            .container::-webkit-scrollbar {
+                display: none !important;
             }
 
             /* Prevent auto-zoom in iOS Safari */
@@ -1295,159 +1269,368 @@
                 font-size: 16px !important;
             }
 
-            /* Sensor Cards compact */
-            .sensor-card {
-                border-radius: 14px;
-                padding: 1rem;
-            }
-
-            .sensor-icon, .output-icon, .output-icon-special {
-                width: 32px;
-                height: 32px;
-                font-size: 1rem;
-            }
-
-            .sensor-label, .output-label {
-                font-size: 0.7rem;
-            }
-
-            .sensor-value {
-                font-size: 1.5rem;
-            }
-
-            .sensor-unit {
-                font-size: 0.8rem;
-            }
-
-            /* Glass cards compact */
-            .glass-card {
-                border-radius: 14px;
-                padding: 1rem;
-                margin-top: 1.25rem;
-            }
-
-            .card-title {
-                font-size: 1rem;
-                margin-bottom: 0.75rem;
-            }
-
-            /* Chart smaller */
-            .glass-card canvas {
-                max-height: 200px !important;
-            }
-
-            /* Output cards compact */
-            .output-card-special {
-                padding: 0.85rem;
-                border-radius: 14px;
-            }
-
-            .output-card-special .badge {
-                font-size: 0.7rem;
-                padding: 0.35rem 0.6rem !important;
-            }
-
-            .output-card-special .btn-sm {
-                font-size: 0.75rem;
-                padding: 0.25rem 0.5rem;
-                min-width: 45px !important;
-            }
-
-            .output-card {
-                padding: 0.85rem;
-                border-radius: 14px;
-            }
-
-            .output-card .btn-sm {
-                font-size: 0.75rem;
-                padding: 0.25rem 0.5rem;
-                min-width: 45px !important;
-            }
-
-            .output-icon,
-            .output-icon-special {
-                width: 36px;
-                height: 36px;
-                border-radius: 10px;
-                font-size: 1rem;
-                margin-bottom: 0.5rem;
-            }
-
-            /* Button glass compact */
-            .btn-glass {
-                font-size: 0.8rem;
-                padding: 0.45rem 1rem;
-            }
-
-            .btn-action-custom, .btn-gradient {
-                padding: 0.45rem 1rem;
-                font-size: 0.8rem;
-            }
-
-            /* Pump button compact */
-            .btn-pump-special {
-                padding: 0.4rem 0.75rem;
-                font-size: 0.8rem;
-            }
-
-            /* Last update */
-            .last-update {
-                font-size: 0.75rem;
-            }
-
-            /* Navbar compact */
-            .navbar .navbar-brand img {
-                height: 30px !important;
-            }
-
-            .navbar .navbar-brand span {
-                font-size: 0.9rem;
-            }
-
-            /* Row gaps smaller */
-            .row.g-3 {
-                --bs-gutter-x: 0.5rem;
-                --bs-gutter-y: 0.5rem;
-            }
-
-            .row.g-4 {
-                --bs-gutter-x: 0.5rem;
-                --bs-gutter-y: 0.5rem;
-            }
-        }
-
-        @media (max-width: 400px) {
-            .container {
-                padding-left: 0.5rem !important;
-                padding-right: 0.5rem !important;
-            }
-
+            /* 2. Device Page Header (Tight 4px/8px Card) */
             .page-header {
-                padding: 0.85rem 0.75rem !important;
+                padding: 8px 10px !important;
+                border-radius: 10px !important;
+                border: 1px solid #e2e8f0 !important;
+                background: #ffffff !important;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+                margin-bottom: 8px !important;
+                gap: 6px !important;
+            }
+
+            .device-title {
+                font-size: 1.05rem !important;
+                font-weight: 800 !important;
+                color: #0f172a !important;
+                line-height: 1.2 !important;
+            }
+
+            .device-type-badge {
+                font-size: 0.65rem !important;
+                font-weight: 700 !important;
+                padding: 0.15rem 0.5rem !important;
+                border-radius: 6px !important;
+            }
+
+            #last-update-text {
+                font-size: 0.68rem !important;
+                margin-top: 0.15rem !important;
+                color: #64748b !important;
+            }
+
+            .header-actions-group {
+                width: 100% !important;
+                display: flex !important;
+                gap: 6px !important;
+                margin-top: 4px !important;
             }
 
             .header-actions-group .btn-action-custom {
+                flex: 1 !important;
+                justify-content: center !important;
+                height: 32px !important;
+                min-height: 32px !important;
+                padding: 0.2rem 0.5rem !important;
+                font-size: 0.72rem !important;
+                font-weight: 700 !important;
+                border-radius: 8px !important;
+                border: 1px solid #e2e8f0 !important;
+                box-shadow: none !important;
+                text-align: center !important;
+            }
+
+            /* 3. Smart Farm Hero Status & Command Center */
+            #sf-status-card {
+                padding: 8px 10px !important;
+                border-radius: 10px !important;
+                border: 1px solid #e2e8f0 !important;
+                background: #ffffff !important;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+                margin-bottom: 8px !important;
+            }
+
+            #sf-status-card .d-flex.flex-wrap.align-items-center.justify-content-between {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 8px !important;
+            }
+
+            #sf-icon-wrapper {
+                width: 36px !important;
+                height: 36px !important;
+                border-radius: 8px !important;
+                font-size: 1.1rem !important;
+                flex-shrink: 0 !important;
+            }
+
+            #sf-badge-siram {
+                font-size: 0.68rem !important;
+                padding: 0.2rem 0.55rem !important;
+                border-radius: 6px !important;
+                font-weight: 800 !important;
+            }
+
+            #sf-badge-jam {
+                font-size: 0.65rem !important;
+                padding: 0.18rem 0.45rem !important;
+                border-radius: 6px !important;
+            }
+
+            #sf-detail-siram {
+                font-size: 0.7rem !important;
+                line-height: 1.3 !important;
+                color: #64748b !important;
+            }
+
+            #sf-sisa-waktu {
+                font-size: 0.85rem !important;
+                font-weight: 800 !important;
+                font-family: monospace !important;
+                color: #059669 !important;
+            }
+
+            #sf-status-card .sf-actions-group {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+                width: 100% !important;
+                gap: 6px !important;
+                margin-top: 4px !important;
+            }
+
+            #sf-status-card .sf-actions-group .btn {
+                height: 34px !important;
+                min-height: 34px !important;
+                padding: 0.3rem 0.5rem !important;
                 font-size: 0.75rem !important;
-                padding: 0.55rem 0.25rem !important;
+                font-weight: 700 !important;
+                border-radius: 8px !important;
+                border: 1px solid #e2e8f0 !important;
+                justify-content: center !important;
+            }
+
+            #sf-status-card .sf-actions-group #sf-btn-start,
+            #sf-status-card .sf-actions-group #sf-btn-stop {
+                grid-column: span 2 !important;
+                height: 36px !important;
+                font-size: 0.82rem !important;
+            }
+
+            /* 4. Pipeline Card */
+            .sf-pipeline-card {
+                padding: 8px 10px !important;
+                border-radius: 10px !important;
+                border: 1px solid #e2e8f0 !important;
+                background: #ffffff !important;
+                margin-bottom: 8px !important;
+            }
+
+            .pipeline-track {
+                min-width: 360px !important;
+                gap: 4px !important;
+                padding: 4px 0 !important;
+            }
+
+            .pipeline-node-icon {
+                width: 30px !important;
+                height: 30px !important;
+                border-radius: 8px !important;
+                font-size: 0.85rem !important;
+            }
+
+            .pipeline-node-label {
+                font-size: 0.62rem !important;
+                font-weight: 600 !important;
+                margin-top: 2px !important;
+            }
+
+            .pipeline-node-status {
+                font-size: 0.6rem !important;
+                font-weight: 700 !important;
+                padding: 1px 4px !important;
+                border-radius: 4px !important;
+            }
+
+            .pipeline-connector {
+                height: 2px !important;
+                min-width: 12px !important;
+            }
+
+            /* 5. Compact Telemetry Grid (Strict 4px/8px Grid, 2 Columns) */
+            .sensor-panel {
+                margin-bottom: 8px !important;
+            }
+
+            .sensor-panel .card-title {
+                font-size: 0.72rem !important;
+                font-weight: 800 !important;
+                text-transform: uppercase !important;
+                letter-spacing: 0.5px !important;
+                color: #64748b !important;
+                margin-bottom: 6px !important;
+            }
+
+            .row.g-3, .row.g-4 {
+                --bs-gutter-x: 6px !important;
+                --bs-gutter-y: 6px !important;
+                row-gap: 6px !important;
+                margin-bottom: 6px !important;
             }
 
             .sensor-card {
-                padding: 0.75rem;
+                padding: 8px 10px !important;
+                border-radius: 10px !important;
+                border: 1px solid #e2e8f0 !important;
+                background: #ffffff !important;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: space-between !important;
+                min-height: 68px !important;
+            }
+
+            .sensor-card .card-header-flex {
+                display: flex !important;
+                flex-direction: row !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+                margin-bottom: 4px !important;
+                gap: 4px !important;
             }
 
             .sensor-icon {
-                width: 30px;
-                height: 30px;
-                font-size: 0.85rem;
-                margin-bottom: 0.35rem;
+                width: 24px !important;
+                height: 24px !important;
+                border-radius: 6px !important;
+                font-size: 0.8rem !important;
+                margin: 0 !important;
+                flex-shrink: 0 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                order: 2 !important;
+            }
+
+            .sensor-label {
+                font-size: 0.68rem !important;
+                font-weight: 700 !important;
+                color: #64748b !important;
+                text-transform: uppercase !important;
+                letter-spacing: 0.3px !important;
+                line-height: 1.2 !important;
+                order: 1 !important;
+                text-align: left !important;
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+                max-width: 80% !important;
+            }
+
+            .sensor-value-container {
+                display: flex !important;
+                align-items: baseline !important;
+                gap: 3px !important;
+                margin-top: 2px !important;
             }
 
             .sensor-value {
-                font-size: 1.3rem;
+                font-size: 1.25rem !important;
+                font-weight: 800 !important;
+                color: #0f172a !important;
+                line-height: 1 !important;
+                font-family: 'Inter', monospace !important;
+                letter-spacing: -0.5px !important;
             }
 
+            .sensor-unit {
+                font-size: 0.68rem !important;
+                font-weight: 700 !important;
+                color: #94a3b8 !important;
+            }
+
+            /* 6. Actuators & Relay Controls */
+            .sf-hub-card, .output-panel, .output-card, .output-card-special {
+                padding: 8px 10px !important;
+                border-radius: 10px !important;
+                border: 1px solid #e2e8f0 !important;
+                background: #ffffff !important;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+                margin-bottom: 6px !important;
+            }
+
+            .sf-hub-header {
+                margin-bottom: 6px !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                gap: 6px !important;
+            }
+
+            .sf-actuator-icon, .output-icon, .output-icon-special {
+                width: 28px !important;
+                height: 28px !important;
+                border-radius: 6px !important;
+                font-size: 0.82rem !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                margin: 0 !important;
+                flex-shrink: 0 !important;
+            }
+
+            .sf-hub-title, .output-label {
+                font-size: 0.78rem !important;
+                font-weight: 700 !important;
+                color: #0f172a !important;
+                line-height: 1.2 !important;
+                margin-bottom: 0 !important;
+            }
+
+            .sf-hub-subtitle {
+                font-size: 0.62rem !important;
+                color: #94a3b8 !important;
+                line-height: 1.2 !important;
+            }
+
+            .output-status {
+                font-size: 0.65rem !important;
+                font-weight: 800 !important;
+                padding: 2px 7px !important;
+                border-radius: 5px !important;
+            }
+
+            .segmented-control {
+                height: 30px !important;
+                padding: 2px !important;
+                border-radius: 6px !important;
+                background: #f1f5f9 !important;
+                border: 1px solid #e2e8f0 !important;
+                margin-top: 4px !important;
+            }
+
+            .segmented-btn {
+                font-size: 0.72rem !important;
+                font-weight: 700 !important;
+                border-radius: 4px !important;
+                height: 100% !important;
+                padding: 0 !important;
+            }
+
+            .sf-zone-simple {
+                padding: 6px 8px !important;
+                border-radius: 8px !important;
+                border: 1px solid #e2e8f0 !important;
+                background: #ffffff !important;
+            }
+
+            .sf-zone-avatar-sm {
+                width: 24px !important;
+                height: 24px !important;
+                font-size: 0.75rem !important;
+                border-radius: 6px !important;
+            }
+
+            .sf-zone-card .fw-bold {
+                font-size: 0.82rem !important;
+            }
+
+            /* Glass Card Charts compact */
             .glass-card {
-                padding: 0.75rem;
+                padding: 8px 10px !important;
+                border-radius: 10px !important;
+                border: 1px solid #e2e8f0 !important;
+                margin-top: 8px !important;
+            }
+
+            .card-title {
+                font-size: 0.85rem !important;
+                font-weight: 700 !important;
+                margin-bottom: 6px !important;
+            }
+
+            .glass-card canvas {
+                max-height: 180px !important;
             }
         }
 

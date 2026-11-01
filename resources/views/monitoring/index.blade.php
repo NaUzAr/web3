@@ -419,25 +419,168 @@
             color: var(--text-secondary);
         }
 
-        @media (max-width: 576px) {
+        @media (max-width: 768px) {
+            html, body {
+                height: 100dvh !important;
+                max-height: 100dvh !important;
+                overflow: hidden !important;
+                overscroll-behavior-y: none !important;
+                background-color: #f8fafc !important;
+                -webkit-tap-highlight-color: transparent !important;
+            }
+
+            .bg-animation {
+                display: none !important;
+            }
+
+            .navbar-main {
+                height: 48px !important;
+                min-height: 48px !important;
+                max-height: 48px !important;
+                padding: 0 12px !important;
+                border-bottom: 1px solid #e2e8f0 !important;
+                background: rgba(255, 255, 255, 0.96) !important;
+                backdrop-filter: blur(12px) !important;
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                width: 100% !important;
+                z-index: 1040 !important;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+            }
+
+            .container {
+                position: fixed !important;
+                top: 48px !important;
+                bottom: calc(54px + env(safe-area-inset-bottom, 0px)) !important;
+                left: 0 !important;
+                right: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                overflow-y: auto !important;
+                overscroll-behavior-y: contain !important;
+                -webkit-overflow-scrolling: touch !important;
+                padding: 8px 10px 24px 10px !important;
+                margin: 0 !important;
+                scrollbar-width: none !important;
+            }
+            .container::-webkit-scrollbar {
+                display: none !important;
+            }
+
+            /* Header container */
+            .header-container {
+                padding: 8px 10px !important;
+                border-radius: 10px !important;
+                border: 1px solid #e2e8f0 !important;
+                background: #ffffff !important;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+                margin-bottom: 8px !important;
+            }
             .page-title {
-                font-size: 1.2rem !important;
+                font-size: 1.05rem !important;
+                font-weight: 800 !important;
+                color: #0f172a !important;
             }
             .header-actions .btn-action {
-                width: 42px;
-                height: 42px;
+                height: 32px !important;
+                min-height: 32px !important;
+                padding: 0 8px !important;
+                font-size: 0.72rem !important;
+                border-radius: 8px !important;
+            }
+
+            /* Dashboard Unified Card & Search */
+            .dashboard-unified-card {
+                background: transparent !important;
+                border: none !important;
+                box-shadow: none !important;
                 padding: 0 !important;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                border-radius: 50% !important;
             }
-            .header-actions .btn-action i {
-                margin: 0 !important;
-                font-size: 1.2rem;
+            .controls-bar {
+                margin-bottom: 8px !important;
+                gap: 6px !important;
             }
-            .header-actions .action-text {
-                display: none !important;
+            .search-box input {
+                height: 36px !important;
+                font-size: 0.8rem !important;
+                border-radius: 8px !important;
+                padding: 0.35rem 0.75rem 0.35rem 2.2rem !important;
+                border: 1px solid #e2e8f0 !important;
+            }
+            .search-box i {
+                font-size: 0.85rem !important;
+                left: 10px !important;
+            }
+            #sortSelect {
+                height: 36px !important;
+                font-size: 0.75rem !important;
+                padding: 0.2rem 1.8rem 0.2rem 0.6rem !important;
+                border-radius: 8px !important;
+                border: 1px solid #e2e8f0 !important;
+            }
+            .btn-view-toggle {
+                padding: 0.2rem 0.6rem !important;
+                font-size: 0.85rem !important;
+            }
+
+            /* Device Cards on Mobile (Tight, Dense Flutter Style) */
+            .device-col {
+                padding: 0 !important;
+                margin-bottom: 6px !important;
+            }
+            .devices-container {
+                --bs-gutter-x: 0 !important;
+                --bs-gutter-y: 6px !important;
+            }
+            .device-card.grid-card {
+                padding: 8px 10px !important;
+                border-radius: 10px !important;
+                border: 1px solid #e2e8f0 !important;
+                background: #ffffff !important;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+                margin-bottom: 0 !important;
+            }
+            .device-icon {
+                width: 32px !important;
+                height: 32px !important;
+                border-radius: 8px !important;
+                font-size: 1rem !important;
+                margin-right: 8px !important;
+                flex-shrink: 0 !important;
+            }
+            .device-name {
+                font-size: 0.85rem !important;
+                font-weight: 700 !important;
+                color: #0f172a !important;
+                line-height: 1.2 !important;
+                margin-bottom: 2px !important;
+            }
+            .device-type-badge {
+                font-size: 0.62rem !important;
+                padding: 1px 5px !important;
+                border-radius: 4px !important;
+            }
+            .device-meta-badge {
+                font-size: 0.62rem !important;
+                padding: 1px 5px !important;
+            }
+            .btn-action-custom {
+                height: 30px !important;
+                min-height: 30px !important;
+                padding: 0.2rem 0.6rem !important;
+                font-size: 0.72rem !important;
+                border-radius: 6px !important;
+            }
+            .sensor-badges-list {
+                gap: 4px !important;
+                margin-top: 6px !important;
+            }
+            .sensor-badge-item {
+                font-size: 0.65rem !important;
+                padding: 2px 6px !important;
+                border-radius: 4px !important;
             }
         }
 

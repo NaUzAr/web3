@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Api\SensorDataController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DeviceController;
+use App\Http\Controllers\Api\WeatherController;
 
 /*
 |--------------------------------------------------------------------------
@@ -57,7 +58,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/devices/{id}/favorite', [DeviceController::class, 'toggleFavorite']);
     Route::post('/devices/{id}/relay-status', [DeviceController::class, 'checkRelayStatus']);
     Route::delete('/devices/{id}', [DeviceController::class, 'destroy']);
+    Route::get('/weather', [WeatherController::class, 'index']);
 });
+
+// Route cuaca publik (dengan rate limit) untuk akses fleksibel
+Route::get('/weather/public', [WeatherController::class, 'index'])->middleware('throttle:60,1');
 
 // ==================== SENSOR DATA ROUTES (IoT Device) ====================
 // Throttle 120 requests per minute untuk perlindungan anti-spam IoT
