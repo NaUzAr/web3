@@ -1413,13 +1413,13 @@
 
             /* 2. Device Page Header (Ultra-Compact Strip - 36px) */
             .page-header {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 12px 18px;
-            margin-bottom: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-        }
+                background: #ffffff !important;
+                border: 1px solid #e2e8f0 !important;
+                border-radius: 8px !important;
+                padding: 6px 10px !important;
+                margin-bottom: 6px !important;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+            }
 
             .page-header > div:first-child {
                 width: 100% !important;
@@ -1525,18 +1525,20 @@
             /* Action Buttons: Crisp 6px Modern Rectangles (NO 50px BULBOUS PILLS!) */
             #sf-status-card .sf-actions-group {
                 display: grid !important;
-                grid-template-columns: 2fr 1.2fr 1fr !important;
+                grid-template-columns: 1.4fr 1.1fr 0.9fr !important;
                 width: 100% !important;
                 gap: 5px !important;
                 margin-top: 2px !important;
             }
 
+            #sf-status-card .sf-actions-group .btn-op,
             #sf-status-card .sf-actions-group .btn,
-            #sf-status-card .sf-actions-group a {
+            #sf-status-card .sf-actions-group a,
+            #sf-status-card .sf-actions-group button {
                 height: 32px !important;
                 min-height: 32px !important;
-                padding: 0 8px !important;
-                font-size: 0.74rem !important;
+                padding: 0 6px !important;
+                font-size: 0.72rem !important;
                 font-weight: 700 !important;
                 border-radius: 6px !important; /* CRISP 6px CORNERS */
                 border: 1px solid #e2e8f0 !important;
@@ -1548,16 +1550,24 @@
                 letter-spacing: -0.2px !important;
             }
 
-            #sf-btn-start {
+            #sf-status-card .sf-actions-group #sf-btn-start,
+            #sf-status-card .sf-actions-group .btn-op-primary {
                 background: #10b981 !important; /* Modern Emerald */
                 color: #ffffff !important;
                 border: none !important;
             }
 
-            #sf-btn-stop {
+            #sf-status-card .sf-actions-group #sf-btn-stop,
+            #sf-status-card .sf-actions-group .btn-op-danger {
                 background: #ef4444 !important; /* Modern Red */
                 color: #ffffff !important;
                 border: none !important;
+            }
+
+            #sf-status-card .sf-actions-group .btn-op-outline {
+                background: #ffffff !important;
+                border: 1px solid #cbd5e1 !important;
+                color: #334155 !important;
             }
 
             /* 4. Pipeline Visualizer (Micro Horizontal Stepper - ~44px) */
