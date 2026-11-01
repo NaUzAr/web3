@@ -28,174 +28,141 @@
         .page-header {
             background: #ffffff;
             border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 12px 18px;
+            border-radius: 10px;
+            padding: 10px 16px;
             margin-bottom: 12px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
         }
 
         .device-title {
-            color: var(--text-main);
-            font-weight: 700;
-            font-size: 1.5rem;
+            color: #0f172a;
+            font-weight: 800;
+            font-size: 1.25rem;
+            letter-spacing: -0.3px;
             margin: 0;
         }
 
         .device-type-badge {
             background: var(--primary-gradient);
             color: #fff;
-            padding: 0.35rem 1rem;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 0.85rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 0.72rem;
+            letter-spacing: 0.3px;
         }
 
         .sensor-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 1rem;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            height: 100%;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 10px 14px;
             display: flex;
             flex-direction: column;
+            justify-content: space-between;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-        }
-
-        .sensor-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%);
-            opacity: 0;
-            transition: opacity 0.4s ease;
-            pointer-events: none;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            min-height: 85px;
         }
 
         .sensor-card:hover {
-            transform: translateY(-5px) scale(1.02);
-            border-color: rgba(255, 255, 255, 0.8);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-
-        .sensor-card:hover::before {
-            opacity: 1;
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
         }
 
         .card-header-flex {
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             align-items: center;
-            justify-content: center;
-            gap: 12px;
-            margin-bottom: 1rem;
+            justify-content: space-between;
+            gap: 6px;
+            margin-bottom: 4px;
         }
 
         .sensor-icon {
-            width: 38px;
-            height: 38px;
-            border-radius: 12px;
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
+            font-size: 0.85rem;
             color: white;
-            box-shadow: inset 0 2px 4px rgba(255,255,255,0.3), 0 4px 8px rgba(0,0,0,0.1);
             flex-shrink: 0;
-            transition: transform 0.4s ease;
-        }
-
-        .sensor-card:hover .sensor-icon {
-            transform: scale(1.1) rotate(-10deg);
+            order: 2;
         }
 
         .sensor-label {
-            color: var(--text-secondary);
-            font-size: 0.75rem;
+            color: #64748b;
+            font-size: 0.7rem;
             font-weight: 700;
-            line-height: 1.2;
-            text-align: center;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             margin: 0;
+            order: 1;
+            text-align: left;
         }
 
         .sensor-value-container {
             display: flex;
             align-items: baseline;
-            justify-content: center;
+            justify-content: flex-start;
             gap: 4px;
             margin-top: auto;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0;
         }
 
         .sensor-value {
-            color: var(--text-main);
-            font-size: 1.6rem;
+            color: #0f172a;
+            font-size: 1.45rem;
             font-weight: 800;
             line-height: 1;
             letter-spacing: -0.5px;
         }
 
         .sensor-unit {
-            color: var(--text-muted);
-            font-size: 1rem;
-            font-weight: 700;
+            color: #94a3b8;
+            font-size: 0.8rem;
+            font-weight: 600;
         }
 
         .sensor-panel, .output-panel {
-            background: rgba(255, 255, 255, 0.4);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.5);
-            border-radius: 24px;
-            padding: 1.5rem;
-            margin-top: 1.5rem;
-            box-shadow: inset 0 2px 15px rgba(255,255,255,0.5);
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            padding: 0;
+            margin-top: 1rem;
+            box-shadow: none;
+        }
+
+        .sensor-panel .card-title, .output-panel .card-title {
+            font-size: 0.85rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            margin-bottom: 0.75rem !important;
         }
 
         .output-card, .output-card-special {
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 1rem;
-            text-align: center;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 10px 14px;
+            text-align: left;
             height: 100%;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             display: flex;
             flex-direction: column;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-        }
-
-        .output-card::before, .output-card-special::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%);
-            opacity: 0;
-            transition: opacity 0.4s ease;
-            pointer-events: none;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+            transition: all 0.2s ease;
+            min-height: 95px;
         }
         
         .output-card:hover, .output-card-special:hover {
-            transform: translateY(-5px) scale(1.02);
-            border-color: rgba(255, 255, 255, 0.8);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-
-        .output-card:hover::before, .output-card-special:hover::before {
-            opacity: 1;
+            border-color: #cbd5e1;
         }
 
         .output-icon, .output-icon-special {
@@ -353,14 +320,14 @@
             border: 1px solid var(--glass-border);
             color: var(--text-main);
             padding: 0.6rem 1.25rem;
-            border-radius: 50px;
+            border-radius: 8px;
             text-decoration: none;
         }
 
         /* Segmented Control for Outputs */
         .segmented-control {
             background: rgba(0, 0, 0, 0.05);
-            border-radius: 50px;
+            border-radius: 8px;
             padding: 3px;
             display: flex;
             gap: 4px;
@@ -372,7 +339,7 @@
             flex: 1;
             border: none;
             background: transparent;
-            border-radius: 50px;
+            border-radius: 8px;
             padding: 0.4rem;
             font-size: 0.75rem;
             font-weight: 700;
@@ -447,32 +414,26 @@
         .sf-hero-card {
             background: #ffffff;
             border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 1rem 1.25rem;
-            margin-bottom: 1rem;
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-bottom: 12px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
             position: relative;
             overflow: hidden;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
 
         .sf-hero-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #10b981, #0ea5e9, #8b5cf6);
+            display: none;
         }
 
         /* Pipeline Visualizer Strip */
         .sf-pipeline-card {
             background: #ffffff;
             border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 1rem 1.25rem;
-            margin-bottom: 1rem;
+            border-radius: 10px;
+            padding: 10px 16px;
+            margin-bottom: 12px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
         }
 
@@ -513,18 +474,18 @@
         }
 
         .pipeline-node-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 14px;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.25rem;
-            color: #6b7280;
-            background: #f3f4f6;
-            border: 1.5px solid #e5e7eb;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.95rem;
+            color: #64748b;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+            transition: all 0.2s ease;
         }
 
         .pipeline-node.active .pipeline-node-icon {
@@ -589,7 +550,7 @@
             background: #e5e7eb;
             position: relative;
             border-radius: 2px;
-            margin-top: -20px;
+            margin-top: -14px; height: 2px;
             z-index: 1;
             overflow: hidden;
         }
@@ -654,17 +615,14 @@
         /* Actuator Control Cards (for Pompa & Pupuk) */
         .sf-actuator-card {
             background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 16px;
-            padding: 1.15rem;
-            margin-bottom: 0.85rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
-            position: relative;
-            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
             display: flex;
             flex-direction: column;
-            gap: 0.75rem;
+            gap: 6px;
+            transition: all 0.2s ease;
         }
 
         .sf-actuator-card:last-child {
@@ -707,7 +665,7 @@
             font-size: 0.72rem !important;
             font-weight: 700 !important;
             padding: 0.3rem 0.65rem !important;
-            border-radius: 50px !important;
+            border-radius: 6px !important;
             display: inline-flex !important;
             align-items: center;
             justify-content: center;
@@ -731,17 +689,13 @@
         /* Zone Card - Modern Agricultural Grid */
         .sf-zone-card {
             background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 16px;
-            padding: 1.15rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px 12px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            height: 100%;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+            transition: all 0.2s ease;
         }
 
         .sf-zone-accent {
@@ -1002,7 +956,7 @@
             background: rgba(255, 255, 255, 0.7);
             border: 1px solid var(--glass-border);
             padding: 0.5rem 1rem;
-            border-radius: 50px;
+            border-radius: 8px;
             font-size: 0.85rem;
             font-weight: 600;
             color: var(--text-secondary);
@@ -1092,7 +1046,7 @@
             border: 1px solid var(--glass-border);
             color: var(--text-main);
             padding: 0.6rem 1.25rem;
-            border-radius: 50px;
+            border-radius: 8px;
             font-weight: 500;
             text-decoration: none;
         }
@@ -1248,17 +1202,7 @@
             padding: 3px 8px !important;
             border-radius: 6px !important;
         }
-        .sf-status-icon-box {
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #ffffff;
-            font-size: 1.15rem;
-            flex-shrink: 0;
-        }
+        .sf-status-icon-box { display: none !important; }
         .sf-mode-badge {
             font-size: 0.72rem;
             font-weight: 800;
@@ -1993,7 +1937,7 @@
             padding: 0.6rem 1.25rem;
             transition: all 0.3s ease;
             text-decoration: none;
-            border-radius: 50px;
+            border-radius: 8px;
             background: #fff;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             display: inline-flex;
@@ -2053,7 +1997,7 @@
             color: #fff;
             font-weight: 600;
             padding: 0.6rem 1.5rem;
-            border-radius: 50px;
+            border-radius: 8px;
             border: none;
             text-decoration: none;
             transition: all 0.3s ease;
@@ -2118,7 +2062,7 @@
         }
 
         .sf-swal-btn {
-            border-radius: 50px !important;
+            border-radius: 6px !important;
             padding: 0.65rem 1.4rem !important;
             font-size: 0.88rem !important;
             font-weight: 700 !important;
