@@ -1,4 +1,4 @@
-const CACHE_NAME = 'smartagri-v3';
+const CACHE_NAME = 'smartagri-v2';
 const STATIC_ASSETS = [
     '/',
     '/css/app.css',

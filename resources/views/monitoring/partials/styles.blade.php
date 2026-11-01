@@ -26,143 +26,176 @@
         }
 
         .page-header {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 10px 16px;
-            margin-bottom: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
         }
 
         .device-title {
-            color: #0f172a;
-            font-weight: 800;
-            font-size: 1.25rem;
-            letter-spacing: -0.3px;
+            color: var(--text-main);
+            font-weight: 700;
+            font-size: 1.5rem;
             margin: 0;
         }
 
         .device-type-badge {
             background: var(--primary-gradient);
             color: #fff;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-weight: 700;
-            font-size: 0.72rem;
-            letter-spacing: 0.3px;
+            padding: 0.35rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
         }
 
         .sensor-card {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 10px 14px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1rem;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            height: 100%;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-            min-height: 85px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+
+        .sensor-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
         }
 
         .sensor-card:hover {
-            border-color: #cbd5e1;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+            transform: translateY(-5px) scale(1.02);
+            border-color: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .sensor-card:hover::before {
+            opacity: 1;
         }
 
         .card-header-flex {
             display: flex;
-            flex-direction: row;
+            flex-direction: column;
             align-items: center;
-            justify-content: space-between;
-            gap: 6px;
-            margin-bottom: 4px;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 1rem;
         }
 
         .sensor-icon {
-            width: 26px;
-            height: 26px;
-            border-radius: 6px;
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.85rem;
+            font-size: 1.2rem;
             color: white;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.3), 0 4px 8px rgba(0,0,0,0.1);
             flex-shrink: 0;
-            order: 2;
+            transition: transform 0.4s ease;
+        }
+
+        .sensor-card:hover .sensor-icon {
+            transform: scale(1.1) rotate(-10deg);
         }
 
         .sensor-label {
-            color: #64748b;
-            font-size: 0.7rem;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
             font-weight: 700;
+            line-height: 1.2;
+            text-align: center;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             margin: 0;
-            order: 1;
-            text-align: left;
         }
 
         .sensor-value-container {
             display: flex;
             align-items: baseline;
-            justify-content: flex-start;
+            justify-content: center;
             gap: 4px;
             margin-top: auto;
-            margin-bottom: 0;
+            margin-bottom: 0.5rem;
         }
 
         .sensor-value {
-            color: #0f172a;
-            font-size: 1.45rem;
+            color: var(--text-main);
+            font-size: 1.6rem;
             font-weight: 800;
             line-height: 1;
             letter-spacing: -0.5px;
         }
 
         .sensor-unit {
-            color: #94a3b8;
-            font-size: 0.8rem;
-            font-weight: 600;
+            color: var(--text-muted);
+            font-size: 1rem;
+            font-weight: 700;
         }
 
         .sensor-panel, .output-panel {
-            background: transparent;
-            border: none;
-            border-radius: 0;
-            padding: 0;
-            margin-top: 1rem;
-            box-shadow: none;
-        }
-
-        .sensor-panel .card-title, .output-panel .card-title {
-            font-size: 0.85rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #64748b;
-            margin-bottom: 0.75rem !important;
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.5);
+            border-radius: 24px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            box-shadow: inset 0 2px 15px rgba(255,255,255,0.5);
         }
 
         .output-card, .output-card-special {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 10px 14px;
-            text-align: left;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1rem;
+            text-align: center;
             height: 100%;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-            transition: all 0.2s ease;
-            min-height: 95px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+
+        .output-card::before, .output-card-special::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
         }
         
         .output-card:hover, .output-card-special:hover {
-            border-color: #cbd5e1;
+            transform: translateY(-5px) scale(1.02);
+            border-color: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .output-card:hover::before, .output-card-special:hover::before {
+            opacity: 1;
         }
 
         .output-icon, .output-icon-special {
@@ -320,47 +353,14 @@
             border: 1px solid var(--glass-border);
             color: var(--text-main);
             padding: 0.6rem 1.25rem;
-            border-radius: 8px;
+            border-radius: 50px;
             text-decoration: none;
-        }
-
-        
-        /* High Density 3-Column Blok Grid */
-        .sf-blok-indicators-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            width: 100%;
-        }
-        .sf-zone-simple {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 8px 10px;
-            transition: all 0.2s ease;
-        }
-        .sf-zone-simple.active-flow {
-            border-color: #10b981;
-            background: rgba(16, 185, 129, 0.04);
-            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
-        }
-        .sf-zone-avatar-sm {
-            width: 24px;
-            height: 24px;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1.5px solid currentColor;
-            flex-shrink: 0;
         }
 
         /* Segmented Control for Outputs */
         .segmented-control {
             background: rgba(0, 0, 0, 0.05);
-            border-radius: 8px;
+            border-radius: 50px;
             padding: 3px;
             display: flex;
             gap: 4px;
@@ -372,7 +372,7 @@
             flex: 1;
             border: none;
             background: transparent;
-            border-radius: 8px;
+            border-radius: 50px;
             padding: 0.4rem;
             font-size: 0.75rem;
             font-weight: 700;
@@ -393,28 +393,14 @@
         }
 
         .segmented-btn.active-off {
-            background: #ffffff;
-            color: #475569;
-            border: 1px solid #cbd5e1;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-        }
-
-        .segmented-btn.active-off:hover {
-            background: #f8fafc;
-            color: #1e293b;
-        }
-
-        .segmented-btn.active-on:hover {
-            transform: translateY(-1px);
+            background: #EF4444;
             color: white;
+            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
         }
 
-        
-        /* Dosing Pupuk Amber accent */
-        .sf-hub-card:has(.icon-pupuk) .segmented-btn.active-on,
-        #output-card-sf_pupuk .segmented-btn.active-on {
-            background: #f59e0b !important;
-            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.25) !important;
+        .segmented-btn.active-on:hover, .segmented-btn.active-off:hover {
+            transform: translateY(-2px);
+            color: white;
         }
 
         /* Smart Farm Blok Selection Cards */
@@ -459,29 +445,37 @@
 
         /* Smart Farm Grouped UI & Architecture Styling */
         .sf-hero-card {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 12px 16px;
-            margin-bottom: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 22px;
+            padding: 1.5rem 1.8rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.04);
+            backdrop-filter: blur(20px);
             position: relative;
             overflow: hidden;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
         }
 
         .sf-hero-card::before {
-            display: none;
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #10b981, #0ea5e9, #8b5cf6);
         }
 
         /* Pipeline Visualizer Strip */
         .sf-pipeline-card {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 10px 16px;
-            margin-bottom: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid rgba(229, 231, 235, 0.8);
+            border-radius: 18px;
+            padding: 1.1rem 1.25rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+            backdrop-filter: blur(10px);
         }
 
         .pipeline-scroll-wrapper {
@@ -508,7 +502,11 @@
             gap: 6px;
         }
 
-        
+        @media (max-width: 768px) {
+            .pipeline-track {
+                min-width: 470px;
+            }
+        }
 
         .pipeline-node {
             display: flex;
@@ -521,18 +519,18 @@
         }
 
         .pipeline-node-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.95rem;
-            color: #64748b;
-            background: #f1f5f9;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-            transition: all 0.2s ease;
+            font-size: 1.25rem;
+            color: #6b7280;
+            background: #f3f4f6;
+            border: 1.5px solid #e5e7eb;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .pipeline-node.active .pipeline-node-icon {
@@ -597,7 +595,7 @@
             background: #e5e7eb;
             position: relative;
             border-radius: 2px;
-            margin-top: -14px; height: 2px;
+            margin-top: -20px;
             z-index: 1;
             overflow: hidden;
         }
@@ -624,14 +622,15 @@
 
         /* Hub Containers */
         .sf-hub-card {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 1rem 1.25rem;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 22px;
+            padding: 1.4rem;
             height: 100%;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+            box-shadow: 0 4px 18px -2px rgba(0, 0, 0, 0.03);
             display: flex;
             flex-direction: column;
+            transition: all 0.3s ease;
         }
 
         .sf-hub-header {
@@ -662,14 +661,17 @@
         /* Actuator Control Cards (for Pompa & Pupuk) */
         .sf-actuator-card {
             background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 10px 12px;
-            margin-bottom: 8px;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 1.15rem;
+            margin-bottom: 0.85rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+            position: relative;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
-            gap: 6px;
-            transition: all 0.2s ease;
+            gap: 0.75rem;
         }
 
         .sf-actuator-card:last-child {
@@ -712,7 +714,7 @@
             font-size: 0.72rem !important;
             font-weight: 700 !important;
             padding: 0.3rem 0.65rem !important;
-            border-radius: 6px !important;
+            border-radius: 50px !important;
             display: inline-flex !important;
             align-items: center;
             justify-content: center;
@@ -727,23 +729,26 @@
         }
 
         .sf-actuator-card .output-status.off,
-        .sf-zone-card .output-status.off,
-        .sf-hub-card .output-status.off {
-            background: #f1f5f9 !important;
-            color: #64748b !important;
-            border: 1px solid #e2e8f0 !important;
+        .sf-zone-card .output-status.off {
+            background: rgba(239, 68, 68, 0.08) !important;
+            color: #dc2626 !important;
+            border: 1px solid rgba(239, 68, 68, 0.2) !important;
         }
 
         /* Zone Card - Modern Agricultural Grid */
         .sf-zone-card {
             background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 10px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 1.15rem;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            height: 100%;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
         }
 
         .sf-zone-accent {
@@ -1004,7 +1009,7 @@
             background: rgba(255, 255, 255, 0.7);
             border: 1px solid var(--glass-border);
             padding: 0.5rem 1rem;
-            border-radius: 8px;
+            border-radius: 50px;
             font-size: 0.85rem;
             font-weight: 600;
             color: var(--text-secondary);
@@ -1094,7 +1099,7 @@
             border: 1px solid var(--glass-border);
             color: var(--text-main);
             padding: 0.6rem 1.25rem;
-            border-radius: 8px;
+            border-radius: 50px;
             font-weight: 500;
             text-decoration: none;
         }
@@ -1197,241 +1202,92 @@
 
 
 
-        
-        /* Modern Common UI Tokens */
-        .btn-action-modern {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 14px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            border-radius: 8px;
-            border: 1px solid #cbd5e1;
-            color: #334155;
-            background: #ffffff;
-            text-decoration: none;
-            transition: all 0.2s ease;
-        }
-        .btn-action-modern:hover {
-            background: #f8fafc;
-            border-color: #94a3b8;
-            color: #0f172a;
-        }
-        .status-beacon {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background: #10b981;
-            display: inline-block;
-            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
-            animation: pulse-dot 2s infinite;
-        }
-        @keyframes pulse-dot {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
-            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-        }
-        .badge-online {
-            background: #dcfce7 !important;
-            color: #15803d !important;
-            border: 1px solid #bbf7d0 !important;
-            font-size: 0.72rem !important;
-            font-weight: 700 !important;
-            padding: 3px 8px !important;
-            border-radius: 6px !important;
-        }
-        .badge-offline {
-            background: #fee2e2 !important;
-            color: #b91c1c !important;
-            border: 1px solid #fecaca !important;
-            font-size: 0.72rem !important;
-            font-weight: 700 !important;
-            padding: 3px 8px !important;
-            border-radius: 6px !important;
-        }
-        .sf-status-icon-box { display: none !important; }
-        .sf-mode-badge {
-            font-size: 0.72rem;
-            font-weight: 800;
-            padding: 3px 8px;
-            border-radius: 6px;
-            letter-spacing: 0.3px;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .mode-auto { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
-        .mode-manual { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
-        .mode-standby { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
-        .sf-rtc-pill {
-            font-size: 0.7rem;
-            font-weight: 600;
-            padding: 3px 8px;
-            border-radius: 6px;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            color: #475569;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .sf-rtc-pill:hover {
-            background: #f1f5f9;
-            border-color: #cbd5e1;
-        }
-        .sf-detail-text {
-            font-size: 0.75rem;
-            color: #64748b;
-            margin-top: 2px;
-        }
-        .btn-op {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            height: 34px;
-            padding: 0 12px;
-            font-size: 0.78rem;
-            font-weight: 700;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            white-space: nowrap;
-        }
-        .btn-op-primary {
-            background: #10b981;
-            color: #ffffff !important;
-        }
-        .btn-op-primary:hover {
-            background: #059669;
-        }
-        .btn-op-danger {
-            background: #ef4444;
-            color: #ffffff !important;
-        }
-        .btn-op-danger:hover {
-            background: #dc2626;
-        }
-        .btn-op-outline {
-            background: #ffffff;
-            border: 1px solid #cbd5e1;
-            color: #334155 !important;
-        }
-        .btn-op-outline:hover {
-            background: #f8fafc;
-            border-color: #94a3b8;
-            color: #0f172a !important;
-        }
-        .sf-section-label {
-            font-size: 0.75rem;
-            font-weight: 800;
-            color: #64748b;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        /* ========= Ultra-Modern High-Density Mobile View (Clean, Minimalist, Flutter/Linear Aesthetic) ========= */
+        /* ========= Mobile Responsive ========= */
         @media (max-width: 768px) {
-            /* Hide floating chatbot on mobile IoT monitoring to prevent blocking UI */
-            #chatbot-widget, #chatbot-bubble {
-                display: none !important;
+            .container {
+                padding-left: 0.75rem !important;
+                padding-right: 0.75rem !important;
             }
 
-            /* 1. App Shell Architecture */
-            html, body {
-                height: 100dvh !important;
-                max-height: 100dvh !important;
-                overflow: hidden !important;
-                overscroll-behavior-y: none !important;
-                background-color: #f8fafc !important;
-                -webkit-tap-highlight-color: transparent !important;
-                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif !important;
+            /* Page Header compact */
+            .page-header {
+                padding: 1.15rem 1rem !important;
+                border-radius: 18px !important;
+                margin-bottom: 1.25rem !important;
+                gap: 0.85rem !important;
             }
 
-            .bg-animation {
-                display: none !important;
+            .device-title {
+                font-size: 1.25rem;
             }
 
-            /* Fixed Compact Top Header (44px) */
-            .navbar-main {
-                height: 44px !important;
-                min-height: 44px !important;
-                max-height: 44px !important;
-                padding: 0 10px !important;
-                border-bottom: 1px solid #e2e8f0 !important;
-                background: rgba(255, 255, 255, 0.98) !important;
-                backdrop-filter: blur(12px) !important;
-                position: fixed !important;
-                top: 0 !important;
-                left: 0 !important;
-                right: 0 !important;
-                width: 100% !important;
-                z-index: 1040 !important;
-                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+            .device-type-badge {
+                font-size: 0.75rem;
+                padding: 0.25rem 0.75rem;
             }
 
-            .navbar-main .navbar-brand img {
-                height: 22px !important;
-            }
-
-            .navbar-main .navbar-brand span.tanikaya-brand-text {
-                font-size: 1.1rem !important;
-            }
-
-            /* Global box-sizing & zero overflow */
-            html, body {
-                overflow-x: hidden !important;
-                width: 100% !important;
-                max-width: 100% !important;
-                box-sizing: border-box !important;
-            }
-
-            .navbar-main .container {
-                position: static !important;
-                width: 100% !important;
-                max-width: 100% !important;
-                height: 100% !important;
-                padding: 0 10px !important;
-                margin: 0 !important;
-                overflow: visible !important;
+            /* Header Action Buttons on Mobile */
+            .header-actions-group {
+                width: 100%;
                 display: flex !important;
-                align-items: center !important;
-                justify-content: space-between !important;
-                box-sizing: border-box !important;
+                gap: 0.4rem !important;
             }
 
-            /* Independent Scroll Body */
-            .monitoring-main-container {
-                position: fixed !important;
-                top: 46px !important;
-                bottom: calc(54px + env(safe-area-inset-bottom, 0px)) !important;
-                left: 0 !important;
-                right: 0 !important;
-                width: 100% !important;
-                max-width: 100% !important;
-                overflow-y: auto !important;
-                overflow-x: hidden !important;
-                overscroll-behavior-y: contain !important;
-                -webkit-overflow-scrolling: touch !important;
-                padding: 6px 10px 24px 10px !important;
-                margin: 0 !important;
-                scrollbar-width: none !important;
-                box-sizing: border-box !important;
-            }
-            .monitoring-main-container::-webkit-scrollbar {
-                display: none !important;
+            .header-actions-group .btn-action-custom {
+                flex: 1;
+                justify-content: center;
+                padding: 0.65rem 0.35rem !important;
+                font-size: 0.82rem !important;
+                font-weight: 600;
+                border-radius: 12px !important;
+                text-align: center;
+                white-space: nowrap;
+                min-height: 42px;
             }
 
-            /* Status Card Vertical Stack on Mobile */
-            #sf-status-card > div {
-                flex-direction: column !important;
+            .header-actions-group .btn-action-custom span {
+                display: inline !important;
+            }
+
+            /* Smart Farm Status Card on Mobile */
+            #sf-status-card {
+                padding: 1.15rem 1rem !important;
+                border-radius: 18px !important;
+                margin-bottom: 1.25rem !important;
+            }
+
+            #sf-status-card .d-flex.flex-wrap.align-items-center.justify-content-between {
+                flex-direction: column;
                 align-items: stretch !important;
-                gap: 8px !important;
+                gap: 0.85rem !important;
+            }
+
+            #sf-status-card .sf-actions-group {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr;
+                width: 100%;
+                gap: 0.5rem;
+            }
+
+            #sf-status-card .sf-actions-group #sf-btn-start,
+            #sf-status-card .sf-actions-group #sf-btn-stop {
+                grid-column: span 2;
+                font-size: 0.92rem !important;
+                min-height: 44px;
+            }
+
+            #sf-status-card .sf-actions-group .btn {
+                justify-content: center;
+                padding: 0.6rem 0.45rem !important;
+                font-size: 0.82rem !important;
+                font-weight: 600;
+                border-radius: 12px !important;
+                min-height: 40px;
+            }
+
+            .sf-hub-card {
+                padding: 1.1rem !important;
+                border-radius: 18px !important;
             }
 
             /* Prevent auto-zoom in iOS Safari */
@@ -1439,600 +1295,159 @@
                 font-size: 16px !important;
             }
 
-            /* 2. Device Page Header (Ultra-Compact Strip - 36px) */
-            .page-header {
-                background: #ffffff !important;
-                border: 1px solid #e2e8f0 !important;
-                border-radius: 8px !important;
-                padding: 6px 10px !important;
-                margin-bottom: 6px !important;
-                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
-            }
-
-            .page-header > div:first-child {
-                width: 100% !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: space-between !important;
-                flex-wrap: wrap !important;
-            }
-
-            .device-title {
-                font-size: 0.95rem !important;
-                font-weight: 800 !important;
-                color: #0f172a !important;
-                line-height: 1.2 !important;
-                letter-spacing: -0.3px !important;
-            }
-
-            .device-title i {
-                display: none !important; /* Hide old bulky icon */
-            }
-
-            /* Hide redundant SMART_FARM badge on mobile */
-            .device-type-badge:not(#conn-badge) {
-                display: none !important;
-            }
-
-            #conn-badge {
-                font-size: 0.62rem !important;
-                font-weight: 800 !important;
-                padding: 2px 6px !important;
-                border-radius: 4px !important;
-                letter-spacing: 0.3px !important;
-            }
-
-            #last-update-text {
-                font-size: 0.65rem !important;
-                margin-top: 1px !important;
-                color: #94a3b8 !important;
-                width: 100% !important;
-            }
-
-            .header-actions-group {
-                display: none !important; /* Actions moved into hero / bottom nav on mobile */
-            }
-
-            /* 3. Smart Farm Hero Status & Command Center (Modern Sleek Card - ~76px) */
-            #sf-status-card {
-                padding: 8px 10px !important;
-                border-radius: 8px !important;
-                border: 1px solid #e2e8f0 !important;
-                background: #ffffff !important;
-                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
-                margin-bottom: 6px !important;
-            }
-
-            #sf-status-card .d-flex.flex-wrap.align-items-center.justify-content-between {
-                flex-direction: column !important;
-                align-items: stretch !important;
-                gap: 6px !important;
-            }
-
-            /* HIDE GIANT WAVY ICON ON MOBILE! */
-            #sf-icon-wrapper {
-                display: none !important;
-            }
-
-            #sf-badge-siram {
-                font-size: 0.68rem !important;
-                padding: 2px 7px !important;
-                border-radius: 4px !important;
-                font-weight: 800 !important;
-                letter-spacing: 0.3px !important;
-            }
-
-            #sf-badge-jam {
-                font-size: 0.65rem !important;
-                padding: 2px 6px !important;
-                border-radius: 4px !important;
-                font-weight: 600 !important;
-            }
-
-            /* Hide wordy filler sentence when standby */
-            #sf-detail-siram {
-                display: none !important;
-            }
-
-            /* When active/siram, show compact 1-line status */
-            #sf-status-card:has(#sf-btn-stop) #sf-detail-siram {
-                display: block !important;
-                font-size: 0.72rem !important;
-                font-weight: 700 !important;
-                color: #059669 !important;
-                margin-top: 2px !important;
-            }
-
-            #sf-sisa-waktu {
-                font-size: 0.85rem !important;
-                font-weight: 800 !important;
-                font-family: 'SF Mono', Menlo, Consolas, monospace !important;
-                color: #059669 !important;
-            }
-
-            /* Action Buttons: 2-Row Native Mobile Grid (Never Cut Off!) */
-            #sf-status-card .sf-actions-group {
-                display: grid !important;
-                grid-template-columns: 1fr 1fr !important;
-                width: 100% !important;
-                gap: 5px !important;
-                margin-top: 6px !important;
-            }
-
-            #sf-status-card .sf-actions-group #sf-btn-start,
-            #sf-status-card .sf-actions-group #sf-btn-stop,
-            #sf-status-card .sf-actions-group .btn-op-primary,
-            #sf-status-card .sf-actions-group .btn-op-danger {
-                grid-column: 1 / -1 !important;
-                height: 38px !important;
-                min-height: 38px !important;
-                font-size: 0.82rem !important;
-                font-weight: 700 !important;
-                border-radius: 8px !important;
-            }
-
-            #sf-status-card .sf-actions-group .btn-op,
-            #sf-status-card .sf-actions-group .btn,
-            #sf-status-card .sf-actions-group a,
-            #sf-status-card .sf-actions-group button {
-                height: 32px !important;
-                min-height: 32px !important;
-                padding: 0 6px !important;
-                font-size: 0.72rem !important;
-                font-weight: 700 !important;
-                border-radius: 6px !important; /* CRISP 6px CORNERS */
-                border: 1px solid #e2e8f0 !important;
-                justify-content: center !important;
-                display: flex !important;
-                align-items: center !important;
-                white-space: nowrap !important;
-                box-shadow: none !important;
-                letter-spacing: -0.2px !important;
-            }
-
-            #sf-status-card .sf-actions-group #sf-btn-start,
-            #sf-status-card .sf-actions-group .btn-op-primary {
-                background: #10b981 !important; /* Modern Emerald */
-                color: #ffffff !important;
-                border: none !important;
-            }
-
-            #sf-status-card .sf-actions-group #sf-btn-stop,
-            #sf-status-card .sf-actions-group .btn-op-danger {
-                background: #ef4444 !important; /* Modern Red */
-                color: #ffffff !important;
-                border: none !important;
-            }
-
-            #sf-status-card .sf-actions-group .btn-op-outline {
-                background: #ffffff !important;
-                border: 1px solid #cbd5e1 !important;
-                color: #334155 !important;
-            }
-
-            /* 4. Pipeline Visualizer (Micro Horizontal Stepper - ~44px) */
-            .sf-pipeline-card {
-                padding: 6px 8px !important;
-                border-radius: 8px !important;
-                border: 1px solid #e2e8f0 !important;
-                background: #ffffff !important;
-                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
-                margin-bottom: 6px !important;
-            }
-
-            .sf-pipeline-card .small.fw-bold {
-                font-size: 0.65rem !important;
-                font-weight: 800 !important;
-                color: #94a3b8 !important;
-                text-transform: uppercase !important;
-                letter-spacing: 0.5px !important;
-                margin-bottom: 4px !important;
-            }
-
-            .pipeline-scroll-wrapper {
-                padding: 0 !important;
-                overflow-x: hidden !important;
-                width: 100% !important;
-                box-sizing: border-box !important;
-            }
-
-            .pipeline-track {
-                min-width: 0 !important;
-                width: 100% !important;
-                max-width: 100% !important;
-                gap: 0 !important;
-                padding: 2px 0 !important;
-                display: flex !important;
-                align-items: flex-start !important;
-                justify-content: space-between !important;
-                box-sizing: border-box !important;
-            }
-
-            .pipeline-node {
-                padding: 0 !important;
-                flex: 0 0 auto !important;
-                width: 38px !important;
-                max-width: 40px !important;
-                display: flex !important;
-                flex-direction: column !important;
-                align-items: center !important;
-                box-sizing: border-box !important;
-            }
-
-            .pipeline-node-icon {
-                width: 22px !important;
-                height: 22px !important;
-                font-size: 0.7rem !important;
-            }
-
-            .pipeline-node-icon svg {
-                width: 12px !important;
-                height: 12px !important;
-            }
-
-            .pipeline-node-label {
-                font-size: 0.54rem !important;
-                letter-spacing: -0.2px !important;
-                margin-top: 1px !important;
-            }
-
-            .pipeline-node-status {
-                font-size: 0.5rem !important;
-                padding: 0 2px !important;
-                letter-spacing: -0.2px !important;
-            }
-
-            .pipeline-connector {
-                flex: 1 1 4px !important;
-                min-width: 4px !important;
-                height: 1.5px !important;
-                margin-top: 10px !important;
-            }
-
-            .pipeline-node-icon {
-                width: 24px !important;
-                height: 24px !important;
-                border-radius: 6px !important;
-                font-size: 0.75rem !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-            }
-
-            .pipeline-node-icon svg {
-                width: 13px !important;
-                height: 13px !important;
-            }
-
-            .pipeline-node-label {
-                font-size: 0.58rem !important;
-                font-weight: 700 !important;
-                color: #475569 !important;
-                margin-top: 1px !important;
-                line-height: 1 !important;
-                white-space: nowrap !important;
-            }
-
-            .pipeline-node-status {
-                font-size: 0.55rem !important;
-                font-weight: 800 !important;
-                padding: 0 3px !important;
-                border-radius: 3px !important;
-                margin-top: 1px !important;
-                line-height: 1.2 !important;
-            }
-
-            .pipeline-connector {
-                height: 2px !important;
-                min-width: 8px !important;
-                flex: 1 !important;
-                margin: 0 !important;
-                margin-top: 11px !important;
-                align-self: flex-start !important;
-            }
-
-            /* 5. Actuators & Relay Hub (Apple HomeKit High-Density Rows) */
-            .sf-hub-card {
-                padding: 8px 10px !important;
-                border-radius: 8px !important;
-                border: 1px solid #e2e8f0 !important;
-                background: #ffffff !important;
-                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
-                margin-bottom: 6px !important;
-            }
-
-            .sf-hub-header {
-                margin-bottom: 4px !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: space-between !important;
-                gap: 6px !important;
-            }
-
-            .sf-actuator-icon {
-                width: 26px !important;
-                height: 26px !important;
-                border-radius: 6px !important;
-                font-size: 0.8rem !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-                margin: 0 !important;
-                flex-shrink: 0 !important;
-            }
-
-            .sf-actuator-icon svg {
-                width: 14px !important;
-                height: 14px !important;
-            }
-
-            .sf-hub-title {
-                font-size: 0.78rem !important;
-                font-weight: 700 !important;
-                color: #0f172a !important;
-                margin-bottom: 0 !important;
-                line-height: 1.1 !important;
-            }
-
-            .sf-hub-subtitle {
-                font-size: 0.6rem !important;
-                color: #94a3b8 !important;
-                line-height: 1.1 !important;
-                white-space: nowrap !important;
-                overflow: hidden !important;
-                text-overflow: ellipsis !important;
-                max-width: 190px !important;
-            }
-
-            .output-status {
-                font-size: 0.62rem !important;
-                font-weight: 800 !important;
-                padding: 1px 5px !important;
-                border-radius: 4px !important;
-                letter-spacing: 0.2px !important;
-            }
-
-            .segmented-control {
-                height: 28px !important;
-                padding: 2px !important;
-                border-radius: 6px !important;
-                background: #f1f5f9 !important;
-                border: 1px solid #e2e8f0 !important;
-                margin-top: 3px !important;
-            }
-
-            .segmented-btn {
-                font-size: 0.68rem !important;
-                font-weight: 700 !important;
-                border-radius: 4px !important;
-                height: 100% !important;
-                padding: 0 !important;
-            }
-
-            /* Indikator Blok: Modern 3-Column Micro Grid */
-            .sf-blok-indicators-grid {
-                display: grid !important;
-                grid-template-columns: 1fr 1fr 1fr !important;
-                gap: 4px !important;
-                width: 100% !important;
-                box-sizing: border-box !important;
-            }
-
-            .sf-zone-simple {
-                min-width: 0 !important;
-                overflow: hidden !important;
-                padding: 4px 4px !important;
-                border-radius: 6px !important;
-                box-sizing: border-box !important;
-            }
-
-            .sf-zone-simple {
-                padding: 5px 6px !important;
-            }
-
-            .sf-zone-simple .sf-zone-label {
-                font-size: 0.7rem !important;
-                line-height: 1.1 !important;
-            }
-
-            .sf-zone-simple .sf-zone-avatar-sm {
-                width: 18px !important;
-                height: 18px !important;
-                font-size: 0.65rem !important;
-            }
-
-            .sf-zone-simple .sf-zone-valve-label {
-                font-size: 0.58rem !important;
-            }
-
-            .sf-zone-simple .output-status {
-                font-size: 0.55rem !important;
-                padding: 1px 4px !important;
-                font-weight: 800 !important;
-            }
-
-            .sf-zone-simple .badge {
-                font-size: 0.52rem !important;
-                padding: 1px 3px !important;
-                font-weight: 700 !important;
-            }
-
-            .sf-hub-card:has(.sf-zone-simple) {
-                padding: 6px 8px !important;
-            }
-
-            .sf-hub-card:has(.sf-zone-simple) .row.g-3 {
-                --bs-gutter-x: 4px !important;
-                --bs-gutter-y: 4px !important;
-                display: grid !important;
-                grid-template-columns: 1fr 1fr 1fr !important;
-            }
-
-            .sf-hub-card:has(.sf-zone-simple) .col-12.col-md-4 {
-                width: 100% !important;
-                padding: 0 !important;
-            }
-
-            .sf-zone-simple {
-                padding: 5px 6px !important;
-                border-radius: 6px !important;
-                border: 1px solid #e2e8f0 !important;
-                background: #ffffff !important;
-                height: auto !important;
-                min-height: 44px !important;
-                display: flex !important;
-                flex-direction: column !important;
-                justify-content: center !important;
-                gap: 3px !important;
-            }
-
-            .sf-zone-simple .d-flex.align-items-center.justify-content-between {
-                width: 100% !important;
-            }
-
-            .sf-zone-avatar-sm {
-                width: 20px !important;
-                height: 20px !important;
-                font-size: 0.72rem !important;
-                font-weight: 800 !important;
-                border-radius: 4px !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-            }
-
-            .sf-zone-card .fw-bold.text-dark {
-                font-size: 0.72rem !important;
-                line-height: 1 !important;
-            }
-
-            .sf-zone-simple .text-muted {
-                font-size: 0.6rem !important;
-                margin-top: 1px !important;
-            }
-
-            .sf-zone-simple .badge {
-                font-size: 0.58rem !important;
-                padding: 1px 4px !important;
-                border-radius: 3px !important;
-            }
-
-            /* Row gaps smaller */
-            .row.g-3, .row.g-4 {
-                --bs-gutter-x: 5px !important;
-                --bs-gutter-y: 5px !important;
-                row-gap: 5px !important;
-                margin-bottom: 5px !important;
-            }
-
-            /* 6. Compact Sensor Telemetry Grid (2 Columns) */
-            .sensor-panel {
-                margin-bottom: 6px !important;
-            }
-
-            .sensor-panel .card-title {
-                font-size: 0.68rem !important;
-                font-weight: 800 !important;
-                text-transform: uppercase !important;
-                letter-spacing: 0.5px !important;
-                color: #94a3b8 !important;
-                margin-bottom: 4px !important;
-            }
-
+            /* Sensor Cards compact */
             .sensor-card {
-                padding: 6px 8px !important;
-                border-radius: 8px !important;
-                border: 1px solid #e2e8f0 !important;
-                background: #ffffff !important;
-                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
-                display: flex !important;
-                flex-direction: column !important;
-                justify-content: space-between !important;
-                min-height: 58px !important;
+                border-radius: 14px;
+                padding: 1rem;
             }
 
-            .sensor-card .card-header-flex {
-                display: flex !important;
-                flex-direction: row !important;
-                justify-content: space-between !important;
-                align-items: center !important;
-                margin-bottom: 2px !important;
-                gap: 3px !important;
+            .sensor-icon, .output-icon, .output-icon-special {
+                width: 32px;
+                height: 32px;
+                font-size: 1rem;
             }
 
-            .sensor-icon {
-                width: 20px !important;
-                height: 20px !important;
-                border-radius: 4px !important;
-                font-size: 0.72rem !important;
-                margin: 0 !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-                order: 2 !important;
-            }
-
-            .sensor-label {
-                font-size: 0.62rem !important;
-                font-weight: 700 !important;
-                color: #64748b !important;
-                text-transform: uppercase !important;
-                letter-spacing: 0.2px !important;
-                line-height: 1.1 !important;
-                order: 1 !important;
-                text-align: left !important;
-                white-space: nowrap !important;
-                overflow: hidden !important;
-                text-overflow: ellipsis !important;
-                max-width: 80% !important;
-            }
-
-            .sensor-value-container {
-                display: flex !important;
-                align-items: baseline !important;
-                gap: 2px !important;
+            .sensor-label, .output-label {
+                font-size: 0.7rem;
             }
 
             .sensor-value {
-                font-size: 1.15rem !important;
-                font-weight: 800 !important;
-                color: #0f172a !important;
-                line-height: 1 !important;
-                font-family: 'SF Mono', Menlo, Consolas, monospace !important;
-                letter-spacing: -0.5px !important;
+                font-size: 1.5rem;
             }
 
             .sensor-unit {
-                font-size: 0.62rem !important;
-                font-weight: 700 !important;
-                color: #94a3b8 !important;
+                font-size: 0.8rem;
             }
 
-            /* Output Cards compact */
-            .output-card, .output-card-special {
-                padding: 6px 8px !important;
-                border-radius: 8px !important;
-                border: 1px solid #e2e8f0 !important;
-                background: #ffffff !important;
-                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+            /* Glass cards compact */
+            .glass-card {
+                border-radius: 14px;
+                padding: 1rem;
+                margin-top: 1.25rem;
             }
 
-            .output-icon, .output-icon-special {
-                width: 24px !important;
-                height: 24px !important;
-                border-radius: 5px !important;
+            .card-title {
+                font-size: 1rem;
+                margin-bottom: 0.75rem;
+            }
+
+            /* Chart smaller */
+            .glass-card canvas {
+                max-height: 200px !important;
+            }
+
+            /* Output cards compact */
+            .output-card-special {
+                padding: 0.85rem;
+                border-radius: 14px;
+            }
+
+            .output-card-special .badge {
+                font-size: 0.7rem;
+                padding: 0.35rem 0.6rem !important;
+            }
+
+            .output-card-special .btn-sm {
+                font-size: 0.75rem;
+                padding: 0.25rem 0.5rem;
+                min-width: 45px !important;
+            }
+
+            .output-card {
+                padding: 0.85rem;
+                border-radius: 14px;
+            }
+
+            .output-card .btn-sm {
+                font-size: 0.75rem;
+                padding: 0.25rem 0.5rem;
+                min-width: 45px !important;
+            }
+
+            .output-icon,
+            .output-icon-special {
+                width: 36px;
+                height: 36px;
+                border-radius: 10px;
+                font-size: 1rem;
+                margin-bottom: 0.5rem;
+            }
+
+            /* Button glass compact */
+            .btn-glass {
+                font-size: 0.8rem;
+                padding: 0.45rem 1rem;
+            }
+
+            .btn-action-custom, .btn-gradient {
+                padding: 0.45rem 1rem;
+                font-size: 0.8rem;
+            }
+
+            /* Pump button compact */
+            .btn-pump-special {
+                padding: 0.4rem 0.75rem;
+                font-size: 0.8rem;
+            }
+
+            /* Last update */
+            .last-update {
+                font-size: 0.75rem;
+            }
+
+            /* Navbar compact */
+            .navbar .navbar-brand img {
+                height: 30px !important;
+            }
+
+            .navbar .navbar-brand span {
+                font-size: 0.9rem;
+            }
+
+            /* Row gaps smaller */
+            .row.g-3 {
+                --bs-gutter-x: 0.5rem;
+                --bs-gutter-y: 0.5rem;
+            }
+
+            .row.g-4 {
+                --bs-gutter-x: 0.5rem;
+                --bs-gutter-y: 0.5rem;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .container {
+                padding-left: 0.5rem !important;
+                padding-right: 0.5rem !important;
+            }
+
+            .page-header {
+                padding: 0.85rem 0.75rem !important;
+            }
+
+            .header-actions-group .btn-action-custom {
                 font-size: 0.75rem !important;
-                margin: 0 auto 3px !important;
+                padding: 0.55rem 0.25rem !important;
             }
 
-            .output-label {
-                font-size: 0.68rem !important;
-                font-weight: 700 !important;
+            .sensor-card {
+                padding: 0.75rem;
             }
 
-            /* Hide Floating Chatbot on Mobile (So it NEVER covers buttons) */
-            #chatbot-widget {
-                display: none !important;
+            .sensor-icon {
+                width: 30px;
+                height: 30px;
+                font-size: 0.85rem;
+                margin-bottom: 0.35rem;
+            }
+
+            .sensor-value {
+                font-size: 1.3rem;
+            }
+
+            .glass-card {
+                padding: 0.75rem;
             }
         }
 
@@ -2124,7 +1539,7 @@
             padding: 0.6rem 1.25rem;
             transition: all 0.3s ease;
             text-decoration: none;
-            border-radius: 8px;
+            border-radius: 50px;
             background: #fff;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             display: inline-flex;
@@ -2184,7 +1599,7 @@
             color: #fff;
             font-weight: 600;
             padding: 0.6rem 1.5rem;
-            border-radius: 8px;
+            border-radius: 50px;
             border: none;
             text-decoration: none;
             transition: all 0.3s ease;
@@ -2249,7 +1664,7 @@
         }
 
         .sf-swal-btn {
-            border-radius: 6px !important;
+            border-radius: 50px !important;
             padding: 0.65rem 1.4rem !important;
             font-size: 0.88rem !important;
             font-weight: 700 !important;

@@ -285,50 +285,49 @@
         color: #dc2626 !important;
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: 576px) {
         .navbar-main {
-            padding: 0.35rem 0;
-            height: 46px;
-            display: flex;
-            align-items: center;
+            padding: 0.45rem 0;
         }
         .navbar-main .navbar-brand {
-            gap: 0.45rem;
+            gap: 0;
             flex-shrink: 0;
         }
         .navbar-main .navbar-brand span {
-            display: inline-block !important;
-            font-size: 1.05rem;
-            font-weight: 800;
-            letter-spacing: -0.3px;
+            display: none;
         }
         .navbar-main .navbar-brand span.tanikaya-brand-text {
             display: inline-block !important;
-            font-size: 1.15rem;
+            font-size: 1.25rem;
             letter-spacing: -0.8px;
         }
         .navbar-main .navbar-brand img {
-            height: 26px;
-            width: auto;
+            height: 32px;
         }
-        /* Hide desktop links completely on mobile/tablet — all navigation is in bottom bar */
+        .nav-links-wrap a span.nav-text {
+            display: none;
+        }
         .nav-links-wrap {
-            display: none !important;
+            gap: 0.1rem;
+            flex-shrink: 1;
+        }
+        .nav-links-wrap a {
+            padding: 0.32rem 0.42rem;
+            font-size: 1.05rem;
         }
         .nav-user-dropdown {
-            margin-left: auto;
+            margin-left: 0.2rem;
         }
         .nav-user-name {
             display: none;
         }
         .nav-user-btn {
-            padding: 0.15rem;
+            padding: 0.2rem;
             border-radius: 50%;
-            background: #ffffff;
         }
         .nav-user-avatar, .nav-user-avatar-wrap {
-            width: 30px;
-            height: 30px;
+            width: 28px;
+            height: 28px;
             font-size: 0.75rem;
         }
         .nav-user-chevron {
@@ -336,73 +335,11 @@
         }
         .nav-user-menu {
             position: fixed !important;
-            top: 50px !important;
-            right: 10px !important;
-            left: 10px !important;
+            top: 52px !important;
+            right: 12px !important;
+            left: 12px !important;
             max-width: none !important;
             width: auto !important;
-        }
-    }
-
-    /* Mobile App-Shell Bottom Navigation Dock (Native Flutter Style) */
-    .mobile-bottom-bar {
-        display: none;
-    }
-    @media (max-width: 768px) {
-        .mobile-bottom-bar {
-            display: flex !important;
-            position: fixed !important;
-            bottom: 0 !important;
-            left: 0 !important;
-            right: 0 !important;
-            height: calc(54px + env(safe-area-inset-bottom, 0px)) !important;
-            padding-bottom: env(safe-area-inset-bottom, 0px) !important;
-            background: rgba(255, 255, 255, 0.98) !important;
-            backdrop-filter: blur(16px) !important;
-            border-top: 1px solid #e2e8f0 !important;
-            z-index: 1045 !important;
-            justify-content: space-around !important;
-            align-items: center !important;
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.04) !important;
-        }
-        .mobile-nav-item {
-            display: flex !important;
-            flex-direction: column !important;
-            align-items: center !important;
-            justify-content: center !important;
-            flex: 1 !important;
-            height: 100% !important;
-            text-decoration: none !important;
-            color: #94a3b8 !important;
-            transition: all 0.15s ease !important;
-            position: relative !important;
-            -webkit-tap-highlight-color: transparent !important;
-        }
-        .mobile-nav-item:active {
-            transform: scale(0.92) !important;
-        }
-        .mobile-nav-item.active {
-            color: var(--primary, #0e5f8a) !important;
-        }
-        .mobile-nav-icon {
-            font-size: 1.15rem !important;
-            line-height: 1 !important;
-        }
-        .mobile-nav-label {
-            font-size: 0.64rem !important;
-            font-weight: 700 !important;
-            margin-top: 2px !important;
-            letter-spacing: -0.2px !important;
-        }
-        .mobile-nav-dot {
-            width: 4px !important;
-            height: 4px !important;
-            border-radius: 50% !important;
-            background: transparent !important;
-            margin-top: 1px !important;
-        }
-        .mobile-nav-item.active .mobile-nav-dot {
-            background: var(--primary, #0e5f8a) !important;
         }
     }
 </style>
@@ -527,8 +464,6 @@
         </div>
     </div>
 </nav>
-
-@include('partials.mobile_bottom_nav')
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {

@@ -26,7 +26,7 @@
     <!-- Navbar -->
     @include('partials.navbar')
 
-    <div class="container monitoring-main-container pt-3 pb-5">
+    <div class="container pt-3 pb-5">
         {{-- 2. Page Header & Action Buttons --}}
         @include('monitoring.partials.header')
 

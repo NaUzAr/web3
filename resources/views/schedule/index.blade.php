@@ -17,50 +17,41 @@
         }
 
         .glass-card {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 1.25rem 1.5rem;
-            margin-bottom: 1.25rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
         }
 
         .page-header {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 12px 20px;
-            margin-bottom: 1.25rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
         }
 
         .btn-glass {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            color: #334155;
-            padding: 0.45rem 1rem;
-            border-radius: 8px;
-            font-size: 0.82rem;
-            font-weight: 600;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            padding: 0.6rem 1.25rem;
+            border-radius: 50px;
             text-decoration: none;
-            transition: all 0.2s ease;
         }
 
         .btn-glass:hover {
-            background: #f8fafc;
-            border-color: #cbd5e1;
-            color: #0f172a;
+            background: var(--glass-bg);
+            border-color: var(--primary);
+            color: var(--primary);
         }
 
         .btn-primary {
-            background: #10b981;
+            background: var(--primary-gradient);
             border: none;
-            color: #fff;
-            border-radius: 8px;
-            font-weight: 700;
-        }
-        .btn-primary:hover {
-            background: #059669;
             color: #fff;
         }
 
@@ -368,10 +359,10 @@
             .page-header {
                 flex-direction: column;
                 align-items: stretch !important;
-                padding: 10px 12px !important;
-                border-radius: 8px !important;
-                margin-bottom: 10px !important;
-                gap: 0.5rem !important;
+                padding: 1.25rem 1rem !important;
+                border-radius: 18px !important;
+                margin-bottom: 1.25rem !important;
+                gap: 1rem !important;
             }
 
             .page-header h2 {
@@ -410,8 +401,8 @@
             }
 
             .glass-card {
-                padding: 10px 12px !important;
-                border-radius: 8px !important;
+                padding: 1rem;
+                border-radius: 18px;
             }
 
             /* Table to Modern Mobile Card */

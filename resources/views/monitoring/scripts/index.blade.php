@@ -945,8 +945,6 @@
             const pStatusPompa = document.getElementById('pipe-status-pompa');
             const pConn1 = document.getElementById('pipe-conn-1');
             const pConn2 = document.getElementById('pipe-conn-2');
-            const pConn3 = document.getElementById('pipe-conn-3');
-            const pConn4 = document.getElementById('pipe-conn-4');
             const pNodePupuk = document.getElementById('pipe-node-pupuk');
             const pStatusPupuk = document.getElementById('pipe-status-pupuk');
 
@@ -994,16 +992,15 @@
 
             if (mode === 'OTOMATIS') {
                 const displayBlok = activeBlok || 1;
-                if (badgeSiram) badgeSiram.className = 'sf-mode-badge mode-auto';
+                if (badgeSiram) badgeSiram.className = 'badge rounded-pill bg-success text-white';
                 if (textSiram) textSiram.innerText = `OTOMATIS (BLOK ${displayBlok})`;
                 if (iconBadge) iconBadge.className = 'bi bi-clock-history me-1';
-                if (iconWrapper) iconWrapper.style.background = '#10b981';
+                if (iconWrapper) iconWrapper.style.background = 'linear-gradient(135deg, #059669, #10b981)';
                 if (iconMain) iconMain.className = 'bi bi-droplet-fill';
 
                 if (detailSiram) {
-                    let pupukHtml = isPupuk ? ' &bull; <span class="text-warning fw-bold"><i class="bi bi-droplet-half me-1"></i>Pupuk ON</span>' : '';
-                    let sisaHtml = totalSisaSeconds > 0 ? ` &bull; Sisa: <strong class="text-success font-monospace" id="sf-sisa-waktu">${sisaMenit}m ${String(sisaDetik).padStart(2, '0')}s</strong>` : '';
-                    detailSiram.innerHTML = `Siram Otomatis <strong>Blok ${displayBlok}</strong>${sisaHtml}${pupukHtml}`;
+                    let pupukHtml = isPupuk ? ' &bull; <span class="text-warning fw-bold"><i class="bi bi-droplet-half me-1"></i>Pupuk Aktif</span>' : '';
+                    detailSiram.innerHTML = `Penyiraman Otomatis <strong>Blok ${displayBlok}</strong> &bull; Sisa Waktu: <strong><span id="sf-sisa-waktu">${sisaMenit}m ${String(sisaDetik).padStart(2, '0')}s</span></strong>${pupukHtml}`;
                 }
 
                 if (btnStart) btnStart.style.display = 'none';
@@ -1011,7 +1008,10 @@
                     btnStop = document.createElement('button');
                     btnStop.type = 'button';
                     btnStop.id = 'sf-btn-stop';
-                    btnStop.className = 'btn-op btn-op-danger';
+                    btnStop.className = 'btn btn-danger btn-sm d-inline-flex align-items-center gap-2 shadow-sm';
+                    btnStop.style.borderRadius = '50px';
+                    btnStop.style.padding = '0.65rem 1.4rem';
+                    btnStop.style.fontWeight = '700';
                     btnStop.onclick = () => stopSiramQuick(true);
                     btnStop.innerHTML = '<i class="bi bi-stop-circle-fill"></i> Stop Siram';
                     actionsContainer.prepend(btnStop);
@@ -1024,14 +1024,6 @@
                 if (pStatusPompa) pStatusPompa.innerText = 'MEMOMPA';
                 if (pConn1) pConn1.classList.add('active');
                 if (pConn2) pConn2.classList.add('active');
-                if (pConn3) {
-                    if (displayBlok >= 2) pConn3.classList.add('active');
-                    else pConn3.classList.remove('active');
-                }
-                if (pConn4) {
-                    if (displayBlok >= 3) pConn4.classList.add('active');
-                    else pConn4.classList.remove('active');
-                }
 
                 if (pNodePupuk) {
                     if (isPupuk) pNodePupuk.classList.add('active');
@@ -1054,10 +1046,10 @@
                     if (flow) flow.style.display = isTarget ? 'inline-flex' : 'none';
                     if (flowBadge) {
                         if (isTarget) {
-                            flowBadge.className = 'badge bg-success text-white';
+                            flowBadge.className = 'badge rounded-pill bg-success text-white';
                             flowBadge.innerText = 'MENGALIR';
                         } else {
-                            flowBadge.className = 'badge bg-light text-muted border';
+                            flowBadge.className = 'badge rounded-pill bg-light text-muted border';
                             flowBadge.innerText = 'STANDBY';
                         }
                     }
@@ -1080,7 +1072,7 @@
                     }
                 });
             } else if (mode === 'MANUAL') {
-                if (badgeSiram) badgeSiram.className = 'sf-mode-badge mode-manual';
+                if (badgeSiram) badgeSiram.className = 'badge rounded-pill bg-primary text-white';
                 
                 let manualText = 'MANUAL (AKTIF)';
                 if (activeBlok > 0) manualText = `MANUAL (BLOK ${activeBlok})`;
@@ -1089,17 +1081,17 @@
                 if (textSiram) textSiram.innerText = manualText;
 
                 if (iconBadge) iconBadge.className = 'bi bi-play-circle-fill me-1';
-                if (iconWrapper) iconWrapper.style.background = '#0ea5e9';
+                if (iconWrapper) iconWrapper.style.background = 'linear-gradient(135deg, #0284c7, #38bdf8)';
                 if (iconMain) iconMain.className = 'bi bi-droplet-fill';
 
                 if (detailSiram) {
-                    let pupukHtml = isPupuk ? ' &bull; <span class="text-warning fw-bold"><i class="bi bi-droplet-half me-1"></i>Pupuk ON</span>' : '';
+                    let pupukHtml = isPupuk ? ' &bull; <span class="text-warning fw-bold"><i class="bi bi-droplet-half me-1"></i>Pupuk Aktif</span>' : '';
                     if (activeBlok > 0) {
-                        detailSiram.innerHTML = `Siram Manual <strong>Blok ${activeBlok}</strong> &bull; <span class="text-primary fw-bold">Aktif</span>${pupukHtml}`;
+                        detailSiram.innerHTML = `Penyiraman Manual <strong>Blok ${activeBlok}</strong> &bull; <span class="text-primary fw-bold"><i class="bi bi-play-circle-fill me-1"></i>Manual Aktif</span>${pupukHtml}`;
                     } else if (isPompa) {
-                        detailSiram.innerHTML = `Pompa Utama &bull; <span class="text-primary fw-bold">Aktif</span>${pupukHtml}`;
+                        detailSiram.innerHTML = `Pompa Utama Manual &bull; <span class="text-primary fw-bold"><i class="bi bi-play-circle-fill me-1"></i>Menyala</span>${pupukHtml}`;
                     } else if (isPupuk) {
-                        detailSiram.innerHTML = `Injeksi Pupuk &bull; <span class="text-warning fw-bold">Aktif</span>`;
+                        detailSiram.innerHTML = `Injeksi Pupuk Manual &bull; <span class="text-warning fw-bold"><i class="bi bi-droplet-half me-1"></i>Aktif</span>`;
                     } else {
                         detailSiram.innerHTML = `Operasi Manual Aktif`;
                     }
@@ -1110,7 +1102,10 @@
                     btnStop = document.createElement('button');
                     btnStop.type = 'button';
                     btnStop.id = 'sf-btn-stop';
-                    btnStop.className = 'btn-op btn-op-danger';
+                    btnStop.className = 'btn btn-danger btn-sm d-inline-flex align-items-center gap-2 shadow-sm';
+                    btnStop.style.borderRadius = '50px';
+                    btnStop.style.padding = '0.65rem 1.4rem';
+                    btnStop.style.fontWeight = '700';
                     btnStop.onclick = () => stopSiramQuick(true);
                     btnStop.innerHTML = '<i class="bi bi-stop-circle-fill"></i> Stop Siram';
                     actionsContainer.prepend(btnStop);
@@ -1157,10 +1152,10 @@
                     if (flow) flow.style.display = isFlowActive ? 'inline-flex' : 'none';
                     if (flowBadge) {
                         if (isFlowActive) {
-                            flowBadge.className = 'badge bg-success text-white';
+                            flowBadge.className = 'badge rounded-pill bg-success text-white';
                             flowBadge.innerText = 'MENGALIR';
                         } else {
-                            flowBadge.className = 'badge bg-light text-muted border';
+                            flowBadge.className = 'badge rounded-pill bg-light text-muted border';
                             flowBadge.innerText = 'STANDBY';
                         }
                     }
@@ -1184,13 +1179,13 @@
                 });
             } else {
                 // STANDBY
-                if (badgeSiram) badgeSiram.className = 'sf-mode-badge mode-standby';
+                if (badgeSiram) badgeSiram.className = 'badge rounded-pill bg-secondary text-white';
                 if (textSiram) textSiram.innerText = 'SIAGA (STANDBY)';
                 if (iconBadge) iconBadge.className = 'bi bi-pause-circle me-1';
-                if (iconWrapper) iconWrapper.style.background = '#64748b';
+                if (iconWrapper) iconWrapper.style.background = 'linear-gradient(135deg, #64748b, #94a3b8)';
                 if (iconMain) iconMain.className = 'bi bi-water';
                 if (detailSiram) {
-                    detailSiram.innerHTML = 'Sistem irigasi siaga &bull; Pompa & katup siap';
+                    detailSiram.innerHTML = 'Sistem irigasi multi-zona siap. Pompa dan katup solenoid dalam kondisi siaga.';
                 }
                 if (btnStop) {
                     btnStop.remove();
@@ -1199,7 +1194,11 @@
                     const newBtnStart = document.createElement('button');
                     newBtnStart.type = 'button';
                     newBtnStart.id = 'sf-btn-start';
-                    newBtnStart.className = 'btn-op btn-op-primary';
+                    newBtnStart.className = 'btn btn-success btn-sm d-inline-flex align-items-center gap-2 shadow-sm';
+                    newBtnStart.style.borderRadius = '50px';
+                    newBtnStart.style.padding = '0.65rem 1.4rem';
+                    newBtnStart.style.fontWeight = '700';
+                    newBtnStart.style.background = 'linear-gradient(135deg, #10b981, #059669)';
                     newBtnStart.onclick = () => openSmartFarmSiramModal();
                     newBtnStart.innerHTML = '<i class="bi bi-play-circle-fill"></i> Siram Manual';
                     actionsContainer.prepend(newBtnStart);
@@ -1211,8 +1210,6 @@
                 if (pStatusPompa) pStatusPompa.innerText = 'OFF';
                 if (pConn1) pConn1.classList.remove('active');
                 if (pConn2) pConn2.classList.remove('active');
-                if (pConn3) pConn3.classList.remove('active');
-                if (pConn4) pConn4.classList.remove('active');
                 if (pNodePupuk) pNodePupuk.classList.remove('active');
                 if (pStatusPupuk) pStatusPupuk.innerText = 'STANDBY';
 
@@ -1226,7 +1223,7 @@
                     if (status) status.innerText = 'TUTUP';
                     if (flow) flow.style.display = 'none';
                     if (flowBadge) {
-                        flowBadge.className = 'badge bg-light text-muted border';
+                        flowBadge.className = 'badge rounded-pill bg-light text-muted border';
                         flowBadge.innerText = 'STANDBY';
                     }
                     if (valveIcon) {
@@ -1265,7 +1262,7 @@
                         badgeError = document.createElement('button');
                         badgeError.type = 'button';
                         badgeError.id = 'sf-badge-error';
-                        badgeError.className = 'badge bg-danger text-white small border-0 d-inline-flex align-items-center gap-1 shadow-sm';
+                        badgeError.className = 'badge rounded-pill bg-danger text-white small border-0 d-inline-flex align-items-center gap-1 shadow-sm';
                         badgeError.title = 'Klik untuk Reset Error Relay pada alat';
                         badgeError.onclick = resetRelayErrorQuick;
                         badgeError.style.cursor = 'pointer';
@@ -1580,10 +1577,10 @@
                             }
                             if (flowBadge) {
                                 if (isFlowing) {
-                                    flowBadge.className = 'badge bg-success text-white';
+                                    flowBadge.className = 'badge rounded-pill bg-success text-white';
                                     flowBadge.innerText = 'MENGALIR';
                                 } else {
-                                    flowBadge.className = 'badge bg-light text-muted border';
+                                    flowBadge.className = 'badge rounded-pill bg-light text-muted border';
                                     flowBadge.innerText = 'STANDBY';
                                 }
                             }
