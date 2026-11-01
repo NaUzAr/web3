@@ -1,393 +1,368 @@
-            @php
-                $isSiram = !empty($sfStatus['siram']);
-                $siramBlok = $sfStatus['blok'] ?? 1;
-                $siramPupuk = ($sfStatus['pupuk'] ?? '') === 'ON';
-                // Format countdown sisa (MMDD: 2 digit menit, 2 digit detik)
-                $sisaRaw = isset($sfStatus['sisa_raw']) ? (string)$sfStatus['sisa_raw'] : (isset($sfStatus['sisa']) && strlen((string)$sfStatus['sisa']) === 4 ? (string)$sfStatus['sisa'] : null);
-                if ($sisaRaw) {
-                    $sisaMenit = (int) substr($sisaRaw, 0, 2);
-                    $sisaDetikMod = (int) substr($sisaRaw, 2, 2);
-                    $sisaDetik = ($sisaMenit * 60) + $sisaDetikMod;
-                } else {
-                    $sisaDetik = (int) ($sfStatus['sisa'] ?? 0);
-                    $sisaMenit = floor($sisaDetik / 60);
-                    $sisaDetikMod = $sisaDetik % 60;
-                }
-                $sfError = !empty($sfStatus['error']);
-                $sfJam = $sfStatus['jam'] ?? null;
-                $sfTimezone = $sfStatus['timezone'] ?? \Cache::get("device_timezone_{$device->id}", 'WIB');
-                $sfJamStr = $sfJam !== null ? str_pad((string)$sfJam, 4, '0', STR_PAD_LEFT) : null;
-                $jamFormatted = $sfJamStr && strlen($sfJamStr) === 4 ? substr($sfJamStr, 0, 2) . ':' . substr($sfJamStr, 2, 2) : null;
+@php
+    $isSiram = !empty($sfStatus['siram']);
+    $siramBlok = $sfStatus['blok'] ?? 1;
+    $siramPupuk = ($sfStatus['pupuk'] ?? '') === 'ON';
+    // Format countdown sisa (MMDD: 2 digit menit, 2 digit detik)
+    $sisaRaw = isset($sfStatus['sisa_raw']) ? (string)$sfStatus['sisa_raw'] : (isset($sfStatus['sisa']) && strlen((string)$sfStatus['sisa']) === 4 ? (string)$sfStatus['sisa'] : null);
+    if ($sisaRaw) {
+        $sisaMenit = (int) substr($sisaRaw, 0, 2);
+        $sisaDetikMod = (int) substr($sisaRaw, 2, 2);
+        $sisaDetik = ($sisaMenit * 60) + $sisaDetikMod;
+    } else {
+        $sisaDetik = (int) ($sfStatus['sisa'] ?? 0);
+        $sisaMenit = floor($sisaDetik / 60);
+        $sisaDetikMod = $sisaDetik % 60;
+    }
+    $sfError = !empty($sfStatus['error']);
+    $sfJam = $sfStatus['jam'] ?? null;
+    $sfTimezone = $sfStatus['timezone'] ?? \Cache::get("device_timezone_{$device->id}", 'WIB');
+    $sfJamStr = $sfJam !== null ? str_pad((string)$sfJam, 4, '0', STR_PAD_LEFT) : null;
+    $jamFormatted = $sfJamStr && strlen($sfJamStr) === 4 ? substr($sfJamStr, 0, 2) . ':' . substr($sfJamStr, 2, 2) : null;
 
-                $sfPompa = $outputs->firstWhere('output_name', 'sf_pompa');
-                $sfBlok1 = $outputs->firstWhere('output_name', 'sf_blok1');
-                $sfBlok2 = $outputs->firstWhere('output_name', 'sf_blok2');
-                $sfBlok3 = $outputs->firstWhere('output_name', 'sf_blok3');
-                $sfPupuk = $outputs->firstWhere('output_name', 'sf_pupuk');
+    $sfPompa = $outputs->firstWhere('output_name', 'sf_pompa');
+    $sfBlok1 = $outputs->firstWhere('output_name', 'sf_blok1');
+    $sfBlok2 = $outputs->firstWhere('output_name', 'sf_blok2');
+    $sfBlok3 = $outputs->firstWhere('output_name', 'sf_blok3');
+    $sfPupuk = $outputs->firstWhere('output_name', 'sf_pupuk');
 
-                $isPompaActive = (bool) (($sfPompa && (float)$sfPompa->current_value > 0) || $isSiram);
-                $isPupukActive = (bool) (($sfPupuk && (float)$sfPupuk->current_value > 0) || $siramPupuk);
-                $activeBlokCount = ($sfBlok1 && (float)$sfBlok1->current_value > 0 ? 1 : 0) + 
-                                   ($sfBlok2 && (float)$sfBlok2->current_value > 0 ? 1 : 0) + 
-                                   ($sfBlok3 && (float)$sfBlok3->current_value > 0 ? 1 : 0);
+    $isPompaActive = (bool) (($sfPompa && (float)$sfPompa->current_value > 0) || $isSiram);
+    $isPupukActive = (bool) (($sfPupuk && (float)$sfPupuk->current_value > 0) || $siramPupuk);
+    $activeBlokCount = ($sfBlok1 && (float)$sfBlok1->current_value > 0 ? 1 : 0) + 
+                       ($sfBlok2 && (float)$sfBlok2->current_value > 0 ? 1 : 0) + 
+                       ($sfBlok3 && (float)$sfBlok3->current_value > 0 ? 1 : 0);
 
-                $otherOutputs = $outputs->whereNotIn('output_name', ['sf_pompa', 'sf_blok1', 'sf_blok2', 'sf_blok3', 'sf_pupuk']);
+    $otherOutputs = $outputs->whereNotIn('output_name', ['sf_pompa', 'sf_blok1', 'sf_blok2', 'sf_blok3', 'sf_pupuk']);
 
-                $sfMode = $sfStatus['mode'] ?? null;
-                if (!$sfMode) {
-                    if ($isSiram && $sisaDetik > 0) {
-                        $sfMode = 'OTOMATIS';
-                    } elseif ($isSiram || $isPompaActive || $isPupukActive || $activeBlokCount > 0) {
-                        $sfMode = 'MANUAL';
-                    } else {
-                        $sfMode = 'STANDBY';
-                    }
-                }
-            @endphp
+    $sfMode = $sfStatus['mode'] ?? null;
+    if (!$sfMode) {
+        if ($isSiram && $sisaDetik > 0) {
+            $sfMode = 'OTOMATIS';
+        } elseif ($isSiram || $isPompaActive || $isPupukActive || $activeBlokCount > 0) {
+            $sfMode = 'MANUAL';
+        } else {
+            $sfMode = 'STANDBY';
+        }
+    }
+@endphp
 
-            <!-- ==================================================== -->
-            <!-- 🌿 SMART FARM CONTROL CENTER: UNIFIED ARCHITECTURE   -->
-            <!-- ==================================================== -->
-
-            <!-- LEVEL 1: HERO STATUS & OPERATIONAL COMMAND BAR -->
-            <div class="sf-hero-card mb-4" id="sf-status-card">
-                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="d-flex align-items-center justify-content-center" id="sf-icon-wrapper" style="width: 58px; height: 58px; border-radius: 18px; background: {{ $sfMode === 'OTOMATIS' ? 'linear-gradient(135deg, #059669, #10b981)' : ($sfMode === 'MANUAL' ? 'linear-gradient(135deg, #0284c7, #38bdf8)' : 'linear-gradient(135deg, #64748b, #94a3b8)') }}; color: white; font-size: 1.75rem; box-shadow: 0 8px 22px -4px rgba(0,0,0,0.18);">
-                            <i class="bi {{ ($sfMode === 'OTOMATIS' || $sfMode === 'MANUAL') ? 'bi-droplet-fill' : 'bi-water' }}" id="sf-icon-main"></i>
-                        </div>
-                        <div>
-                            <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
-                                <span class="badge rounded-pill {{ $sfMode === 'OTOMATIS' ? 'bg-success text-white' : ($sfMode === 'MANUAL' ? 'bg-primary text-white' : 'bg-secondary text-white') }}" id="sf-badge-siram" style="padding: 6px 14px; font-weight: 700; letter-spacing: 0.5px;">
-                                    <i class="bi {{ $sfMode === 'OTOMATIS' ? 'bi-clock-history me-1' : ($sfMode === 'MANUAL' ? 'bi-play-circle-fill me-1' : 'bi-pause-circle me-1') }}" id="sf-icon-badge"></i>
-                                    <span id="sf-text-siram">
-                                        @if($sfMode === 'OTOMATIS')
-                                            OTOMATIS (BLOK {{ $siramBlok }})
-                                        @elseif($sfMode === 'MANUAL')
-                                            @if($siramBlok > 0)
-                                                MANUAL (BLOK {{ $siramBlok }})
-                                            @elseif($isPompaActive)
-                                                MANUAL (POMPA)
-                                            @elseif($isPupukActive)
-                                                MANUAL (PUPUK)
-                                            @else
-                                                MANUAL (AKTIF)
-                                            @endif
-                                        @else
-                                            SIAGA (STANDBY)
-                                        @endif
-                                    </span>
-                                </span>
-                                <span class="badge rounded-pill bg-light text-muted border small d-inline-flex align-items-center gap-1 shadow-sm" id="sf-badge-jam" title="Waktu RTC alat. Klik untuk sinkronkan zona waktu!" style="cursor: pointer; transition: all 0.2s;" onclick="openRtcSyncModal()">
-                                    <i class="bi bi-clock text-primary"></i>RTC: <span id="sf-text-jam">{{ $jamFormatted ? ($jamFormatted . ' ' . $sfTimezone) : '--:--' }}</span>
-                                    <i class="bi bi-arrow-repeat ms-1 text-muted" id="sf-icon-sync-rtc"></i>
-                                </span>
-                                @if($sfError)
-                                    <button type="button" class="badge rounded-pill bg-danger text-white small border-0 d-inline-flex align-items-center gap-1 shadow-sm" id="sf-badge-error" title="Klik untuk Reset Error Relay pada alat" onclick="resetRelayErrorQuick()" style="cursor: pointer;">
-                                        <i class="bi bi-exclamation-triangle-fill"></i> Error Relay (Klik Reset)
-                                    </button>
-                                @endif
-                            </div>
-                            <div class="small text-muted" id="sf-detail-siram">
-                                @if($sfMode === 'OTOMATIS')
-                                    Penyiraman Otomatis <strong>Blok {{ $siramBlok }}</strong>
-                                    @if(($sisaMenit ?? 0) > 0 || ($sisaDetikMod ?? 0) > 0)
-                                        &bull; Sisa Waktu: <strong><span id="sf-sisa-waktu">{{ $sisaMenit }}m {{ $sisaDetikMod }}s</span></strong>
-                                    @endif
-                                    @if($siramPupuk)
-                                        &bull; <span class="text-warning fw-bold d-inline-flex align-items-center gap-1">
-                                            <i class="bi bi-droplet-half me-1"></i>Pupuk Aktif
-                                        </span>
-                                    @endif
-                                @elseif($sfMode === 'MANUAL')
-                                    @if($siramBlok > 0)
-                                        Penyiraman Manual <strong>Blok {{ $siramBlok }}</strong> &bull; <span class="text-primary fw-bold"><i class="bi bi-play-circle-fill me-1"></i>Manual Aktif</span>
-                                    @elseif($isPompaActive)
-                                        Pompa Utama Manual &bull; <span class="text-primary fw-bold"><i class="bi bi-play-circle-fill me-1"></i>Menyala</span>
-                                    @elseif($isPupukActive)
-                                        Injeksi Pupuk Manual &bull; <span class="text-warning fw-bold"><i class="bi bi-droplet-half me-1"></i>Aktif</span>
-                                    @else
-                                        Operasi Manual &bull; <span class="text-primary fw-bold">Aktif</span>
-                                    @endif
-                                    @if($siramPupuk && $siramBlok > 0)
-                                        &bull; <span class="text-warning fw-bold d-inline-flex align-items-center gap-1">
-                                            <i class="bi bi-droplet-half me-1"></i>Pupuk Aktif
-                                        </span>
-                                    @endif
+<!-- LEVEL 1: HERO STATUS & OPERATIONAL COMMAND BAR (MODERN SLEEK) -->
+<div class="sf-hero-card mb-3" id="sf-status-card">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2.5">
+        <!-- Status Info Left -->
+        <div class="d-flex align-items-center gap-2.5">
+            <div class="sf-status-icon-box" id="sf-icon-wrapper" style="background: {{ $sfMode === 'OTOMATIS' ? '#10b981' : ($sfMode === 'MANUAL' ? '#0ea5e9' : '#64748b') }};">
+                <i class="bi {{ ($sfMode === 'OTOMATIS' || $sfMode === 'MANUAL') ? 'bi-droplet-fill' : 'bi-water' }}" id="sf-icon-main"></i>
+            </div>
+            <div>
+                <div class="d-flex align-items-center gap-1.5 flex-wrap">
+                    <span class="sf-mode-badge {{ $sfMode === 'OTOMATIS' ? 'mode-auto' : ($sfMode === 'MANUAL' ? 'mode-manual' : 'mode-standby') }}" id="sf-badge-siram">
+                        <i class="bi {{ $sfMode === 'OTOMATIS' ? 'bi-clock-history' : ($sfMode === 'MANUAL' ? 'bi-play-circle-fill' : 'bi-pause-circle') }}" id="sf-icon-badge"></i>
+                        <span id="sf-text-siram">
+                            @if($sfMode === 'OTOMATIS')
+                                OTOMATIS (BLOK {{ $siramBlok }})
+                            @elseif($sfMode === 'MANUAL')
+                                @if($siramBlok > 0)
+                                    MANUAL (BLOK {{ $siramBlok }})
+                                @elseif($isPompaActive)
+                                    MANUAL (POMPA)
+                                @elseif($isPupukActive)
+                                    MANUAL (PUPUK)
                                 @else
-                                    Sistem irigasi multi-zona siap. Pompa dan katup solenoid dalam kondisi siaga.
+                                    MANUAL (AKTIF)
                                 @endif
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Quick Operation Buttons -->
-                    <div class="d-flex align-items-center gap-2 flex-wrap sf-actions-group" id="sf-actions-container">
-                        @if($isSiram || $isPompaActive || $isPupukActive || $sfMode === 'MANUAL' || $sfMode === 'OTOMATIS')
-                            <button type="button" id="sf-btn-stop" class="btn btn-danger btn-sm d-inline-flex align-items-center gap-2 shadow-sm" style="border-radius: 50px; padding: 0.65rem 1.4rem; font-weight: 700;" onclick="stopSiramQuick()">
-                                <i class="bi bi-stop-circle-fill"></i> Stop Siram
-                            </button>
-                        @else
-                            <button type="button" id="sf-btn-start" class="btn btn-success btn-sm d-inline-flex align-items-center gap-2 shadow-sm" style="border-radius: 50px; padding: 0.65rem 1.4rem; font-weight: 700; background: linear-gradient(135deg, #10b981, #059669);" onclick="openSmartFarmSiramModal()">
-                                <i class="bi bi-play-circle-fill"></i> Siram Manual
-                            </button>
-                        @endif
-                        <a href="{{ ($isAdminView ?? false) ? route('schedule.index', $device->id) : route('schedule.index', $userDevice->id) }}" class="btn btn-glass btn-sm d-inline-flex align-items-center gap-2 shadow-sm" style="border-radius: 50px; padding: 0.65rem 1.3rem; font-weight: 600;">
-                            <i class="bi bi-calendar-check text-primary"></i> Kelola Jadwal
-                        </a>
-                        <button type="button" class="btn btn-light btn-sm d-inline-flex align-items-center gap-1 border shadow-sm" style="border-radius: 50px; padding: 0.65rem 1.1rem; font-weight: 600; color: #4b5563;" onclick="openRtcSyncModal()" title="Sinkronkan Waktu RTC Device">
-                            <i class="bi bi-clock-history text-primary"></i> Jam RTC
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- LEVEL 2: LIVE IRRIGATION PIPELINE VISUALIZER -->
-            <div class="sf-pipeline-card mb-4">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <span class="small fw-bold text-muted d-flex align-items-center gap-1" style="font-size: 0.76rem; letter-spacing: 0.5px; text-transform: uppercase;">
-                        <i class="bi bi-diagram-3-fill text-primary"></i> Alur Distribusi Irigasi & Fertigasi
+                            @else
+                                SIAGA (STANDBY)
+                            @endif
+                        </span>
                     </span>
+                    <span class="sf-rtc-pill" id="sf-badge-jam" title="Waktu RTC alat. Klik untuk sinkronkan!" onclick="openRtcSyncModal()">
+                        <i class="bi bi-clock text-primary"></i> <span id="sf-text-jam">{{ $jamFormatted ? ($jamFormatted . ' ' . $sfTimezone) : '--:--' }}</span>
+                        <i class="bi bi-arrow-repeat ms-0.5 text-muted" id="sf-icon-sync-rtc"></i>
+                    </span>
+                    @if($sfError)
+                        <button type="button" class="badge bg-danger text-white border-0 py-1 px-2 d-inline-flex align-items-center gap-1 rounded" id="sf-badge-error" onclick="resetRelayErrorQuick()">
+                            <i class="bi bi-exclamation-triangle-fill"></i> Reset Relay
+                        </button>
+                    @endif
                 </div>
-                <div class="pipeline-scroll-wrapper">
-                    <div class="pipeline-track">
-                        <!-- Node 1: Pompa Utama -->
-                        <div class="pipeline-node node-pompa {{ $isPompaActive ? 'active' : '' }}" id="pipe-node-pompa">
-                            <div class="pipeline-node-icon" style="color: #0284c7; background: rgba(2, 132, 199, 0.08); border-color: rgba(2, 132, 199, 0.2);">
-                                <i class="bi bi-water"></i>
-                            </div>
-                            <div class="pipeline-node-label">Pompa Utama</div>
-                            <div class="pipeline-node-status" id="pipe-status-pompa">{{ $isPompaActive ? 'MEMOMPA' : 'OFF' }}</div>
-                        </div>
-
-                        <!-- Connector 1 -->
-                        <div class="pipeline-connector {{ $isPompaActive ? 'active' : '' }}" id="pipe-conn-1"></div>
-
-                        <!-- Node 2: Dosing Pupuk -->
-                        <div class="pipeline-node node-pupuk {{ $isPupukActive ? 'active' : '' }}" id="pipe-node-pupuk">
-                            <div class="pipeline-node-icon" style="color: #d97706; background: rgba(217, 119, 6, 0.08); border-color: rgba(217, 119, 6, 0.2);">
-                                <svg class="sf-icon-pupuk" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M10 2v5L4.5 17.5A2.5 2.5 0 0 0 6.6 21h10.8a2.5 2.5 0 0 0 2.1-3.5L14 7V2"></path>
-                                    <line x1="8.5" y1="2" x2="15.5" y2="2"></line>
-                                    <path d="M7.5 15h9"></path>
-                                    <circle cx="12" cy="11.5" r="1" fill="currentColor"></circle>
-                                </svg>
-                            </div>
-                            <div class="pipeline-node-label">Injeksi Pupuk</div>
-                            <div class="pipeline-node-status" id="pipe-status-pupuk">{{ $isPupukActive ? 'INJEKSI' : 'STANDBY' }}</div>
-                        </div>
-
-                        <!-- Connector 2 -->
-                        <div class="pipeline-connector {{ $isPompaActive ? 'active' : '' }}" id="pipe-conn-2"></div>
-
-                        <!-- Node 3: Blok 1 -->
-                        @php
-                            $isB1Flow = ($sfBlok1?->current_value && $isPompaActive) || ($isSiram && $siramBlok == 1);
-                            $isB2Flow = ($sfBlok2?->current_value && $isPompaActive) || ($isSiram && $siramBlok == 2);
-                            $isB3Flow = ($sfBlok3?->current_value && $isPompaActive) || ($isSiram && $siramBlok == 3);
-                        @endphp
-                        <div class="pipeline-node node-blok1 {{ $isB1Flow ? 'active' : '' }}" id="pipe-node-blok1">
-                            <div class="pipeline-node-icon" style="color: #059669; background: rgba(16, 185, 129, 0.08); border-color: rgba(16, 185, 129, 0.2); font-weight: 800; font-size: 1.15rem;">
-                                1
-                            </div>
-                            <div class="pipeline-node-label">Blok 1</div>
-                            <div class="pipeline-node-status" id="pipe-status-blok1">{{ $isB1Flow ? 'MENGALIR' : ($sfBlok1?->current_value ? 'BUKA' : 'TUTUP') }}</div>
-                        </div>
-
-                        <!-- Node 4: Blok 2 -->
-                        <div class="pipeline-node node-blok2 {{ $isB2Flow ? 'active' : '' }}" id="pipe-node-blok2">
-                            <div class="pipeline-node-icon" style="color: #0284c7; background: rgba(14, 165, 233, 0.08); border-color: rgba(14, 165, 233, 0.2); font-weight: 800; font-size: 1.15rem;">
-                                2
-                            </div>
-                            <div class="pipeline-node-label">Blok 2</div>
-                            <div class="pipeline-node-status" id="pipe-status-blok2">{{ $isB2Flow ? 'MENGALIR' : ($sfBlok2?->current_value ? 'BUKA' : 'TUTUP') }}</div>
-                        </div>
-
-                        <!-- Node 5: Blok 3 -->
-                        <div class="pipeline-node node-blok3 {{ $isB3Flow ? 'active' : '' }}" id="pipe-node-blok3">
-                            <div class="pipeline-node-icon" style="color: #7c3aed; background: rgba(139, 92, 246, 0.08); border-color: rgba(139, 92, 246, 0.2); font-weight: 800; font-size: 1.15rem;">
-                                3
-                            </div>
-                            <div class="pipeline-node-label">Blok 3</div>
-                            <div class="pipeline-node-status" id="pipe-status-blok3">{{ $isB3Flow ? 'MENGALIR' : ($sfBlok3?->current_value ? 'BUKA' : 'TUTUP') }}</div>
-                        </div>
-                    </div>
+                <div class="sf-detail-text" id="sf-detail-siram">
+                    @if($sfMode === 'OTOMATIS')
+                        Siram Otomatis <strong>Blok {{ $siramBlok }}</strong>
+                        @if(($sisaMenit ?? 0) > 0 || ($sisaDetikMod ?? 0) > 0)
+                            &bull; Sisa: <strong class="text-success font-monospace" id="sf-sisa-waktu">{{ $sisaMenit }}m {{ $sisaDetikMod }}s</strong>
+                        @endif
+                        @if($siramPupuk)
+                            &bull; <span class="text-warning fw-bold"><i class="bi bi-droplet-half me-1"></i>Pupuk ON</span>
+                        @endif
+                    @elseif($sfMode === 'MANUAL')
+                        Siram Manual <strong>Blok {{ $siramBlok }}</strong> &bull; <span class="text-primary fw-bold">Aktif</span>
+                        @if($siramPupuk)
+                            &bull; <span class="text-warning fw-bold"><i class="bi bi-droplet-half me-1"></i>Pupuk ON</span>
+                        @endif
+                    @else
+                        Sistem irigasi siaga &bull; Pompa & katup siap
+                    @endif
                 </div>
             </div>
+        </div>
 
-            <!-- LEVEL 3: SUPLAI AIR & FERTIGASI (KOLOM SEIMBANG 2x6) -->
-            <div class="row g-4 mb-4">
-                <!-- 1.1 POMPA UTAMA (AIR) -->
-                @if($sfPompa)
-                <div class="col-12 col-md-6">
-                    <div class="sf-hub-card h-100 {{ $isPompaActive ? 'border-primary' : '' }}" id="output-card-{{ $sfPompa->id }}">
-                        <div class="sf-hub-header mb-3">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="sf-actuator-icon" style="background: {{ $isPompaActive ? 'linear-gradient(135deg, #0284c7, #38bdf8)' : 'rgba(2, 132, 199, 0.1)' }}; color: {{ $isPompaActive ? '#ffffff' : '#0284c7' }}; border: 1px solid {{ $isPompaActive ? '#0284c7' : 'rgba(2, 132, 199, 0.2)' }};">
-                                    <i class="bi bi-water"></i>
-                                </div>
-                                <div>
-                                    <h6 class="sf-hub-title mb-0">Pompa Air Utama</h6>
-                                    <div class="sf-hub-subtitle">Suplai air bertekanan utama ke pipa irigasi</div>
-                                </div>
-                            </div>
-                            <span id="output-status-{{ $sfPompa->id }}" class="output-status {{ $isPompaActive ? 'on' : 'off' }} badge rounded-pill px-3 py-1.5 small m-0" data-on-text="MEMOMPA" data-off-text="OFF">
-                                {{ $isPompaActive ? 'MEMOMPA' : 'OFF' }}
-                            </span>
-                        </div>
-
-                        <div class="mt-auto pt-2">
-                            <div class="segmented-control">
-                                <button type="button" class="segmented-btn {{ $isPompaActive ? 'active-on' : '' }}" onclick="openSmartFarmSiramModal()" id="btn-on-{{ $sfPompa->id }}">
-                                    <i class="bi bi-power me-1"></i> ON (SIRAM)
-                                </button>
-                                <button type="button" class="segmented-btn {{ !$isPompaActive ? 'active-off' : '' }}" onclick="stopSmartFarmSiram()" id="btn-off-{{ $sfPompa->id }}">
-                                    OFF
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                @endif
-
-                <!-- 1.2 INJEKSI PUPUK CAIR -->
-                @if($sfPupuk)
-                @php
-                    $isPupukOn = (bool) ($sfPupuk->current_value ?? 0);
-                @endphp
-                <div class="col-12 col-md-6">
-                    <div class="sf-hub-card h-100 {{ $isPupukOn ? 'border-warning' : '' }}" id="output-card-{{ $sfPupuk->id }}">
-                        <div class="sf-hub-header mb-3">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="sf-actuator-icon" style="background: {{ $isPupukOn ? 'linear-gradient(135deg, #d97706, #f59e0b)' : 'rgba(217, 119, 6, 0.1)' }}; color: {{ $isPupukOn ? '#ffffff' : '#d97706' }}; border: 1px solid {{ $isPupukOn ? '#f59e0b' : 'rgba(217, 119, 6, 0.2)' }};">
-                                    <svg class="sf-icon-pupuk" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M10 2v5L4.5 17.5A2.5 2.5 0 0 0 6.6 21h10.8a2.5 2.5 0 0 0 2.1-3.5L14 7V2"></path>
-                                        <line x1="8.5" y1="2" x2="15.5" y2="2"></line>
-                                        <path d="M7.5 15h9"></path>
-                                        <circle cx="12" cy="11.5" r="1" fill="currentColor"></circle>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h6 class="sf-hub-title mb-0">Injeksi Pupuk Cair</h6>
-                                    <div class="sf-hub-subtitle"><i class="bi bi-info-circle text-warning me-1"></i>Hanya aktif saat Pompa & Blok ON</div>
-                                </div>
-                            </div>
-                            <span id="output-status-{{ $sfPupuk->id }}" class="output-status {{ $isPupukOn ? 'on' : 'off' }} badge rounded-pill px-3 py-1.5 small m-0" data-on-text="INJEKSI AKTIF" data-off-text="STANDBY">
-                                {{ $isPupukOn ? 'INJEKSI AKTIF' : 'STANDBY' }}
-                            </span>
-                        </div>
-
-                        <div class="mt-auto pt-2">
-                            <div class="segmented-control">
-                                <button type="button" class="segmented-btn {{ $isPupukOn ? 'active-on' : '' }}" onclick="setOutput({{ $sfPupuk->id }}, true)" id="btn-on-{{ $sfPupuk->id }}">
-                                    <i class="bi bi-power me-1"></i> ON (PUPUK)
-                                </button>
-                                <button type="button" class="segmented-btn {{ !$isPupukOn ? 'active-off' : '' }}" onclick="setOutput({{ $sfPupuk->id }}, false)" id="btn-off-{{ $sfPupuk->id }}">
-                                    OFF
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                @endif
-            </div>
-
-            <!-- LEVEL 4: INDIKATOR BLOK -->
-            <div class="sf-hub-card mb-4">
-                <div class="sf-hub-header mb-3">
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="sf-section-icon" style="width: 32px; height: 32px; border-radius: 10px; background: rgba(16, 185, 129, 0.12); color: #059669; display: flex; align-items: center; justify-content: center; font-size: 1rem;">
-                            <i class="bi bi-grid-3x3-gap-fill"></i>
-                        </div>
-                        <div>
-                            <h6 class="sf-hub-title mb-0">Indikator Blok</h6>
-                            <div class="sf-hub-subtitle">Status katup dan aliran air tiap blok lahan</div>
-                        </div>
-                    </div>
-                    <span class="badge rounded-pill bg-light text-muted border px-2.5 py-1 small">3 Blok</span>
-                </div>
-
-                <div class="row g-3">
-                    @php
-                        $blocks = [
-                            ['num' => 1, 'name' => 'Blok 1', 'obj' => $sfBlok1, 'color' => '#10b981', 'bg' => 'rgba(16, 185, 129, 0.12)', 'text' => '#059669'],
-                            ['num' => 2, 'name' => 'Blok 2', 'obj' => $sfBlok2, 'color' => '#0ea5e9', 'bg' => 'rgba(14, 165, 233, 0.12)', 'text' => '#0284c7'],
-                            ['num' => 3, 'name' => 'Blok 3', 'obj' => $sfBlok3, 'color' => '#8b5cf6', 'bg' => 'rgba(139, 92, 246, 0.12)', 'text' => '#7c3aed'],
-                        ];
-                    @endphp
-
-                    @foreach($blocks as $b)
-                        @php
-                            $blk = $b['obj'];
-                            $isBlkOn = (bool) ($blk?->current_value ?? 0);
-                            $isFlowing = ($isBlkOn && $isPompaActive) || ($isSiram && $siramBlok == $b['num']);
-                        @endphp
-                        <div class="col-12 col-md-4">
-                            <div class="sf-zone-card sf-zone-simple {{ $isFlowing ? 'active-flow' : '' }}" 
-                                 id="output-card-{{ $blk?->id }}"
-                                 style="--zone-color: {{ $b['color'] }};">
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <div class="d-flex align-items-center gap-2.5">
-                                        <div class="sf-zone-avatar-sm" style="background: {{ $b['bg'] }}; color: {{ $b['text'] }}; border: 1.5px solid {{ $b['color'] }}33;">
-                                            {{ $b['num'] }}
-                                        </div>
-                                        <div>
-                                            <div class="fw-bold text-dark" style="font-size: 0.95rem; line-height: 1.2;">{{ $b['name'] }}</div>
-                                            <div class="d-flex align-items-center gap-1 mt-1 text-muted" style="font-size: 0.75rem;">
-                                                <i class="bi {{ $isBlkOn ? 'bi-unlock-fill text-success' : 'bi-lock-fill text-muted' }}" id="sf-valve-icon-blok{{ $b['num'] }}"></i>
-                                                <span>Katup:</span>
-                                                <span class="output-status {{ $isBlkOn ? 'on' : 'off' }}" 
-                                                      id="output-status-{{ $blk?->id }}"
-                                                      data-on-text="TERBUKA"
-                                                      data-off-text="TERTUTUP">
-                                                    {{ $isBlkOn ? 'TERBUKA' : 'TERTUTUP' }}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="d-flex align-items-center gap-1">
-                                        <span class="sf-flow-indicator" id="sf-flow-blok{{ $b['num'] }}" style="display: {{ $isFlowing ? 'inline-flex' : 'none' }};">
-                                            <span class="sf-flow-dot"></span>
-                                        </span>
-                                        <span class="badge rounded-pill {{ $isFlowing ? 'bg-success text-white' : 'bg-light text-muted border' }}"
-                                              id="sf-flow-badge-blok{{ $b['num'] }}"
-                                              style="font-size: 0.72rem; padding: 0.35rem 0.75rem; font-weight: 700; letter-spacing: 0.3px;">
-                                            {{ $isFlowing ? 'MENGALIR' : 'STANDBY' }}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-
-            <!-- Output Tambahan Lainnya (Jika Ada) -->
-            @if($otherOutputs->count() > 0)
-            <div class="output-panel mb-4">
-                <h5 class="card-title mb-3" style="color: var(--text-main);">
-                    <i class="bi bi-sliders me-2 text-primary"></i>Output Tambahan Lainnya
-                </h5>
-                <div class="row g-4">
-                    @foreach($otherOutputs as $output)
-                        <div class="col-6 col-md-4 col-lg-3">
-                            <div class="output-card" id="output-card-{{ $output->id }}">
-                                <div class="card-header-flex">
-                                    <div class="output-icon" style="background: {{ $output->color }};">
-                                        <i class="bi {{ $output->icon }}"></i>
-                                    </div>
-                                    <div class="output-label">{{ $output->output_label }}</div>
-                                </div>
-                                <div class="output-status {{ $output->current_value ? 'on' : 'off' }}" id="output-status-{{ $output->id }}">
-                                    {{ $output->current_value ? 'ON' : 'OFF' }}
-                                </div>
-                                <div class="segmented-control">
-                                    <button type="button" class="segmented-btn {{ $output->current_value ? 'active-on' : '' }}" onclick="setOutput({{ $output->id }}, true)" id="btn-on-{{ $output->id }}">ON</button>
-                                    <button type="button" class="segmented-btn {{ !$output->current_value ? 'active-off' : '' }}" onclick="setOutput({{ $output->id }}, false)" id="btn-off-{{ $output->id }}">OFF</button>
-                                </div>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
+        <!-- Action Buttons Right -->
+        <div class="d-flex align-items-center gap-1.5 sf-actions-group" id="sf-actions-container">
+            @if($isSiram || $isPompaActive || $isPupukActive || $sfMode === 'MANUAL' || $sfMode === 'OTOMATIS')
+                <button type="button" id="sf-btn-stop" class="btn-op btn-op-danger" onclick="stopSiramQuick()">
+                    <i class="bi bi-stop-circle-fill"></i> Stop Siram
+                </button>
+            @else
+                <button type="button" id="sf-btn-start" class="btn-op btn-op-primary" onclick="openSmartFarmSiramModal()">
+                    <i class="bi bi-play-circle-fill"></i> Siram Manual
+                </button>
             @endif
+            <a href="{{ ($isAdminView ?? false) ? route('schedule.index', $device->id) : route('schedule.index', $userDevice->id) }}" class="btn-op btn-op-outline">
+                <i class="bi bi-calendar-check text-primary"></i> Kelola Jadwal
+            </a>
+            <button type="button" class="btn-op btn-op-outline" onclick="openRtcSyncModal()" title="Sinkronkan Waktu RTC">
+                <i class="bi bi-clock-history text-muted"></i> Jam RTC
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- LEVEL 2: LIVE IRRIGATION PIPELINE VISUALIZER (MODERN COMPACT TRACK) -->
+<div class="sf-pipeline-card mb-3">
+    <div class="d-flex align-items-center justify-content-between mb-2">
+        <span class="sf-section-label">
+            <i class="bi bi-diagram-3-fill text-primary me-1"></i> Alur Distribusi Irigasi & Fertigasi
+        </span>
+    </div>
+    <div class="pipeline-scroll-wrapper">
+        <div class="pipeline-track">
+            <!-- Node 1: Pompa Utama -->
+            <div class="pipeline-node node-pompa {{ $isPompaActive ? 'active' : '' }}" id="pipe-node-pompa">
+                <div class="pipeline-node-icon">
+                    <i class="bi bi-water"></i>
+                </div>
+                <div class="pipeline-node-label">Pompa Utama</div>
+                <div class="pipeline-node-status" id="pipe-status-pompa">{{ $isPompaActive ? 'MEMOMPA' : 'OFF' }}</div>
+            </div>
+
+            <!-- Connector 1 -->
+            <div class="pipeline-connector {{ $isPompaActive ? 'active' : '' }}" id="pipe-conn-1"></div>
+
+            <!-- Node 2: Dosing Pupuk -->
+            <div class="pipeline-node node-pupuk {{ $isPupukActive ? 'active' : '' }}" id="pipe-node-pupuk">
+                <div class="pipeline-node-icon">
+                    <svg class="sf-icon-pupuk" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10 2v5L4.5 17.5A2.5 2.5 0 0 0 6.6 21h10.8a2.5 2.5 0 0 0 2.1-3.5L14 7V2"></path>
+                        <line x1="8.5" y1="2" x2="15.5" y2="2"></line>
+                        <path d="M7.5 15h9"></path>
+                        <circle cx="12" cy="11.5" r="1" fill="currentColor"></circle>
+                    </svg>
+                </div>
+                <div class="pipeline-node-label">Injeksi Pupuk</div>
+                <div class="pipeline-node-status" id="pipe-status-pupuk">{{ $isPupukActive ? 'INJEKSI' : 'STANDBY' }}</div>
+            </div>
+
+            <!-- Connector 2 -->
+            <div class="pipeline-connector {{ $isPompaActive ? 'active' : '' }}" id="pipe-conn-2"></div>
+
+            <!-- Node 3: Blok 1 -->
+            @php
+                $isB1Flow = ($sfBlok1?->current_value && $isPompaActive) || ($isSiram && $siramBlok == 1);
+                $isB2Flow = ($sfBlok2?->current_value && $isPompaActive) || ($isSiram && $siramBlok == 2);
+                $isB3Flow = ($sfBlok3?->current_value && $isPompaActive) || ($isSiram && $siramBlok == 3);
+            @endphp
+            <div class="pipeline-node node-blok1 {{ $isB1Flow ? 'active' : '' }}" id="pipe-node-blok1">
+                <div class="pipeline-node-icon">1</div>
+                <div class="pipeline-node-label">Blok 1</div>
+                <div class="pipeline-node-status" id="pipe-status-blok1">{{ $isB1Flow ? 'MENGALIR' : ($sfBlok1?->current_value ? 'BUKA' : 'TUTUP') }}</div>
+            </div>
+
+            <!-- Node 4: Blok 2 -->
+            <div class="pipeline-node node-blok2 {{ $isB2Flow ? 'active' : '' }}" id="pipe-node-blok2">
+                <div class="pipeline-node-icon">2</div>
+                <div class="pipeline-node-label">Blok 2</div>
+                <div class="pipeline-node-status" id="pipe-status-blok2">{{ $isB2Flow ? 'MENGALIR' : ($sfBlok2?->current_value ? 'BUKA' : 'TUTUP') }}</div>
+            </div>
+
+            <!-- Node 5: Blok 3 -->
+            <div class="pipeline-node node-blok3 {{ $isB3Flow ? 'active' : '' }}" id="pipe-node-blok3">
+                <div class="pipeline-node-icon">3</div>
+                <div class="pipeline-node-label">Blok 3</div>
+                <div class="pipeline-node-status" id="pipe-status-blok3">{{ $isB3Flow ? 'MENGALIR' : ($sfBlok3?->current_value ? 'BUKA' : 'TUTUP') }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- LEVEL 3: SUPLAI AIR & FERTIGASI -->
+<div class="row g-2.5 mb-3">
+    <!-- 1.1 POMPA UTAMA (AIR) -->
+    @if($sfPompa)
+    <div class="col-12 col-md-6">
+        <div class="sf-hub-card h-100 {{ $isPompaActive ? 'border-primary' : '' }}" id="output-card-{{ $sfPompa->id }}">
+            <div class="sf-hub-header">
+                <div class="d-flex align-items-center gap-2.5">
+                    <div class="sf-actuator-icon icon-pompa">
+                        <i class="bi bi-water"></i>
+                    </div>
+                    <div>
+                        <h6 class="sf-hub-title">Pompa Air Utama</h6>
+                        <div class="sf-hub-subtitle">Suplai air bertekanan utama ke pipa irigasi</div>
+                    </div>
+                </div>
+                <span id="output-status-{{ $sfPompa->id }}" class="output-status {{ $isPompaActive ? 'on' : 'off' }}" data-on-text="MEMOMPA" data-off-text="OFF">
+                    {{ $isPompaActive ? 'MEMOMPA' : 'OFF' }}
+                </span>
+            </div>
+
+            <div class="segmented-control mt-2">
+                <button type="button" class="segmented-btn {{ $isPompaActive ? 'active-on' : '' }}" onclick="openSmartFarmSiramModal()" id="btn-on-{{ $sfPompa->id }}">
+                    <i class="bi bi-power me-1"></i> ON (SIRAM)
+                </button>
+                <button type="button" class="segmented-btn {{ !$isPompaActive ? 'active-off' : '' }}" onclick="stopSmartFarmSiram()" id="btn-off-{{ $sfPompa->id }}">
+                    OFF
+                </button>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    <!-- 1.2 INJEKSI PUPUK CAIR -->
+    @if($sfPupuk)
+    @php
+        $isPupukOn = (bool) ($sfPupuk->current_value ?? 0);
+    @endphp
+    <div class="col-12 col-md-6">
+        <div class="sf-hub-card h-100 {{ $isPupukOn ? 'border-warning' : '' }}" id="output-card-{{ $sfPupuk->id }}">
+            <div class="sf-hub-header">
+                <div class="d-flex align-items-center gap-2.5">
+                    <div class="sf-actuator-icon icon-pupuk">
+                        <svg class="sf-icon-pupuk" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M10 2v5L4.5 17.5A2.5 2.5 0 0 0 6.6 21h10.8a2.5 2.5 0 0 0 2.1-3.5L14 7V2"></path>
+                            <line x1="8.5" y1="2" x2="15.5" y2="2"></line>
+                            <path d="M7.5 15h9"></path>
+                            <circle cx="12" cy="11.5" r="1" fill="currentColor"></circle>
+                        </svg>
+                    </div>
+                    <div>
+                        <h6 class="sf-hub-title">Injeksi Pupuk Cair</h6>
+                        <div class="sf-hub-subtitle">Dosing nutrisi tanaman terlarut</div>
+                    </div>
+                </div>
+                <span id="output-status-{{ $sfPupuk->id }}" class="output-status {{ $isPupukOn ? 'on' : 'off' }}" data-on-text="INJEKSI AKTIF" data-off-text="STANDBY">
+                    {{ $isPupukOn ? 'INJEKSI AKTIF' : 'STANDBY' }}
+                </span>
+            </div>
+
+            <div class="segmented-control mt-2">
+                <button type="button" class="segmented-btn {{ $isPupukOn ? 'active-on' : '' }}" onclick="setOutput({{ $sfPupuk->id }}, true)" id="btn-on-{{ $sfPupuk->id }}">
+                    <i class="bi bi-power me-1"></i> ON (PUPUK)
+                </button>
+                <button type="button" class="segmented-btn {{ !$isPupukOn ? 'active-off' : '' }}" onclick="setOutput({{ $sfPupuk->id }}, false)" id="btn-off-{{ $sfPupuk->id }}">
+                    OFF
+                </button>
+            </div>
+        </div>
+    </div>
+    @endif
+</div>
+
+<!-- LEVEL 4: INDIKATOR BLOK -->
+<div class="sf-hub-card mb-3">
+    <div class="sf-hub-header mb-2.5">
+        <div class="d-flex align-items-center gap-2">
+            <div class="sf-section-icon">
+                <i class="bi bi-grid-3x3-gap-fill text-success"></i>
+            </div>
+            <div>
+                <h6 class="sf-hub-title">Indikator Solenoid Blok</h6>
+                <div class="sf-hub-subtitle">Status katup dan aliran air per zona lahan</div>
+            </div>
+        </div>
+        <span class="badge bg-light text-muted border px-2 py-0.5" style="font-size: 0.7rem;">3 Blok</span>
+    </div>
+
+    <div class="row g-2">
+        @php
+            $blocks = [
+                ['num' => 1, 'name' => 'Blok 1', 'obj' => $sfBlok1, 'color' => '#10b981'],
+                ['num' => 2, 'name' => 'Blok 2', 'obj' => $sfBlok2, 'color' => '#0ea5e9'],
+                ['num' => 3, 'name' => 'Blok 3', 'obj' => $sfBlok3, 'color' => '#8b5cf6'],
+            ];
+        @endphp
+
+        @foreach($blocks as $b)
+            @php
+                $blk = $b['obj'];
+                $isBlkOn = (bool) ($blk?->current_value ?? 0);
+                $isFlowing = ($isBlkOn && $isPompaActive) || ($isSiram && $siramBlok == $b['num']);
+            @endphp
+            <div class="col-12 col-md-4">
+                <div class="sf-zone-card sf-zone-simple {{ $isFlowing ? 'active-flow' : '' }}" 
+                     id="output-card-{{ $blk?->id }}"
+                     style="--zone-color: {{ $b['color'] }};">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="sf-zone-avatar-sm" style="border-color: {{ $b['color'] }}; color: {{ $b['color'] }};">
+                                {{ $b['num'] }}
+                            </div>
+                            <div>
+                                <div class="fw-bold text-dark" style="font-size: 0.85rem; line-height: 1.1;">{{ $b['name'] }}</div>
+                                <div class="d-flex align-items-center gap-1 text-muted" style="font-size: 0.68rem;">
+                                    <i class="bi {{ $isBlkOn ? 'bi-unlock-fill text-success' : 'bi-lock-fill text-muted' }}" id="sf-valve-icon-blok{{ $b['num'] }}"></i>
+                                    <span>Katup:</span>
+                                    <span class="output-status {{ $isBlkOn ? 'on' : 'off' }}" 
+                                          id="output-status-{{ $blk?->id }}"
+                                          data-on-text="TERBUKA"
+                                          data-off-text="TERTUTUP">
+                                        {{ $isBlkOn ? 'TERBUKA' : 'TERTUTUP' }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-1">
+                            <span class="sf-flow-indicator" id="sf-flow-blok{{ $b['num'] }}" style="display: {{ $isFlowing ? 'inline-flex' : 'none' }};">
+                                <span class="sf-flow-dot"></span>
+                            </span>
+                            <span class="badge {{ $isFlowing ? 'bg-success text-white' : 'bg-light text-muted border' }}"
+                                  id="sf-flow-badge-blok{{ $b['num'] }}"
+                                  style="font-size: 0.65rem; padding: 2px 7px; font-weight: 700;">
+                                {{ $isFlowing ? 'MENGALIR' : 'STANDBY' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endforeach
+    </div>
+</div>
+
+<!-- Output Tambahan Lainnya (Jika Ada) -->
+@if($otherOutputs->count() > 0)
+<div class="output-panel mb-3">
+    <h5 class="sf-section-label mb-2.5">
+        <i class="bi bi-sliders me-1 text-primary"></i> Output Tambahan Lainnya
+    </h5>
+    <div class="row g-2.5">
+        @foreach($otherOutputs as $output)
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="output-card" id="output-card-{{ $output->id }}">
+                    <div class="card-header-flex">
+                        <div class="output-icon" style="background: {{ $output->color }};">
+                            <i class="bi {{ $output->icon }}"></i>
+                        </div>
+                        <div class="output-label">{{ $output->output_label }}</div>
+                    </div>
+                    <div class="output-status {{ $output->current_value ? 'on' : 'off' }}" id="output-status-{{ $output->id }}">
+                        {{ $output->current_value ? 'ON' : 'OFF' }}
+                    </div>
+                    <div class="segmented-control mt-2">
+                        <button type="button" class="segmented-btn {{ $output->current_value ? 'active-on' : '' }}" onclick="setOutput({{ $output->id }}, true)" id="btn-on-{{ $output->id }}">ON</button>
+                        <button type="button" class="segmented-btn {{ !$output->current_value ? 'active-off' : '' }}" onclick="setOutput({{ $output->id }}, false)" id="btn-off-{{ $output->id }}">OFF</button>
+                    </div>
+                </div>
+            </div>
+        @endforeach
+    </div>
+</div>
+@endif

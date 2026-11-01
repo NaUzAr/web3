@@ -26,12 +26,12 @@
         }
 
         .page-header {
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 1.5rem 2rem;
-            margin-bottom: 2rem;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px 18px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
         }
 
         .device-title {
@@ -445,13 +445,12 @@
 
         /* Smart Farm Grouped UI & Architecture Styling */
         .sf-hero-card {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 22px;
-            padding: 1.5rem 1.8rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.04);
-            backdrop-filter: blur(20px);
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
             position: relative;
             overflow: hidden;
             transition: all 0.3s ease;
@@ -469,13 +468,12 @@
 
         /* Pipeline Visualizer Strip */
         .sf-pipeline-card {
-            background: rgba(255, 255, 255, 0.85);
-            border: 1px solid rgba(229, 231, 235, 0.8);
-            border-radius: 18px;
-            padding: 1.1rem 1.25rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
-            backdrop-filter: blur(10px);
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
         }
 
         .pipeline-scroll-wrapper {
@@ -502,11 +500,7 @@
             gap: 6px;
         }
 
-        @media (max-width: 768px) {
-            .pipeline-track {
-                min-width: 470px;
-            }
-        }
+        
 
         .pipeline-node {
             display: flex;
@@ -622,15 +616,14 @@
 
         /* Hub Containers */
         .sf-hub-card {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 22px;
-            padding: 1.4rem;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
             height: 100%;
-            box-shadow: 0 4px 18px -2px rgba(0, 0, 0, 0.03);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
             display: flex;
             flex-direction: column;
-            transition: all 0.3s ease;
         }
 
         .sf-hub-header {
@@ -1202,6 +1195,154 @@
 
 
 
+        
+        /* Modern Common UI Tokens */
+        .btn-action-modern {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            color: #334155;
+            background: #ffffff;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .btn-action-modern:hover {
+            background: #f8fafc;
+            border-color: #94a3b8;
+            color: #0f172a;
+        }
+        .status-beacon {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #10b981;
+            display: inline-block;
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+            animation: pulse-dot 2s infinite;
+        }
+        @keyframes pulse-dot {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        .badge-online {
+            background: #dcfce7 !important;
+            color: #15803d !important;
+            border: 1px solid #bbf7d0 !important;
+            font-size: 0.72rem !important;
+            font-weight: 700 !important;
+            padding: 3px 8px !important;
+            border-radius: 6px !important;
+        }
+        .badge-offline {
+            background: #fee2e2 !important;
+            color: #b91c1c !important;
+            border: 1px solid #fecaca !important;
+            font-size: 0.72rem !important;
+            font-weight: 700 !important;
+            padding: 3px 8px !important;
+            border-radius: 6px !important;
+        }
+        .sf-status-icon-box {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-size: 1.15rem;
+            flex-shrink: 0;
+        }
+        .sf-mode-badge {
+            font-size: 0.72rem;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 6px;
+            letter-spacing: 0.3px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .mode-auto { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+        .mode-manual { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+        .mode-standby { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+        .sf-rtc-pill {
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            color: #475569;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .sf-rtc-pill:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+        .sf-detail-text {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 2px;
+        }
+        .btn-op {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            height: 34px;
+            padding: 0 12px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .btn-op-primary {
+            background: #10b981;
+            color: #ffffff !important;
+        }
+        .btn-op-primary:hover {
+            background: #059669;
+        }
+        .btn-op-danger {
+            background: #ef4444;
+            color: #ffffff !important;
+        }
+        .btn-op-danger:hover {
+            background: #dc2626;
+        }
+        .btn-op-outline {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            color: #334155 !important;
+        }
+        .btn-op-outline:hover {
+            background: #f8fafc;
+            border-color: #94a3b8;
+            color: #0f172a !important;
+        }
+        .sf-section-label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
         /* ========= Ultra-Modern High-Density Mobile View (Clean, Minimalist, Flutter/Linear Aesthetic) ========= */
         @media (max-width: 768px) {
             /* 1. App Shell Architecture */
@@ -1272,15 +1413,13 @@
 
             /* 2. Device Page Header (Ultra-Compact Strip - 36px) */
             .page-header {
-                padding: 6px 10px !important;
-                border-radius: 8px !important;
-                border: 1px solid #e2e8f0 !important;
-                background: #ffffff !important;
-                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
-                margin-bottom: 6px !important;
-                gap: 4px !important;
-                min-height: auto !important;
-            }
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px 18px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+        }
 
             .page-header > div:first-child {
                 width: 100% !important;
