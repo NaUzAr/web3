@@ -1202,9 +1202,9 @@
 
 
 
-        /* ========= Mobile App-Shell Responsive (Strict High-Density Flutter Architecture) ========= */
+        /* ========= Ultra-Modern High-Density Mobile View (Clean, Minimalist, Flutter/Linear Aesthetic) ========= */
         @media (max-width: 768px) {
-            /* 1. App Shell Viewport */
+            /* 1. App Shell Architecture */
             html, body {
                 height: 100dvh !important;
                 max-height: 100dvh !important;
@@ -1212,20 +1212,21 @@
                 overscroll-behavior-y: none !important;
                 background-color: #f8fafc !important;
                 -webkit-tap-highlight-color: transparent !important;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif !important;
             }
 
             .bg-animation {
                 display: none !important;
             }
 
-            /* Fixed Top Header (h-12 / 48px) */
+            /* Fixed Compact Top Header (44px) */
             .navbar-main {
-                height: 48px !important;
-                min-height: 48px !important;
-                max-height: 48px !important;
-                padding: 0 12px !important;
+                height: 44px !important;
+                min-height: 44px !important;
+                max-height: 44px !important;
+                padding: 0 10px !important;
                 border-bottom: 1px solid #e2e8f0 !important;
-                background: rgba(255, 255, 255, 0.96) !important;
+                background: rgba(255, 255, 255, 0.98) !important;
                 backdrop-filter: blur(12px) !important;
                 position: fixed !important;
                 top: 0 !important;
@@ -1233,22 +1234,22 @@
                 right: 0 !important;
                 width: 100% !important;
                 z-index: 1040 !important;
-                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
             }
 
             .navbar-main .navbar-brand img {
-                height: 24px !important;
+                height: 22px !important;
             }
 
             .navbar-main .navbar-brand span.tanikaya-brand-text {
-                font-size: 1.15rem !important;
+                font-size: 1.1rem !important;
             }
 
             /* Independent Scroll Body */
             .container {
                 position: fixed !important;
-                top: 48px !important;
-                bottom: calc(54px + env(safe-area-inset-bottom, 0px)) !important;
+                top: 44px !important;
+                bottom: calc(52px + env(safe-area-inset-bottom, 0px)) !important;
                 left: 0 !important;
                 right: 0 !important;
                 width: 100% !important;
@@ -1256,7 +1257,7 @@
                 overflow-y: auto !important;
                 overscroll-behavior-y: contain !important;
                 -webkit-overflow-scrolling: touch !important;
-                padding: 8px 10px 24px 10px !important;
+                padding: 6px 8px 18px 8px !important;
                 margin: 0 !important;
                 scrollbar-width: none !important;
             }
@@ -1269,205 +1270,405 @@
                 font-size: 16px !important;
             }
 
-            /* 2. Device Page Header (Tight 4px/8px Card) */
+            /* 2. Device Page Header (Ultra-Compact Strip - 36px) */
             .page-header {
-                padding: 8px 10px !important;
-                border-radius: 10px !important;
+                padding: 6px 10px !important;
+                border-radius: 8px !important;
                 border: 1px solid #e2e8f0 !important;
                 background: #ffffff !important;
                 box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
-                margin-bottom: 8px !important;
-                gap: 6px !important;
+                margin-bottom: 6px !important;
+                gap: 4px !important;
+                min-height: auto !important;
+            }
+
+            .page-header > div:first-child {
+                width: 100% !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                flex-wrap: wrap !important;
             }
 
             .device-title {
-                font-size: 1.05rem !important;
+                font-size: 0.95rem !important;
                 font-weight: 800 !important;
                 color: #0f172a !important;
                 line-height: 1.2 !important;
+                letter-spacing: -0.3px !important;
             }
 
-            .device-type-badge {
-                font-size: 0.65rem !important;
-                font-weight: 700 !important;
-                padding: 0.15rem 0.5rem !important;
-                border-radius: 6px !important;
+            .device-title i {
+                display: none !important; /* Hide old bulky icon */
+            }
+
+            /* Hide redundant SMART_FARM badge on mobile */
+            .device-type-badge:not(#conn-badge) {
+                display: none !important;
+            }
+
+            #conn-badge {
+                font-size: 0.62rem !important;
+                font-weight: 800 !important;
+                padding: 2px 6px !important;
+                border-radius: 4px !important;
+                letter-spacing: 0.3px !important;
             }
 
             #last-update-text {
-                font-size: 0.68rem !important;
-                margin-top: 0.15rem !important;
-                color: #64748b !important;
+                font-size: 0.65rem !important;
+                margin-top: 1px !important;
+                color: #94a3b8 !important;
+                width: 100% !important;
             }
 
             .header-actions-group {
-                width: 100% !important;
-                display: flex !important;
-                gap: 6px !important;
-                margin-top: 4px !important;
+                display: none !important; /* Actions moved into hero / bottom nav on mobile */
             }
 
-            .header-actions-group .btn-action-custom {
-                flex: 1 !important;
-                justify-content: center !important;
-                height: 32px !important;
-                min-height: 32px !important;
-                padding: 0.2rem 0.5rem !important;
-                font-size: 0.72rem !important;
-                font-weight: 700 !important;
-                border-radius: 8px !important;
-                border: 1px solid #e2e8f0 !important;
-                box-shadow: none !important;
-                text-align: center !important;
-            }
-
-            /* 3. Smart Farm Hero Status & Command Center */
+            /* 3. Smart Farm Hero Status & Command Center (Modern Sleek Card - ~76px) */
             #sf-status-card {
                 padding: 8px 10px !important;
-                border-radius: 10px !important;
+                border-radius: 8px !important;
                 border: 1px solid #e2e8f0 !important;
                 background: #ffffff !important;
                 box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
-                margin-bottom: 8px !important;
+                margin-bottom: 6px !important;
             }
 
             #sf-status-card .d-flex.flex-wrap.align-items-center.justify-content-between {
                 flex-direction: column !important;
                 align-items: stretch !important;
-                gap: 8px !important;
+                gap: 6px !important;
             }
 
+            /* HIDE GIANT WAVY ICON ON MOBILE! */
             #sf-icon-wrapper {
-                width: 36px !important;
-                height: 36px !important;
-                border-radius: 8px !important;
-                font-size: 1.1rem !important;
-                flex-shrink: 0 !important;
+                display: none !important;
             }
 
             #sf-badge-siram {
                 font-size: 0.68rem !important;
-                padding: 0.2rem 0.55rem !important;
-                border-radius: 6px !important;
+                padding: 2px 7px !important;
+                border-radius: 4px !important;
                 font-weight: 800 !important;
+                letter-spacing: 0.3px !important;
             }
 
             #sf-badge-jam {
                 font-size: 0.65rem !important;
-                padding: 0.18rem 0.45rem !important;
-                border-radius: 6px !important;
+                padding: 2px 6px !important;
+                border-radius: 4px !important;
+                font-weight: 600 !important;
             }
 
+            /* Hide wordy filler sentence when standby */
             #sf-detail-siram {
-                font-size: 0.7rem !important;
-                line-height: 1.3 !important;
-                color: #64748b !important;
+                display: none !important;
+            }
+
+            /* When active/siram, show compact 1-line status */
+            #sf-status-card:has(#sf-btn-stop) #sf-detail-siram {
+                display: block !important;
+                font-size: 0.72rem !important;
+                font-weight: 700 !important;
+                color: #059669 !important;
+                margin-top: 2px !important;
             }
 
             #sf-sisa-waktu {
                 font-size: 0.85rem !important;
                 font-weight: 800 !important;
-                font-family: monospace !important;
+                font-family: 'SF Mono', Menlo, Consolas, monospace !important;
                 color: #059669 !important;
             }
 
+            /* Action Buttons: Crisp 6px Modern Rectangles (NO 50px BULBOUS PILLS!) */
             #sf-status-card .sf-actions-group {
                 display: grid !important;
-                grid-template-columns: 1fr 1fr !important;
+                grid-template-columns: 2fr 1.2fr 1fr !important;
                 width: 100% !important;
-                gap: 6px !important;
-                margin-top: 4px !important;
-            }
-
-            #sf-status-card .sf-actions-group .btn {
-                height: 34px !important;
-                min-height: 34px !important;
-                padding: 0.3rem 0.5rem !important;
-                font-size: 0.75rem !important;
-                font-weight: 700 !important;
-                border-radius: 8px !important;
-                border: 1px solid #e2e8f0 !important;
-                justify-content: center !important;
-            }
-
-            #sf-status-card .sf-actions-group #sf-btn-start,
-            #sf-status-card .sf-actions-group #sf-btn-stop {
-                grid-column: span 2 !important;
-                height: 36px !important;
-                font-size: 0.82rem !important;
-            }
-
-            /* 4. Pipeline Card */
-            .sf-pipeline-card {
-                padding: 8px 10px !important;
-                border-radius: 10px !important;
-                border: 1px solid #e2e8f0 !important;
-                background: #ffffff !important;
-                margin-bottom: 8px !important;
-            }
-
-            .pipeline-track {
-                min-width: 360px !important;
-                gap: 4px !important;
-                padding: 4px 0 !important;
-            }
-
-            .pipeline-node-icon {
-                width: 30px !important;
-                height: 30px !important;
-                border-radius: 8px !important;
-                font-size: 0.85rem !important;
-            }
-
-            .pipeline-node-label {
-                font-size: 0.62rem !important;
-                font-weight: 600 !important;
+                gap: 5px !important;
                 margin-top: 2px !important;
             }
 
-            .pipeline-node-status {
-                font-size: 0.6rem !important;
+            #sf-status-card .sf-actions-group .btn,
+            #sf-status-card .sf-actions-group a {
+                height: 32px !important;
+                min-height: 32px !important;
+                padding: 0 8px !important;
+                font-size: 0.74rem !important;
                 font-weight: 700 !important;
-                padding: 1px 4px !important;
-                border-radius: 4px !important;
+                border-radius: 6px !important; /* CRISP 6px CORNERS */
+                border: 1px solid #e2e8f0 !important;
+                justify-content: center !important;
+                display: flex !important;
+                align-items: center !important;
+                white-space: nowrap !important;
+                box-shadow: none !important;
+                letter-spacing: -0.2px !important;
+            }
+
+            #sf-btn-start {
+                background: #10b981 !important; /* Modern Emerald */
+                color: #ffffff !important;
+                border: none !important;
+            }
+
+            #sf-btn-stop {
+                background: #ef4444 !important; /* Modern Red */
+                color: #ffffff !important;
+                border: none !important;
+            }
+
+            /* 4. Pipeline Visualizer (Micro Horizontal Stepper - ~44px) */
+            .sf-pipeline-card {
+                padding: 6px 8px !important;
+                border-radius: 8px !important;
+                border: 1px solid #e2e8f0 !important;
+                background: #ffffff !important;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+                margin-bottom: 6px !important;
+            }
+
+            .sf-pipeline-card .small.fw-bold {
+                font-size: 0.65rem !important;
+                font-weight: 800 !important;
+                color: #94a3b8 !important;
+                text-transform: uppercase !important;
+                letter-spacing: 0.5px !important;
+                margin-bottom: 4px !important;
+            }
+
+            .pipeline-scroll-wrapper {
+                padding: 0 !important;
+                overflow-x: auto !important;
+            }
+
+            .pipeline-track {
+                min-width: 0 !important;
+                width: 100% !important;
+                gap: 2px !important;
+                padding: 2px 0 !important;
+                justify-content: space-between !important;
+            }
+
+            .pipeline-node {
+                padding: 2px !important;
+                flex: 1 !important;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+            }
+
+            .pipeline-node-icon {
+                width: 24px !important;
+                height: 24px !important;
+                border-radius: 6px !important;
+                font-size: 0.75rem !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+
+            .pipeline-node-icon svg {
+                width: 13px !important;
+                height: 13px !important;
+            }
+
+            .pipeline-node-label {
+                font-size: 0.58rem !important;
+                font-weight: 700 !important;
+                color: #475569 !important;
+                margin-top: 1px !important;
+                line-height: 1 !important;
+                white-space: nowrap !important;
+            }
+
+            .pipeline-node-status {
+                font-size: 0.55rem !important;
+                font-weight: 800 !important;
+                padding: 0 3px !important;
+                border-radius: 3px !important;
+                margin-top: 1px !important;
+                line-height: 1.2 !important;
             }
 
             .pipeline-connector {
-                height: 2px !important;
-                min-width: 12px !important;
+                height: 1.5px !important;
+                min-width: 6px !important;
+                margin: 0 !important;
+                align-self: center !important;
             }
 
-            /* 5. Compact Telemetry Grid (Strict 4px/8px Grid, 2 Columns) */
+            /* 5. Actuators & Relay Hub (Apple HomeKit High-Density Rows) */
+            .sf-hub-card {
+                padding: 8px 10px !important;
+                border-radius: 8px !important;
+                border: 1px solid #e2e8f0 !important;
+                background: #ffffff !important;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+                margin-bottom: 6px !important;
+            }
+
+            .sf-hub-header {
+                margin-bottom: 4px !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                gap: 6px !important;
+            }
+
+            .sf-actuator-icon {
+                width: 26px !important;
+                height: 26px !important;
+                border-radius: 6px !important;
+                font-size: 0.8rem !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                margin: 0 !important;
+                flex-shrink: 0 !important;
+            }
+
+            .sf-actuator-icon svg {
+                width: 14px !important;
+                height: 14px !important;
+            }
+
+            .sf-hub-title {
+                font-size: 0.78rem !important;
+                font-weight: 700 !important;
+                color: #0f172a !important;
+                margin-bottom: 0 !important;
+                line-height: 1.1 !important;
+            }
+
+            .sf-hub-subtitle {
+                font-size: 0.6rem !important;
+                color: #94a3b8 !important;
+                line-height: 1.1 !important;
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+                max-width: 190px !important;
+            }
+
+            .output-status {
+                font-size: 0.62rem !important;
+                font-weight: 800 !important;
+                padding: 1px 5px !important;
+                border-radius: 4px !important;
+                letter-spacing: 0.2px !important;
+            }
+
+            .segmented-control {
+                height: 28px !important;
+                padding: 2px !important;
+                border-radius: 6px !important;
+                background: #f1f5f9 !important;
+                border: 1px solid #e2e8f0 !important;
+                margin-top: 3px !important;
+            }
+
+            .segmented-btn {
+                font-size: 0.68rem !important;
+                font-weight: 700 !important;
+                border-radius: 4px !important;
+                height: 100% !important;
+                padding: 0 !important;
+            }
+
+            /* Indikator Blok: Modern 3-Column Micro Grid */
+            .sf-hub-card:has(.sf-zone-simple) {
+                padding: 6px 8px !important;
+            }
+
+            .sf-hub-card:has(.sf-zone-simple) .row.g-3 {
+                --bs-gutter-x: 4px !important;
+                --bs-gutter-y: 4px !important;
+                display: grid !important;
+                grid-template-columns: 1fr 1fr 1fr !important;
+            }
+
+            .sf-hub-card:has(.sf-zone-simple) .col-12.col-md-4 {
+                width: 100% !important;
+                padding: 0 !important;
+            }
+
+            .sf-zone-simple {
+                padding: 4px 6px !important;
+                border-radius: 6px !important;
+                border: 1px solid #e2e8f0 !important;
+                background: #ffffff !important;
+                height: 38px !important;
+                display: flex !important;
+                align-items: center !important;
+            }
+
+            .sf-zone-simple .d-flex.align-items-center.justify-content-between {
+                width: 100% !important;
+            }
+
+            .sf-zone-avatar-sm {
+                width: 20px !important;
+                height: 20px !important;
+                font-size: 0.72rem !important;
+                font-weight: 800 !important;
+                border-radius: 4px !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+
+            .sf-zone-card .fw-bold.text-dark {
+                font-size: 0.72rem !important;
+                line-height: 1 !important;
+            }
+
+            .sf-zone-simple .text-muted {
+                font-size: 0.6rem !important;
+                margin-top: 1px !important;
+            }
+
+            .sf-zone-simple .badge {
+                font-size: 0.58rem !important;
+                padding: 1px 4px !important;
+                border-radius: 3px !important;
+            }
+
+            /* Row gaps smaller */
+            .row.g-3, .row.g-4 {
+                --bs-gutter-x: 5px !important;
+                --bs-gutter-y: 5px !important;
+                row-gap: 5px !important;
+                margin-bottom: 5px !important;
+            }
+
+            /* 6. Compact Sensor Telemetry Grid (2 Columns) */
             .sensor-panel {
-                margin-bottom: 8px !important;
+                margin-bottom: 6px !important;
             }
 
             .sensor-panel .card-title {
-                font-size: 0.72rem !important;
+                font-size: 0.68rem !important;
                 font-weight: 800 !important;
                 text-transform: uppercase !important;
                 letter-spacing: 0.5px !important;
-                color: #64748b !important;
-                margin-bottom: 6px !important;
-            }
-
-            .row.g-3, .row.g-4 {
-                --bs-gutter-x: 6px !important;
-                --bs-gutter-y: 6px !important;
-                row-gap: 6px !important;
-                margin-bottom: 6px !important;
+                color: #94a3b8 !important;
+                margin-bottom: 4px !important;
             }
 
             .sensor-card {
-                padding: 8px 10px !important;
-                border-radius: 10px !important;
+                padding: 6px 8px !important;
+                border-radius: 8px !important;
                 border: 1px solid #e2e8f0 !important;
                 background: #ffffff !important;
                 box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
                 display: flex !important;
                 flex-direction: column !important;
                 justify-content: space-between !important;
-                min-height: 68px !important;
+                min-height: 58px !important;
             }
 
             .sensor-card .card-header-flex {
@@ -1475,17 +1676,16 @@
                 flex-direction: row !important;
                 justify-content: space-between !important;
                 align-items: center !important;
-                margin-bottom: 4px !important;
-                gap: 4px !important;
+                margin-bottom: 2px !important;
+                gap: 3px !important;
             }
 
             .sensor-icon {
-                width: 24px !important;
-                height: 24px !important;
-                border-radius: 6px !important;
-                font-size: 0.8rem !important;
+                width: 20px !important;
+                height: 20px !important;
+                border-radius: 4px !important;
+                font-size: 0.72rem !important;
                 margin: 0 !important;
-                flex-shrink: 0 !important;
                 display: flex !important;
                 align-items: center !important;
                 justify-content: center !important;
@@ -1493,12 +1693,12 @@
             }
 
             .sensor-label {
-                font-size: 0.68rem !important;
+                font-size: 0.62rem !important;
                 font-weight: 700 !important;
                 color: #64748b !important;
                 text-transform: uppercase !important;
-                letter-spacing: 0.3px !important;
-                line-height: 1.2 !important;
+                letter-spacing: 0.2px !important;
+                line-height: 1.1 !important;
                 order: 1 !important;
                 text-align: left !important;
                 white-space: nowrap !important;
@@ -1510,127 +1710,49 @@
             .sensor-value-container {
                 display: flex !important;
                 align-items: baseline !important;
-                gap: 3px !important;
-                margin-top: 2px !important;
+                gap: 2px !important;
             }
 
             .sensor-value {
-                font-size: 1.25rem !important;
+                font-size: 1.15rem !important;
                 font-weight: 800 !important;
                 color: #0f172a !important;
                 line-height: 1 !important;
-                font-family: 'Inter', monospace !important;
+                font-family: 'SF Mono', Menlo, Consolas, monospace !important;
                 letter-spacing: -0.5px !important;
             }
 
             .sensor-unit {
-                font-size: 0.68rem !important;
-                font-weight: 700 !important;
-                color: #94a3b8 !important;
-            }
-
-            /* 6. Actuators & Relay Controls */
-            .sf-hub-card, .output-panel, .output-card, .output-card-special {
-                padding: 8px 10px !important;
-                border-radius: 10px !important;
-                border: 1px solid #e2e8f0 !important;
-                background: #ffffff !important;
-                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
-                margin-bottom: 6px !important;
-            }
-
-            .sf-hub-header {
-                margin-bottom: 6px !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: space-between !important;
-                gap: 6px !important;
-            }
-
-            .sf-actuator-icon, .output-icon, .output-icon-special {
-                width: 28px !important;
-                height: 28px !important;
-                border-radius: 6px !important;
-                font-size: 0.82rem !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-                margin: 0 !important;
-                flex-shrink: 0 !important;
-            }
-
-            .sf-hub-title, .output-label {
-                font-size: 0.78rem !important;
-                font-weight: 700 !important;
-                color: #0f172a !important;
-                line-height: 1.2 !important;
-                margin-bottom: 0 !important;
-            }
-
-            .sf-hub-subtitle {
                 font-size: 0.62rem !important;
-                color: #94a3b8 !important;
-                line-height: 1.2 !important;
-            }
-
-            .output-status {
-                font-size: 0.65rem !important;
-                font-weight: 800 !important;
-                padding: 2px 7px !important;
-                border-radius: 5px !important;
-            }
-
-            .segmented-control {
-                height: 30px !important;
-                padding: 2px !important;
-                border-radius: 6px !important;
-                background: #f1f5f9 !important;
-                border: 1px solid #e2e8f0 !important;
-                margin-top: 4px !important;
-            }
-
-            .segmented-btn {
-                font-size: 0.72rem !important;
                 font-weight: 700 !important;
-                border-radius: 4px !important;
-                height: 100% !important;
-                padding: 0 !important;
+                color: #94a3b8 !important;
             }
 
-            .sf-zone-simple {
+            /* Output Cards compact */
+            .output-card, .output-card-special {
                 padding: 6px 8px !important;
                 border-radius: 8px !important;
                 border: 1px solid #e2e8f0 !important;
                 background: #ffffff !important;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
             }
 
-            .sf-zone-avatar-sm {
+            .output-icon, .output-icon-special {
                 width: 24px !important;
                 height: 24px !important;
+                border-radius: 5px !important;
                 font-size: 0.75rem !important;
-                border-radius: 6px !important;
+                margin: 0 auto 3px !important;
             }
 
-            .sf-zone-card .fw-bold {
-                font-size: 0.82rem !important;
-            }
-
-            /* Glass Card Charts compact */
-            .glass-card {
-                padding: 8px 10px !important;
-                border-radius: 10px !important;
-                border: 1px solid #e2e8f0 !important;
-                margin-top: 8px !important;
-            }
-
-            .card-title {
-                font-size: 0.85rem !important;
+            .output-label {
+                font-size: 0.68rem !important;
                 font-weight: 700 !important;
-                margin-bottom: 6px !important;
             }
 
-            .glass-card canvas {
-                max-height: 180px !important;
+            /* Hide Floating Chatbot on Mobile (So it NEVER covers buttons) */
+            #chatbot-widget {
+                display: none !important;
             }
         }
 

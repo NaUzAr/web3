@@ -474,8 +474,7 @@
     /* ===== Mobile Responsive ===== */
     @media (max-width: 768px) {
         #chatbot-widget {
-            bottom: 16px;
-            right: 16px;
+            display: none !important;
         }
 
         #chatbot-bubble {
